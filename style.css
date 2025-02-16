@@ -1,0 +1,112 @@
+/* retro-style.css */
+body {
+    background-color: #000000;
+    color: #00ff00;
+    font-family: "Comic Sans MS", cursive;
+    cursor: url('data:image/cur;base64,R0lGODlhIAAgAMIEAAAAAAAA/////4CAgP///////////////yH5BAEKAAQALAAAAAAgACAAAAP+SLrc/m7IOeoN8MpaqH0T95jniR0YiKqZtSrvnFIwzGRJ3nhu73zv/8AvgIEWw6FxyWwam7+l0+mkMqFUKNQZhUqvVyd2y+2Cw+JuOQUmn9PnNFuubsPjM7r9HqPb7/a7npYmAIKDhH+GgIiJhnGEjI2Oj4SLkYyRjpaXjZGUmZqbnJKYnqCfoZmjpKWmp5+iqqusra6noK+lpamttLW2t62wuLm6u7y9vru7wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/wADChxIsKDBgwgTKlzIsKHDhxAjSpxI0QMBADs='), auto;
+    margin: 0;
+    padding: 20px;
+}
+
+/* Blinking text effect */
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+h1 {
+    color: #ff00ff;
+    text-align: center;
+    font-size: 36px;
+    text-shadow: 2px 2px #ff0000;
+    animation: blink 1s infinite;
+}
+
+h2 {
+    color: #ffff00;
+    text-shadow: 2px 2px #0000ff;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: linear-gradient(to bottom, #000066, #660066);
+    border: 5px ridge #00ff00;
+    padding: 20px;
+}
+
+/* Cool scrollbar */
+::-webkit-scrollbar {
+    width: 15px;
+}
+
+::-webkit-scrollbar-track {
+    background: #000000;
+    border: 2px solid #00ff00;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #00ff00;
+    border: 2px solid #ff00ff;
+}
+
+/* Navigation styling */
+nav {
+    background-color: #000099;
+    padding: 10px;
+    text-align: center;
+    border: 3px outset #ff00ff;
+    margin-bottom: 20px;
+}
+
+nav a {
+    color: #00ff00;
+    text-decoration: none;
+    padding: 5px 15px;
+    margin: 0 10px;
+    background-color: #000000;
+    border: 2px outset #00ff00;
+}
+
+nav a:hover {
+    background-color: #ff00ff;
+    color: #ffff00;
+    border-style: inset;
+}
+
+/* Links */
+a {
+    color: #00ff00;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #ff00ff;
+    text-decoration: underline wavy #ffff00;
+}
+
+/* Game container */
+.game-container {
+    border: 3px dashed #ff00ff;
+    padding: 20px;
+    margin: 20px 0;
+    background-color: #000033;
+}
+
+/* Marquee-style text */
+.marquee {
+    color: #ff0000;
+    font-weight: bold;
+    font-size: 20px;
+    text-decoration: underline overline;
+}
+
+/* Under construction gif replacement */
+.under-construction {
+    text-align: center;
+    padding: 20px;
+    border: 2px dashed #ff0000;
+    background-color: #330000;
+    margin: 20px 0;
+}
