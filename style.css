@@ -3,7 +3,7 @@ body {
     background-color: #000000;
     color: #00ff00;
     font-family: "Comic Sans MS", cursive;
-    cursor: url('data:image/cur;base64,R0lGODlhIAAgAMIEAAAAAAAA/////4CAgP///////////////yH5BAEKAAQALAAAAAAgACAAAAP+SLrc/m7IOeoN8MpaqH0T95jniR0YiKqZtSrvnFIwzGRJ3nhu73zv/8AvgIEWw6FxyWwam7+l0+mkMqFUKNQZhUqvVyd2y+2Cw+JuOQUmn9PnNFuubsPjM7r9HqPb7/a7npYmAIKDhH+GgIiJhnGEjI2Oj4SLkYyRjpaXjZGUmZqbnJKYnqCfoZmjpKWmp5+iqqusra6noK+lpamttLW2t62wuLm6u7y9vru7wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/wADChxIsKDBgwgTKlzIsKHDhxAjSpxI0QMBADs='), auto;
+    cursor: url('data:image/cur;base64,R0lGODlhIAAgAMIEAAAAAAAA/////4CAgP///////////////yH5BAEKAAQALAAAAAAgACAAAAP+SLrc/m7IOeoN8MpaqH0T95jniR0YiKqZtSrvnFIwzGRJ3nhu73zv/8AvgIEWw6FxyWwam7+l0+mkMqFUKNQZhUqvVyd2y+2Cw+JuOQUmn9PnNFuubsPjM7r9HqPb7/a7npYmAIKDhH+GgIiJhnGEjI2Oj4SLkYyRjpaXjZGUmZqbnJKYnqCfoZmjpKWmp5+iqqusra6noK+lpamttLW2t62wuLm6u7y9vru7wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/wADChxIsKHDhxAjSpxI0QMBADs='), auto;
     margin: 0;
     padding: 20px;
 }
@@ -34,6 +34,9 @@ h2 {
     background: linear-gradient(to bottom, #000066, #660066);
     border: 5px ridge #00ff00;
     padding: 20px;
+    /* Make sure container doesn't overflow on mobile */
+    width: 90%;
+    box-sizing: border-box;
 }
 
 /* Cool scrollbar */
@@ -67,6 +70,9 @@ nav a {
     margin: 0 10px;
     background-color: #000000;
     border: 2px outset #00ff00;
+    /* Make links wrap nicely on mobile */
+    display: inline-block;
+    margin-bottom: 5px;
 }
 
 nav a:hover {
@@ -79,6 +85,8 @@ nav a:hover {
 a {
     color: #00ff00;
     text-decoration: none;
+    /* Ensure touch targets are large enough */
+    padding: 5px;
 }
 
 a:hover {
@@ -100,6 +108,8 @@ a:hover {
     font-weight: bold;
     font-size: 20px;
     text-decoration: underline overline;
+    /* Make sure long text wraps on mobile */
+    word-wrap: break-word;
 }
 
 /* Under construction gif replacement */
@@ -109,4 +119,31 @@ a:hover {
     border: 2px dashed #ff0000;
     background-color: #330000;
     margin: 20px 0;
+}
+
+/* Mobile-specific adjustments */
+@media screen and (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 24px; /* Smaller heading on mobile */
+    }
+
+    nav a {
+        display: block; /* Stack navigation links on mobile */
+        margin: 5px 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .container {
+        padding: 10px;
+        width: 95%;
+    }
+
+    .marquee {
+        font-size: 16px; /* Smaller marquee text on mobile */
+    }
 }
