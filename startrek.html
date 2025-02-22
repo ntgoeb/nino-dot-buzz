@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Games - Super Star Trek</title>
+    <link rel="stylesheet" href="retro-style.css">
+    <style>
+        .trek-container {
+            font-family: monospace;
+            white-space: pre-wrap;
+            background-color: #000033;
+            padding: 20px;
+            border: 3px solid #00ff00;
+        }
+        
+        #gameOutput {
+            min-height: 300px;
+            margin-bottom: 20px;
+            color: #00ff00;
+            overflow-y: auto;
+            max-height: 500px;
+        }
+        
+        #gameInput {
+            background: #000000;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            padding: 5px;
+            width: 100%;
+            font-family: monospace;
+            margin-top: 10px;
+        }
+        
+        .status-display {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .status-item {
+            border: 1px solid #00ff00;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="games.html">Games</a>
+            <a href="links.html">Links</a>
+        </nav>
+
+        <h1>Super Star Trek</h1>
+        
+        <div class="trek-container">
+            <div id="gameOutput"></div>
+            <div class="status-display" id="statusDisplay"></div>
+            <input type="text" id="gameInput" placeholder="Enter command..." autocomplete="off">
+        </div>
+    </div>
+
+<script>
+// Game state
+const gameState = {
+    stardate: 2100.0,
+    energy: 3000,
+    shields: 0,
+    torpedoes: 10,
+    quadrant: [0, 0],
+    sector: [0, 0],
+    klingons: 0,
+    bases: 0,
+    damage: {
+        warp: 0,
+        shortRange: 0,
+        longRange: 0,
+        phaser: 0,
+        torpedo: 0,
+        shield: 0,
+        computer: 0
+    }
+};
+
+// Initialize galaxy
+const galaxy = Array(8).fill().map(() => 
+    Array(8).fill().map(() => ({
+        klingons: 0,
+        bases: 0,
+        stars: Math.floor(Math.random() * 8)
+    }))
+);
+
+function initializeGame() {
+    // Place Klingons
+    gameState.klingons = 12;
+    for(let i = 0; i < gameState.klingons; i++) {
+        let x = Math.floor(Math.random() * 8);
+        let y = Math.floor(Math.random() * 8);
+        galaxy[y][x].klingons++;
+    }
+    
+    // Place starbases
+    gameState.bases = 3;
+    for(let i = 0; i < gameState.bases; i++) {
+        let x = Math.floor(Math.random() * 8);
+        let y = Math.floor(Math.random() * 8);
+        galaxy[y][x].bases++;
+    }
+    
+    // Random starting position
+    gameState.quadrant = [Math.floor(Math.random() * 8), Math.floor(Math.random() * 8)];
+    gameState.sector = [Math.floor(Math.random() * 8), Math.floor(Math.random() * 8)];
+    
+    updateDisplay("Welcome to Super Star Trek!\n");
+    showStatus();
+}
+
+function updateDisplay(text) {
+    const output = document.getElementById('gameOutput');
+    output.textContent += text + "\n";
+    output.scrollTop = output.scrollHeight;
+}
+
+function showStatus() {
+    const status = document.getElementById('statusDisplay');
+    status.innerHTML = `
+        <div class="status-item">Stardate: ${gameState.stardate.toFixed(1)}</div>
+        <div class="status-item">Energy: ${gameState.energy}</div>
+        <div class="status-item">Shields: ${gameState.shields}</div>
+        <div class="status-item">Torpedoes: ${gameState.torpedoes}</div>
+        <div class="status-item">Quadrant: ${gameState.quadrant[0]},${gameState.quadrant[1]}</div>
+        <div class="status-item">Sector: ${gameState.sector[0]},${gameState.sector[1]}</div>
+        <div class="status-item">Klingons: ${gameState.klingons}</div>
+        <div class="status-item">Bases: ${gameState.bases}</div>
+    `;
+}
+
+function processCommand(cmd) {
+    cmd = cmd.toLowerCase().trim();
+    const parts = cmd.split(' ');
+    
+    switch(parts[0]) {
+        case 'help':
+            showHelp();
+            break;
+        case 'nav':
+        case 'navigate':
+            if(parts.length === 3) {
+                navigate(parseFloat(parts[1]), parseInt(parts[2]));
+            } else {
+                updateDisplay("Navigation requires course (1-8) and warp factor");
+            }
+            break;
+        case 'shield':
+        case 'shields':
+            if(parts.length === 2) {
+                setShields(parseInt(parts[1]));
+            } else {
+                updateDisplay("Shield command requires energy amount");
+            }
+            break;
+        case 'phasers':
+            if(parts.length === 2) {
+                firePhasers(parseInt(parts[1]));
+            } else {
+                updateDisplay("Phaser command requires energy amount");
+            }
+            break;
+        case 'torpedo':
+            if(parts.length === 2) {
+                fireTorpedo(parseInt(parts[1]));
+            } else {
+                updateDisplay("Torpedo command requires course (1-8)");
+            }
+            break;
+        case 'scan':
+        case 'sr':
+            shortRangeScan();
+            break;
+        case 'lr':
+            longRangeScan();
+            break;
+        default:
+            updateDisplay("Unknown command. Type 'help' for commands.");
+    }
+    showStatus();
+}
+
+function showHelp() {
+    updateDisplay(`
+Available commands:
+    nav <course 1-8> <warp 1-8> - Navigate ship
+    shield <energy> - Raise/lower shields
+    phasers <energy> - Fire phasers
+    torpedo <course 1-8> - Fire photon torpedo
+    scan or sr - Short range scan
+    lr - Long range scan
+    help - Show this help
+    `);
+}
+
+function shortRangeScan() {
+    let scan = "\nShort Range Scan\n";
+    scan += "-----------------\n";
+    for(let i = 0; i < 8; i++) {
+        for(let j = 0; j < 8; j++) {
+            if(i === gameState.sector[1] && j === gameState.sector[0]) {
+                scan += "<E> ";
+            } else {
+                scan += " .  ";
+            }
+        }
+        scan += "\n";
+    }
+    updateDisplay(scan);
+}
+
+// Add more game functions here...
+// This is a simplified version - we can add more features like:
+// - Actual combat with Klingons
+// - Damage control
+// - More detailed navigation
+// - Energy management
+// - etc.
+
+// Set up input handling
+document.getElementById('gameInput').addEventListener('keypress', function(e) {
+    if(e.key === 'Enter') {
+        const cmd = this.value;
+        updateDisplay("> " + cmd);
+        processCommand(cmd);
+        this.value = '';
+    }
+});
+
+// Initialize the game when the page loads
+initializeGame();
+</script>
+</body>
+</html>
