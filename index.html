@@ -31,7 +31,115 @@
                 <h2>Featured Game</h2>
                 <p>Coming attractions</p>
             </div>
+
+            <!-- News Section -->
+            <div class="news-container">
+                <h2>📰 Today's Headlines</h2>
+                <ul id="news-list">
+                    <li>Loading news...</li>
+                </ul>
+                <p class="news-sources">Sources: BBC News, NPR</p>
+            </div>
         </main>
+
+    <script>
+        async function fetchRSS(url) {
+            const proxyUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`;
+            try {
+                const response = await fetch(proxyUrl);
+                const data = await response.json();
+                return data.status === 'ok' ? data.items : [];
+            } catch (error) {
+                console.error('Error fetching RSS:', error);
+                return [];
+            }
+        }
+
+        async function loadNews() {
+            const feeds = {
+                entertainment: [
+                    'https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml',
+                    'https://feeds.npr.org/1008/rss.xml'
+                ],
+                general: [
+                    'https://feeds.bbci.co.uk/news/rss.xml',
+                    'https://feeds.npr.org/1001/rss.xml'
+                ]
+            };
+
+            // Fetch all feeds in parallel
+            const [entBBC, entNPR, genBBC, genNPR] = await Promise.all([
+                fetchRSS(feeds.entertainment[0]),
+                fetchRSS(feeds.entertainment[1]),
+                fetchRSS(feeds.general[0]),
+                fetchRSS(feeds.general[1])
+            ]);
+
+            // Tag items with their source type
+            const entertainmentItems = [
+                ...entBBC.slice(0, 3).map(item => ({ ...item, type: 'entertainment', source: 'BBC' })),
+                ...entNPR.slice(0, 3).map(item => ({ ...item, type: 'entertainment', source: 'NPR' }))
+            ];
+
+            const generalItems = [
+                ...genBBC.slice(0, 5).map(item => ({ ...item, type: 'general', source: 'BBC' })),
+                ...genNPR.slice(0, 5).map(item => ({ ...item, type: 'general', source: 'NPR' }))
+            ];
+
+            // Pick 2 entertainment headlines (1 from each source if possible)
+            const selectedEntertainment = [];
+            const bbcEnt = entertainmentItems.find(i => i.source === 'BBC');
+            const nprEnt = entertainmentItems.find(i => i.source === 'NPR');
+            if (bbcEnt) selectedEntertainment.push(bbcEnt);
+            if (nprEnt) selectedEntertainment.push(nprEnt);
+
+            // Fill remaining entertainment slots if needed
+            while (selectedEntertainment.length < 2 && entertainmentItems.length > selectedEntertainment.length) {
+                const remaining = entertainmentItems.find(i => !selectedEntertainment.includes(i));
+                if (remaining) selectedEntertainment.push(remaining);
+                else break;
+            }
+
+            // Shuffle general items and pick 5 (excluding duplicates by title)
+            const usedTitles = new Set(selectedEntertainment.map(i => i.title));
+            const availableGeneral = generalItems.filter(i => !usedTitles.has(i.title));
+
+            // Interleave sources for variety
+            const selectedGeneral = [];
+            let bbcIndex = 0, nprIndex = 0;
+            const bbcGen = availableGeneral.filter(i => i.source === 'BBC');
+            const nprGen = availableGeneral.filter(i => i.source === 'NPR');
+
+            while (selectedGeneral.length < 5) {
+                if (bbcIndex < bbcGen.length && (selectedGeneral.length % 2 === 0 || nprIndex >= nprGen.length)) {
+                    selectedGeneral.push(bbcGen[bbcIndex++]);
+                } else if (nprIndex < nprGen.length) {
+                    selectedGeneral.push(nprGen[nprIndex++]);
+                } else {
+                    break;
+                }
+            }
+
+            // Combine: general headlines first, then entertainment at the end
+            const allHeadlines = [...selectedGeneral, ...selectedEntertainment].slice(0, 7);
+
+            // Render the news list
+            const newsList = document.getElementById('news-list');
+
+            if (allHeadlines.length === 0) {
+                newsList.innerHTML = '<li>Unable to load news. Check back later!</li>';
+                return;
+            }
+
+            newsList.innerHTML = allHeadlines.map(item => {
+                const label = item.type === 'entertainment' ? ' 🎬' : '';
+                return `<li><a href="${item.link}" target="_blank" rel="noopener">${item.title}</a>${label} <span class="news-source">[${item.source}]</span></li>`;
+            }).join('');
+        }
+
+        // Load news when page loads
+        loadNews();
+    </script>
     </div>
 </body>
 </html>
