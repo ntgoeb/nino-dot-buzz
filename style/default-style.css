@@ -29,7 +29,7 @@ h2 {
 }
 
 .container {
-    max-width: 800px;
+    max-width: 1040px;
     margin: 0 auto;
     background: linear-gradient(to bottom, #000066, #660066);
     border: 5px ridge #00ff00;
