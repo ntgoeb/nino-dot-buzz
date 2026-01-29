@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guess the Number - Nino's Webhome</title>
+    <link rel="stylesheet" href="style/default-style.css">
+    <style>
+        .guess-container {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .guess-input {
+            background: #000000;
+            color: #00ff00;
+            border: 2px inset #00ff00;
+            padding: 10px 15px;
+            font-size: 1.5em;
+            font-family: "Comic Sans MS", cursive;
+            width: 100px;
+            text-align: center;
+        }
+
+        .guess-btn {
+            background: #000000;
+            color: #00ff00;
+            border: 2px outset #00ff00;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            cursor: pointer;
+            font-family: "Comic Sans MS", cursive;
+            margin-left: 10px;
+        }
+
+        .guess-btn:hover {
+            background: #003300;
+        }
+
+        .message {
+            font-size: 1.5em;
+            margin: 20px 0;
+            min-height: 40px;
+        }
+
+        .message.hot {
+            color: #ff0000;
+        }
+
+        .message.warm {
+            color: #ff9900;
+        }
+
+        .message.cold {
+            color: #00ffff;
+        }
+
+        .message.win {
+            color: #00ff00;
+            animation: blink 0.5s infinite;
+        }
+
+        .stats {
+            color: #ffff00;
+            margin: 20px 0;
+        }
+
+        .history {
+            color: #888888;
+            font-size: 0.9em;
+            margin-top: 20px;
+        }
+
+        .new-game-btn {
+            background: #000000;
+            color: #00ff00;
+            border: 2px outset #ff00ff;
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            font-family: "Comic Sans MS", cursive;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="games.html">Games</a>
+            <a href="links.html">Links</a>
+        </nav>
+
+        <h1>Guess the Number</h1>
+        <div class="game-container">
+            <div class="guess-container">
+                <p>I'm thinking of a number between <strong>1</strong> and <strong>100</strong>...</p>
+
+                <div style="margin: 20px 0;">
+                    <input type="number" id="guess-input" class="guess-input" min="1" max="100" placeholder="?">
+                    <button onclick="makeGuess()" class="guess-btn">Guess!</button>
+                </div>
+
+                <div id="message" class="message"></div>
+                <div id="stats" class="stats"></div>
+                <div id="history" class="history"></div>
+
+                <button onclick="newGame()" class="new-game-btn">New Game</button>
+            </div>
+        </div>
+        <p style="text-align: center;"><a href="games.html">&laquo; Back to Games</a></p>
+    </div>
+
+    <script>
+        let secretNumber;
+        let attempts;
+        let guessHistory;
+        let gameOver;
+
+        function newGame() {
+            secretNumber = Math.floor(Math.random() * 100) + 1;
+            attempts = 0;
+            guessHistory = [];
+            gameOver = false;
+            document.getElementById('message').textContent = 'Take a guess!';
+            document.getElementById('message').className = 'message';
+            document.getElementById('stats').textContent = '';
+            document.getElementById('history').textContent = '';
+            document.getElementById('guess-input').value = '';
+            document.getElementById('guess-input').focus();
+        }
+
+        function makeGuess() {
+            if (gameOver) return;
+
+            const input = document.getElementById('guess-input');
+            const guess = parseInt(input.value);
+
+            if (isNaN(guess) || guess < 1 || guess > 100) {
+                document.getElementById('message').textContent = 'Please enter a number between 1 and 100!';
+                document.getElementById('message').className = 'message';
+                return;
+            }
+
+            attempts++;
+            guessHistory.push(guess);
+
+            const message = document.getElementById('message');
+            const diff = Math.abs(secretNumber - guess);
+
+            if (guess === secretNumber) {
+                message.textContent = `YOU GOT IT!!! The number was ${secretNumber}!`;
+                message.className = 'message win';
+                document.getElementById('stats').textContent = `You won in ${attempts} ${attempts === 1 ? 'guess' : 'guesses'}!`;
+                gameOver = true;
+            } else if (guess < secretNumber) {
+                if (diff <= 5) {
+                    message.textContent = 'SO CLOSE! Go higher!';
+                    message.className = 'message hot';
+                } else if (diff <= 15) {
+                    message.textContent = 'Getting warm... Higher!';
+                    message.className = 'message warm';
+                } else {
+                    message.textContent = 'Too low... way higher!';
+                    message.className = 'message cold';
+                }
+            } else {
+                if (diff <= 5) {
+                    message.textContent = 'SO CLOSE! Go lower!';
+                    message.className = 'message hot';
+                } else if (diff <= 15) {
+                    message.textContent = 'Getting warm... Lower!';
+                    message.className = 'message warm';
+                } else {
+                    message.textContent = 'Too high... way lower!';
+                    message.className = 'message cold';
+                }
+            }
+
+            document.getElementById('stats').textContent = `Attempts: ${attempts}`;
+            document.getElementById('history').textContent = `Your guesses: ${guessHistory.join(', ')}`;
+
+            input.value = '';
+            input.focus();
+        }
+
+        // Allow Enter key to submit guess
+        document.getElementById('guess-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                makeGuess();
+            }
+        });
+
+        // Start first game
+        newGame();
+    </script>
+</body>
+</html>
