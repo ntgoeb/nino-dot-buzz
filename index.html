@@ -32,6 +32,16 @@
                 <p>Coming attractions</p>
             </div>
 
+            <!-- Notes Section -->
+            <div class="notes-container">
+                <h2>My Notes</h2>
+                <textarea id="user-notes" placeholder="Write your notes here... they'll be saved in your browser!"></textarea>
+                <div class="notes-footer">
+                    <span id="save-status"></span>
+                    <button onclick="clearNotes()">Clear Notes</button>
+                </div>
+            </div>
+
             <!-- News Section -->
             <div class="news-container">
                 <h2>📰 Today's Headlines</h2>
@@ -139,6 +149,45 @@
 
         // Load news when page loads
         loadNews();
+
+        // Notes functionality
+        const notesArea = document.getElementById('user-notes');
+        const saveStatus = document.getElementById('save-status');
+        let saveTimeout;
+
+        // Load saved notes
+        const savedNotes = localStorage.getItem('nino-notes');
+        if (savedNotes) {
+            notesArea.value = savedNotes;
+        }
+
+        // Auto-save on input
+        notesArea.addEventListener('input', function() {
+            clearTimeout(saveTimeout);
+            saveStatus.textContent = 'Saving...';
+            saveStatus.style.color = '#ffff00';
+
+            saveTimeout = setTimeout(() => {
+                localStorage.setItem('nino-notes', notesArea.value);
+                saveStatus.textContent = 'Saved!';
+                saveStatus.style.color = '#00ff00';
+                setTimeout(() => {
+                    saveStatus.textContent = '';
+                }, 2000);
+            }, 500);
+        });
+
+        function clearNotes() {
+            if (confirm('Are you sure you want to clear your notes?')) {
+                notesArea.value = '';
+                localStorage.removeItem('nino-notes');
+                saveStatus.textContent = 'Cleared!';
+                saveStatus.style.color = '#ff00ff';
+                setTimeout(() => {
+                    saveStatus.textContent = '';
+                }, 2000);
+            }
+        }
     </script>
     </div>
 </body>

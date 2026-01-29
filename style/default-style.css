@@ -173,6 +173,66 @@ a:hover {
     margin-bottom: 0;
 }
 
+/* Notes container */
+.notes-container {
+    border: 3px solid #ff9900;
+    padding: 20px;
+    margin: 20px 0;
+    background-color: #000033;
+}
+
+.notes-container h2 {
+    color: #ff9900;
+    text-shadow: 2px 2px #660000;
+    margin-top: 0;
+}
+
+#user-notes {
+    width: 100%;
+    height: 150px;
+    background: #000000;
+    color: #00ff00;
+    border: 2px inset #00ff00;
+    padding: 10px;
+    font-family: "Comic Sans MS", cursive;
+    font-size: 14px;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+#user-notes::placeholder {
+    color: #006600;
+}
+
+#user-notes:focus {
+    outline: none;
+    border-color: #ff00ff;
+}
+
+.notes-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.notes-footer button {
+    background: #000000;
+    color: #ff9900;
+    border: 2px outset #ff9900;
+    padding: 5px 15px;
+    font-family: "Comic Sans MS", cursive;
+    cursor: pointer;
+}
+
+.notes-footer button:hover {
+    background: #331a00;
+}
+
+#save-status {
+    font-size: 12px;
+}
+
 /* Mobile-specific adjustments */
 @media screen and (max-width: 600px) {
     body {
