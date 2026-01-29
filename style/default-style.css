@@ -81,6 +81,51 @@ nav a:hover {
     border-style: inset;
 }
 
+/* Music Player */
+.music-player {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background-color: #000033;
+    border: 2px solid #ff00ff;
+    margin-bottom: 20px;
+}
+
+#music-btn {
+    background: #000000;
+    border: 2px outset #00ff00;
+    padding: 8px 12px;
+    font-size: 1.5em;
+    cursor: pointer;
+    line-height: 1;
+}
+
+#music-btn:hover {
+    background: #003300;
+    border-style: inset;
+}
+
+#now-playing {
+    color: #00ffff;
+    font-size: 0.9em;
+    flex: 1;
+}
+
+/* Footer */
+.site-footer {
+    margin-top: 20px;
+    padding: 10px;
+    text-align: center;
+    font-size: 0.8em;
+    color: #888888;
+    border-top: 1px dashed #444444;
+}
+
+.site-footer a {
+    color: #00ff00;
+}
+
 /* Links */
 a {
     color: #00ff00;
