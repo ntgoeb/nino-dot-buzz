@@ -58,21 +58,21 @@ h2 {
 nav {
     background-color: #000099;
     padding: 10px;
-    text-align: center;
     border: 3px outset #ff00ff;
     margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
 }
 
 nav a {
     color: #00ff00;
     text-decoration: none;
     padding: 5px 15px;
-    margin: 0 10px;
     background-color: #000000;
     border: 2px outset #00ff00;
-    /* Make links wrap nicely on mobile */
     display: inline-block;
-    margin-bottom: 5px;
 }
 
 nav a:hover {
@@ -85,18 +85,15 @@ nav a:hover {
 .music-player {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px;
-    background-color: #000033;
-    border: 2px solid #ff00ff;
-    margin-bottom: 20px;
+    gap: 8px;
+    margin-left: auto;
 }
 
 #music-btn {
     background: #000000;
     border: 2px outset #00ff00;
-    padding: 8px 12px;
-    font-size: 1.5em;
+    padding: 5px 10px;
+    font-size: 1.2em;
     cursor: pointer;
     line-height: 1;
 }
@@ -108,8 +105,11 @@ nav a:hover {
 
 #now-playing {
     color: #00ffff;
-    font-size: 0.9em;
-    flex: 1;
+    font-size: 0.8em;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* Footer */
@@ -282,17 +282,38 @@ a:hover {
 @media screen and (max-width: 600px) {
     body {
         padding: 10px;
+        font-family: Arial, Helvetica, sans-serif;
     }
 
     h1 {
-        font-size: 24px; /* Smaller heading on mobile */
+        font-size: 24px;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    h2 {
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    nav {
+        flex-direction: column;
+        align-items: stretch;
     }
 
     nav a {
-        display: block; /* Stack navigation links on mobile */
-        margin: 5px 0;
+        display: block;
+        text-align: center;
+        margin: 3px 0;
+    }
+
+    .music-player {
+        margin-left: 0;
+        margin-top: 10px;
+        justify-content: center;
         width: 100%;
-        box-sizing: border-box;
+    }
+
+    #now-playing {
+        max-width: none;
     }
 
     .container {
@@ -300,7 +321,11 @@ a:hover {
         width: 95%;
     }
 
-    .marquee {
-        font-size: 16px; /* Smaller marquee text on mobile */
+    #user-notes {
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .notes-footer button {
+        font-family: Arial, Helvetica, sans-serif;
     }
 }

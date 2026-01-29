@@ -13,21 +13,18 @@
             <a href="index.html">Home</a>
             <a href="games.html">Games</a>
             <a href="links.html">Links</a>
+            <div class="music-player">
+                <button id="music-btn" onclick="toggleMusic()" title="Play random music">
+                    <span id="music-icon">🎵</span>
+                </button>
+                <span id="now-playing"></span>
+                <audio id="audio-player"></audio>
+            </div>
         </nav>
-
-        <!-- Music Player -->
-        <div class="music-player">
-            <button id="music-btn" onclick="toggleMusic()" title="Play random music">
-                <span id="music-icon">🎵</span>
-            </button>
-            <span id="now-playing"></span>
-            <audio id="audio-player"></audio>
-        </div>
 
         <!-- Main content -->
         <main>
             <h1>Nino's Webhome</h1>
-            <div class="marquee">*** NINO|ONIN ***</div>
             
             <div class="under-construction">
                 🚧 WE ARE WORKING ON THIS PART 🚧
@@ -235,60 +232,55 @@
 
         // Music Player
         const musicTracks = [
-            { file: '8bit_Dungeon_Level.mp3', title: '8-bit Dungeon Level' },
-            { file: 'Bit_Quest.mp3', title: 'Bit Quest' },
-            { file: 'Carefree.mp3', title: 'Carefree' },
-            { file: 'Chipper_Doodle.mp3', title: 'Chipper Doodle' },
-            { file: 'Crypto.mp3', title: 'Crypto' },
-            { file: 'Digital_Lemonade.mp3', title: 'Digital Lemonade' },
-            { file: 'Disco_Medusae.mp3', title: 'Disco Medusae' },
-            { file: 'Electrodoodle.mp3', title: 'Electrodoodle' },
-            { file: 'Fluffing_a_Duck.mp3', title: 'Fluffing a Duck' },
-            { file: 'Funky_Chunk.mp3', title: 'Funky Chunk' },
-            { file: 'Hard_Boiled.mp3', title: 'Hard Boiled' },
-            { file: 'Hyperfun.mp3', title: 'Hyperfun' },
-            { file: 'Investigations.mp3', title: 'Investigations' },
-            { file: 'Monkeys_Spinning_Monkeys.mp3', title: 'Monkeys Spinning Monkeys' },
-            { file: 'Neon_Laser_Horizon.mp3', title: 'Neon Laser Horizon' },
-            { file: 'Pinball_Spring.mp3', title: 'Pinball Spring' },
-            { file: 'Pixelland.mp3', title: 'Pixelland' },
-            { file: 'Quirky_Dog.mp3', title: 'Quirky Dog' },
-            { file: 'Run_Amok.mp3', title: 'Run Amok' },
-            { file: 'Sneaky_Snitch.mp3', title: 'Sneaky Snitch' },
-            { file: 'Space_Fighter_Loop.mp3', title: 'Space Fighter Loop' },
-            { file: 'Spy_Glass.mp3', title: 'Spy Glass' },
-            { file: 'Super_Friendly.mp3', title: 'Super Friendly' },
-            { file: 'The_Builder.mp3', title: 'The Builder' },
-            { file: 'Wallpaper.mp3', title: 'Wallpaper' },
-            { file: 'Your_Call.mp3', title: 'Your Call' }
+            '8bit_Dungeon_Level.mp3',
+            'Bit_Quest.mp3',
+            'Carefree.mp3',
+            'Chipper_Doodle.mp3',
+            'Crypto.mp3',
+            'Digital_Lemonade.mp3',
+            'Disco_Medusae.mp3',
+            'Electrodoodle.mp3',
+            'Fluffing_a_Duck.mp3',
+            'Funky_Chunk.mp3',
+            'Hard_Boiled.mp3',
+            'Hyperfun.mp3',
+            'Investigations.mp3',
+            'Monkeys_Spinning_Monkeys.mp3',
+            'Neon_Laser_Horizon.mp3',
+            'Pinball_Spring.mp3',
+            'Pixelland.mp3',
+            'Quirky_Dog.mp3',
+            'Run_Amok.mp3',
+            'Sneaky_Snitch.mp3',
+            'Space_Fighter_Loop.mp3',
+            'Spy_Glass.mp3',
+            'Super_Friendly.mp3',
+            'The_Builder.mp3',
+            'Wallpaper.mp3',
+            'Your_Call.mp3'
         ];
 
         const audioPlayer = document.getElementById('audio-player');
-        const musicBtn = document.getElementById('music-btn');
         const musicIcon = document.getElementById('music-icon');
         const nowPlaying = document.getElementById('now-playing');
         let isPlaying = false;
 
         function playRandomTrack() {
             const track = musicTracks[Math.floor(Math.random() * musicTracks.length)];
-            audioPlayer.src = 'music/' + track.file;
+            audioPlayer.src = 'music/' + track;
             audioPlayer.play();
-            nowPlaying.textContent = track.title;
+            nowPlaying.textContent = track;
             isPlaying = true;
             musicIcon.textContent = '⏸️';
         }
 
         function toggleMusic() {
-            if (!audioPlayer.src || audioPlayer.src === window.location.href) {
-                playRandomTrack();
-            } else if (isPlaying) {
+            if (isPlaying) {
                 audioPlayer.pause();
                 isPlaying = false;
                 musicIcon.textContent = '▶️';
             } else {
-                audioPlayer.play();
-                isPlaying = true;
-                musicIcon.textContent = '⏸️';
+                playRandomTrack();
             }
         }
 
