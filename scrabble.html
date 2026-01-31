@@ -150,6 +150,9 @@
             background: #003300;
             border: 1px solid #00ff00;
         }
+        .score-item.disconnected {
+            opacity: 0.5;
+        }
         .score-name {
             color: #ffff00;
             font-size: 0.9em;
@@ -1396,9 +1399,13 @@
                 if (playerId === gameState.currentTurn) {
                     item.classList.add('current-turn');
                 }
+                if (!player.connected) {
+                    item.classList.add('disconnected');
+                }
 
+                const disconnectedIcon = !player.connected ? ' <span style="color:#ff6666;">⚠</span>' : '';
                 item.innerHTML = `
-                    <div class="score-name">${player.name}${playerId === localState.playerId ? ' (you)' : ''}</div>
+                    <div class="score-name">${player.name}${playerId === localState.playerId ? ' (you)' : ''}${disconnectedIcon}</div>
                     <div class="score-value">${player.score || 0}</div>
                 `;
                 elements.scoreboard.appendChild(item);
@@ -1410,11 +1417,19 @@
 
             const currentPlayer = gameState.players?.[gameState.currentTurn];
             const isMyTurn = gameState.currentTurn === localState.playerId;
+            const isDisconnected = currentPlayer && !currentPlayer.connected;
 
             elements.turnIndicator.className = 'turn-indicator' + (isMyTurn ? ' your-turn' : '');
-            elements.turnIndicator.textContent = isMyTurn
-                ? "Your turn - play a word!"
-                : `Waiting for ${currentPlayer?.name || 'opponent'}...`;
+
+            if (isMyTurn) {
+                elements.turnIndicator.textContent = "Your turn - play a word!";
+            } else if (isDisconnected) {
+                elements.turnIndicator.textContent = `Waiting for ${currentPlayer?.name || 'opponent'} (disconnected)...`;
+                elements.turnIndicator.style.color = '#ff6666';
+            } else {
+                elements.turnIndicator.textContent = `Waiting for ${currentPlayer?.name || 'opponent'}...`;
+                elements.turnIndicator.style.color = '';
+            }
 
             elements.tilesRemaining.textContent = `Tiles remaining: ${gameState.tilesRemaining || 0}`;
         }
@@ -1857,8 +1872,40 @@
 
             const game = snapshot.val();
 
+            // Check for reconnection (game in progress, disconnected player with same name)
+            if (game.status === 'playing') {
+                const disconnectedPlayer = Object.entries(game.players || {}).find(
+                    ([id, player]) => player.name === playerName && !player.connected
+                );
+
+                if (disconnectedPlayer) {
+                    // Reconnect as this player
+                    const [existingPlayerId, player] = disconnectedPlayer;
+                    localState.playerId = existingPlayerId;
+                    localState.roomCode = roomCode;
+                    localState.isHost = existingPlayerId === game.hostId;
+
+                    // Mark as connected
+                    await update(gameRef, {
+                        [`players/${existingPlayerId}/connected`]: true
+                    });
+
+                    // Set up presence
+                    const presenceRef = ref(database, `scrabble/${roomCode}/players/${existingPlayerId}/connected`);
+                    onDisconnect(presenceRef).set(false);
+
+                    // Subscribe to changes
+                    subscribeToGame();
+                    return;
+                } else {
+                    // No matching disconnected player
+                    throw new Error('Game in progress. To rejoin, enter your exact name.');
+                }
+            }
+
+            // Game is waiting - normal join flow
             if (game.status !== 'waiting') {
-                throw new Error('Game already started');
+                throw new Error('Game already finished');
             }
 
             const playerCount = game.playerOrder?.length || 0;
