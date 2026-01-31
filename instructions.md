@@ -16,7 +16,7 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans on de
 ├── guess-number.html       # Guess the Number game
 ├── startrek.html           # Star Trek (skeleton only - needs implementation)
 ├── chess.html              # Chess vs Stockfish AI + mate puzzles
-├── scrabble.html           # Scrabble multiplayer (structure in place, needs Firebase)
+├── scrabble.html           # Scrabble multiplayer (2-4 players, Firebase)
 ├── links.html              # Links page
 ├── style/
 │   └── default-style.css   # Retro styling
@@ -27,6 +27,7 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans on de
 ├── CNAME                   # Custom domain config (nino.buzz)
 ├── startrek-implementation-plan.md  # Detailed plan for Star Trek game
 ├── chess-implementation-plan.md     # Detailed plan for Chess game
+├── scrabble-implementation-plan.md  # Design doc for Scrabble multiplayer
 └── README.txt              # Original feature wishlist
 ```
 
@@ -35,7 +36,7 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans on de
 - [x] News feed (BBC + NPR via RSS)
 - [x] Personal notes (saved to localStorage)
 - [x] Music player (26 retro tracks, random play)
-- [x] Games: Hangman, Tic-Tac-Toe, Guess the Number, Chess (vs AI + puzzles)
+- [x] Games: Hangman, Tic-Tac-Toe, Guess the Number, Chess (vs AI + puzzles), Scrabble (multiplayer)
 - [x] Links page
 - [x] Wider layout (1040px)
 - [x] Mobile-friendly fonts
@@ -43,7 +44,7 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans on de
 ## Feature Wishlist (remaining)
 - [ ] **Super Star Trek** - Full implementation (see `startrek-implementation-plan.md`)
 - [x] **Chess** - vs computer using Stockfish.js (see `chess-implementation-plan.md`)
-- [ ] **Scrabble** - 2-player online (see `scrabble-implementation-plan.md`)
+- [x] **Scrabble** - 2-4 player online (see `scrabble-implementation-plan.md`)
 - [ ] "Login" page (novelty/fake)
 - [ ] Style and background color tweaks
 - [ ] Horoscope
@@ -60,8 +61,8 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans on de
 - Click-to-move and algebraic notation text input
 - Mating Puzzles mode with verified puzzles from Lichess database (mate-in-2 and mate-in-3 mixed)
 
-### Scrabble Multiplayer (Planned)
-- **Firebase Realtime Database** for game state sync (free tier: 100 connections, 1GB)
+### Scrabble Multiplayer (Implemented)
+- **Firebase Realtime Database** for real-time game state sync
 - 2-4 players with room code system (4-letter codes)
 - No automatic word validation - players can play anything
 - Challenge system: disputes resolved outside game, buttons to handle outcomes
