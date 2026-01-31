@@ -327,14 +327,51 @@
             color: #00ff00;
             font-size: 1.1em;
         }
+        @keyframes blink-slow {
+            0%, 96% { opacity: 1; }
+            98% { opacity: 0; }
+            100% { opacity: 1; }
+        }
         .turn-indicator.your-turn {
             color: #ffff00;
-            animation: blink 1s infinite;
+            animation: blink-slow 15s infinite;
         }
         .tiles-remaining {
             color: #888;
             font-size: 0.9em;
             margin-top: 5px;
+        }
+
+        /* Tile Distribution Reference */
+        .tile-distribution {
+            background: #000033;
+            border: 2px ridge #666;
+            padding: 8px 12px;
+            font-size: 0.75em;
+            color: #888;
+            max-width: 450px;
+        }
+        .tile-distribution summary {
+            cursor: pointer;
+            color: #aaa;
+        }
+        .tile-distribution-grid {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 2px;
+            margin-top: 8px;
+        }
+        .tile-dist-item {
+            text-align: center;
+            padding: 2px;
+        }
+        .tile-dist-letter {
+            color: #ffff00;
+            font-weight: bold;
+        }
+        .tile-dist-count {
+            color: #888;
+            font-size: 0.9em;
         }
 
         /* Last Play Info */
@@ -495,6 +532,12 @@
                 height: 30px;
                 font-size: 16px;
             }
+            .menu-btn, .control-btn {
+                font-family: Arial, Helvetica, sans-serif;
+            }
+            .menu-input input {
+                font-family: Arial, Helvetica, sans-serif;
+            }
         }
     </style>
 </head>
@@ -600,12 +643,46 @@
 
             <!-- Game Controls -->
             <div class="game-controls">
-                <button class="control-btn primary" id="play-btn" disabled>Play Word</button>
                 <button class="control-btn" id="shuffle-btn">Shuffle</button>
                 <button class="control-btn" id="recall-btn">Recall</button>
                 <button class="control-btn" id="pass-btn">Pass</button>
                 <button class="control-btn" id="swap-btn">Swap</button>
+                <button class="control-btn primary" id="play-btn" disabled>Play Word</button>
             </div>
+
+            <!-- Tile Distribution Reference -->
+            <details class="tile-distribution">
+                <summary>Tile Distribution</summary>
+                <div class="tile-distribution-grid">
+                    <div class="tile-dist-item"><span class="tile-dist-letter">A</span><br><span class="tile-dist-count">×9</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">B</span><br><span class="tile-dist-count">×2</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">C</span><br><span class="tile-dist-count">×2</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">D</span><br><span class="tile-dist-count">×4</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">E</span><br><span class="tile-dist-count">×12</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">F</span><br><span class="tile-dist-count">×2</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">G</span><br><span class="tile-dist-count">×3</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">H</span><br><span class="tile-dist-count">×2</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">I</span><br><span class="tile-dist-count">×9</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">J</span><br><span class="tile-dist-count">×1</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">K</span><br><span class="tile-dist-count">×1</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">L</span><br><span class="tile-dist-count">×4</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">M</span><br><span class="tile-dist-count">×2</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">N</span><br><span class="tile-dist-count">×6</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">O</span><br><span class="tile-dist-count">×8</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">P</span><br><span class="tile-dist-count">×2</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">Q</span><br><span class="tile-dist-count">×1</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">R</span><br><span class="tile-dist-count">×6</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">S</span><br><span class="tile-dist-count">×4</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">T</span><br><span class="tile-dist-count">×6</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">U</span><br><span class="tile-dist-count">×4</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">V</span><br><span class="tile-dist-count">×2</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">W</span><br><span class="tile-dist-count">×2</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">X</span><br><span class="tile-dist-count">×1</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">Y</span><br><span class="tile-dist-count">×2</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">Z</span><br><span class="tile-dist-count">×1</span></div>
+                    <div class="tile-dist-item"><span class="tile-dist-letter">_</span><br><span class="tile-dist-count">×2</span></div>
+                </div>
+            </details>
         </div>
 
         <!-- Game Over Screen -->
@@ -1532,8 +1609,13 @@
         };
 
         document.getElementById('accept-word-btn').onclick = async () => {
-            // Just mark as not challengeable by advancing (do nothing, wait for next play)
-            // The challengeable flag will be cleared on next turn
+            // Mark the word as accepted (no longer challengeable)
+            if (!gameRef || !gameState?.lastPlay?.challengeable) return;
+            try {
+                await update(gameRef, { 'lastPlay/challengeable': false });
+            } catch (err) {
+                console.error('Error accepting word:', err);
+            }
         };
 
         document.getElementById('challenge-valid-btn').onclick = async () => {

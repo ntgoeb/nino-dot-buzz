@@ -184,6 +184,30 @@
             text-shadow: 1px 1px 0 #666666, -1px -1px 0 #666666, 1px -1px 0 #666666, -1px 1px 0 #666666;
         }
 
+        /* Pawns are noticeably smaller */
+        .piece-p {
+            font-size: 1.8em;
+        }
+
+        /* Bishops have a cross marker to distinguish from pawns */
+        .piece-b::after {
+            content: '+';
+            position: absolute;
+            font-size: 14px;
+            font-weight: bold;
+            bottom: 1px;
+            right: 3px;
+            text-shadow: none;
+        }
+        .white-piece.piece-b::after {
+            color: #ffffff;
+            text-shadow: 1px 1px 0 #000;
+        }
+        .black-piece.piece-b::after {
+            color: #1a1a1a;
+            text-shadow: 1px 1px 0 #666;
+        }
+
         /* Move Panel */
         .move-panel {
             width: 220px;
@@ -1065,7 +1089,7 @@
 
                 // Clear previous content
                 squareEl.textContent = '';
-                squareEl.classList.remove('white-piece', 'black-piece');
+                squareEl.classList.remove('white-piece', 'black-piece', 'piece-p', 'piece-b', 'piece-n', 'piece-r', 'piece-q', 'piece-k');
 
                 if (piece) {
                     const symbol = piece.color === 'w'
@@ -1073,6 +1097,7 @@
                         : PIECES[piece.type];
                     squareEl.textContent = symbol;
                     squareEl.classList.add(piece.color === 'w' ? 'white-piece' : 'black-piece');
+                    squareEl.classList.add('piece-' + piece.type);
                 }
             });
 

@@ -20,7 +20,6 @@ h1 {
     text-align: center;
     font-size: 36px;
     text-shadow: 2px 2px #ff0000;
-    animation: blink 1s infinite;
 }
 
 h2 {
