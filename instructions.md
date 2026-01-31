@@ -16,6 +16,7 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans on de
 ├── guess-number.html       # Guess the Number game
 ├── startrek.html           # Star Trek (skeleton only - needs implementation)
 ├── chess.html              # Chess vs Stockfish AI + mate puzzles
+├── scrabble.html           # Scrabble multiplayer (structure in place, needs Firebase)
 ├── links.html              # Links page
 ├── style/
 │   └── default-style.css   # Retro styling
@@ -42,7 +43,7 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans on de
 ## Feature Wishlist (remaining)
 - [ ] **Super Star Trek** - Full implementation (see `startrek-implementation-plan.md`)
 - [x] **Chess** - vs computer using Stockfish.js (see `chess-implementation-plan.md`)
-- [ ] **Scrabble** - 2-player online using Firebase Realtime DB for multiplayer sync
+- [ ] **Scrabble** - 2-player online (see `scrabble-implementation-plan.md`)
 - [ ] "Login" page (novelty/fake)
 - [ ] Style and background color tweaks
 - [ ] Horoscope
@@ -59,11 +60,13 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans on de
 - Click-to-move and algebraic notation text input
 - Mating Puzzles mode with verified puzzles from Lichess database (mate-in-2 and mate-in-3 mixed)
 
-### Scrabble Multiplayer
-- Use **Firebase Realtime Database** for game state sync (free tier: 100 connections, 1GB)
-- Room code system for joining games
-- Word validation via dictionary file (~2MB word list)
-- Need: board state, tile bag, turn management, scoring
+### Scrabble Multiplayer (Planned)
+- **Firebase Realtime Database** for game state sync (free tier: 100 connections, 1GB)
+- 2-4 players with room code system (4-letter codes)
+- No automatic word validation - players can play anything
+- Challenge system: disputes resolved outside game, buttons to handle outcomes
+- Full implementation: board, tile bag, turn rotation, scoring, blank tiles
+- See `scrabble-implementation-plan.md` for detailed design
 
 ## Workflow
 - Claude can push directly to main branch

@@ -1,0 +1,1961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrabble - Nino's Webhome</title>
+    <link rel="stylesheet" href="style/default-style.css">
+    <style>
+        /* Screen Management */
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+        }
+
+        /* Menu Screen */
+        .menu-screen {
+            text-align: center;
+            padding: 30px;
+        }
+        .menu-screen h2 {
+            color: #00ffff;
+            font-size: 2em;
+            margin-bottom: 30px;
+        }
+        .menu-input {
+            margin: 15px 0;
+        }
+        .menu-input label {
+            display: block;
+            color: #ffff00;
+            margin-bottom: 5px;
+        }
+        .menu-input input {
+            background: #000;
+            color: #00ff00;
+            border: 2px inset #00ff00;
+            padding: 10px 15px;
+            font-size: 1.1em;
+            font-family: "Comic Sans MS", cursive;
+            width: 200px;
+            text-align: center;
+        }
+        .menu-input input::placeholder {
+            color: #006600;
+        }
+        .menu-btn {
+            background: #000;
+            color: #ff00ff;
+            border: 3px outset #ff00ff;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            font-family: "Comic Sans MS", cursive;
+            margin: 10px;
+        }
+        .menu-btn:hover {
+            background: #330033;
+        }
+        .menu-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .menu-divider {
+            color: #666;
+            margin: 25px 0;
+        }
+
+        /* Lobby Screen */
+        .lobby-screen {
+            text-align: center;
+            padding: 30px;
+        }
+        .room-code-display {
+            background: #000033;
+            border: 3px ridge #00ffff;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 300px;
+        }
+        .room-code-display label {
+            color: #ffff00;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .room-code {
+            font-size: 3em;
+            color: #00ff00;
+            letter-spacing: 10px;
+            font-family: monospace;
+        }
+        .player-list {
+            background: #000033;
+            border: 2px ridge #00ff00;
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 300px;
+            text-align: left;
+        }
+        .player-list h3 {
+            color: #00ffff;
+            margin: 0 0 10px 0;
+            text-align: center;
+        }
+        .player-item {
+            color: #00ff00;
+            padding: 5px 0;
+            border-bottom: 1px dashed #003300;
+        }
+        .player-item:last-child {
+            border-bottom: none;
+        }
+        .player-item.host::after {
+            content: " (host)";
+            color: #ffff00;
+        }
+        .waiting-text {
+            color: #ffff00;
+            animation: blink 1s infinite;
+        }
+
+        /* Game Screen */
+        .game-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        .game-screen.active {
+            display: flex;
+        }
+
+        /* Scoreboard */
+        .scoreboard {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            background: #000033;
+            border: 2px ridge #00ffff;
+            padding: 10px 20px;
+            min-width: 300px;
+        }
+        .score-item {
+            text-align: center;
+            padding: 5px 15px;
+        }
+        .score-item.current-turn {
+            background: #003300;
+            border: 1px solid #00ff00;
+        }
+        .score-name {
+            color: #ffff00;
+            font-size: 0.9em;
+        }
+        .score-value {
+            color: #00ff00;
+            font-size: 1.4em;
+            font-weight: bold;
+        }
+
+        /* Scrabble Board */
+        .board-container {
+            position: relative;
+        }
+        .scrabble-board {
+            display: grid;
+            grid-template-columns: repeat(15, 28px);
+            grid-template-rows: repeat(15, 28px);
+            gap: 1px;
+            background: #000;
+            border: 3px ridge #00ff00;
+            box-shadow: 0 0 15px #00ff0066;
+        }
+        .cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+        }
+        .cell.normal { background: #c8b896; }
+        .cell.tw { background: #ff6666; }
+        .cell.dw { background: #ffaaaa; }
+        .cell.tl { background: #6666ff; }
+        .cell.dl { background: #aaaaff; }
+        .cell.center { background: #ffaaaa; }
+        .cell.center::before {
+            content: "★";
+            color: #ff6666;
+            font-size: 14px;
+        }
+
+        /* Special square labels */
+        .cell.tw::before { content: "TW"; font-size: 8px; color: #990000; }
+        .cell.dw:not(.center)::before { content: "DW"; font-size: 8px; color: #990000; }
+        .cell.tl::before { content: "TL"; font-size: 8px; color: #000099; }
+        .cell.dl::before { content: "DL"; font-size: 8px; color: #000099; }
+
+        /* Tiles on board */
+        .cell.has-tile {
+            background: #f5deb3;
+            border: 2px outset #d4a574;
+            box-sizing: border-box;
+        }
+        .cell.has-tile::before {
+            content: none;
+        }
+        .cell.has-tile .tile-letter {
+            font-size: 16px;
+            color: #000;
+        }
+        .cell.has-tile .tile-score {
+            position: absolute;
+            bottom: 1px;
+            right: 2px;
+            font-size: 7px;
+            color: #666;
+        }
+        .cell.placed-this-turn {
+            background: #ffe4b5;
+            border-color: #ffa500;
+        }
+        .cell.last-play {
+            box-shadow: inset 0 0 0 2px #00ff00;
+        }
+
+        /* Tile Rack */
+        .rack-container {
+            background: #8b4513;
+            border: 3px ridge #a0522d;
+            padding: 8px 15px;
+            display: flex;
+            gap: 5px;
+            min-height: 50px;
+        }
+        .rack-tile {
+            width: 36px;
+            height: 36px;
+            background: #f5deb3;
+            border: 2px outset #d4a574;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #000;
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+        }
+        .rack-tile:hover {
+            background: #ffe4b5;
+        }
+        .rack-tile.selected {
+            background: #ffd700;
+            border-style: inset;
+            transform: translateY(-3px);
+        }
+        .rack-tile.blank {
+            color: #666;
+        }
+        .rack-tile .tile-score {
+            position: absolute;
+            bottom: 1px;
+            right: 3px;
+            font-size: 9px;
+            color: #666;
+        }
+        .rack-tile.empty {
+            background: #654321;
+            border-style: inset;
+            cursor: default;
+        }
+
+        /* Game Controls */
+        .game-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .control-btn {
+            background: #000;
+            color: #00ff00;
+            border: 2px outset #00ff00;
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            font-family: "Comic Sans MS", cursive;
+        }
+        .control-btn:hover {
+            background: #003300;
+        }
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .control-btn.primary {
+            border-color: #ff00ff;
+            color: #ff00ff;
+        }
+        .control-btn.primary:hover {
+            background: #330033;
+        }
+        .control-btn.danger {
+            border-color: #ff0000;
+            color: #ff0000;
+        }
+        .control-btn.danger:hover {
+            background: #330000;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            background: #000033;
+            border: 2px ridge #00ffff;
+            padding: 10px 20px;
+            text-align: center;
+            min-width: 300px;
+        }
+        .turn-indicator {
+            color: #00ff00;
+            font-size: 1.1em;
+        }
+        .turn-indicator.your-turn {
+            color: #ffff00;
+            animation: blink 1s infinite;
+        }
+        .tiles-remaining {
+            color: #888;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        /* Last Play Info */
+        .last-play-info {
+            background: #000033;
+            border: 2px ridge #00ff00;
+            padding: 10px 15px;
+            text-align: center;
+            min-width: 280px;
+        }
+        .last-play-info.hidden {
+            display: none;
+        }
+        .last-play-text {
+            color: #00ffff;
+            margin-bottom: 8px;
+        }
+        .last-play-words {
+            color: #ffff00;
+            font-size: 1.1em;
+        }
+        .challenge-buttons {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        /* Challenge Pending */
+        .challenge-pending {
+            background: #330000;
+            border: 2px ridge #ff0000;
+            padding: 15px;
+            text-align: center;
+        }
+        .challenge-pending.hidden {
+            display: none;
+        }
+        .challenge-title {
+            color: #ff6666;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        .challenge-word {
+            color: #ffff00;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+        }
+
+        /* Game Over Screen */
+        .game-over-screen {
+            text-align: center;
+            padding: 30px;
+        }
+        .final-scores {
+            background: #000033;
+            border: 3px ridge #00ffff;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 300px;
+        }
+        .final-scores h3 {
+            color: #00ffff;
+            margin: 0 0 15px 0;
+        }
+        .final-score-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #003333;
+        }
+        .final-score-item:last-child {
+            border-bottom: none;
+        }
+        .final-score-item.winner {
+            color: #ffff00;
+        }
+        .final-rank {
+            color: #888;
+            width: 30px;
+        }
+        .final-name {
+            flex: 1;
+            text-align: left;
+            color: #00ff00;
+        }
+        .final-points {
+            color: #00ffff;
+            font-weight: bold;
+        }
+        .winner-announcement {
+            color: #ff00ff;
+            font-size: 1.5em;
+            margin: 20px 0;
+            animation: blink 0.5s infinite;
+        }
+
+        /* Letter Picker Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: linear-gradient(to bottom, #000066, #660066);
+            border: 5px ridge #00ff00;
+            padding: 20px 30px;
+            text-align: center;
+        }
+        .modal-content h3 {
+            color: #00ffff;
+            margin-bottom: 15px;
+        }
+        .letter-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 35px);
+            gap: 5px;
+            justify-content: center;
+        }
+        .letter-btn {
+            width: 35px;
+            height: 35px;
+            background: #f5deb3;
+            border: 2px outset #d4a574;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .letter-btn:hover {
+            background: #ffd700;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 500px) {
+            .scrabble-board {
+                grid-template-columns: repeat(15, 22px);
+                grid-template-rows: repeat(15, 22px);
+            }
+            .cell {
+                font-size: 12px;
+            }
+            .cell.tw::before, .cell.dw::before,
+            .cell.tl::before, .cell.dl::before {
+                font-size: 6px;
+            }
+            .rack-tile {
+                width: 30px;
+                height: 30px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="games.html">Games</a>
+            <a href="links.html">Links</a>
+        </nav>
+
+        <h1>Scrabble</h1>
+
+        <!-- Menu Screen -->
+        <div id="menu-screen" class="screen menu-screen active">
+            <h2>Online Scrabble</h2>
+            <p style="color: #888;">2-4 players</p>
+
+            <div class="menu-input">
+                <label>Your Name:</label>
+                <input type="text" id="player-name" placeholder="Enter name" maxlength="12">
+            </div>
+
+            <button class="menu-btn" id="create-game-btn">Create Game</button>
+
+            <div class="menu-divider">- or -</div>
+
+            <div class="menu-input">
+                <label>Room Code:</label>
+                <input type="text" id="room-code-input" placeholder="ABCD" maxlength="4" style="text-transform: uppercase;">
+            </div>
+
+            <button class="menu-btn" id="join-game-btn">Join Game</button>
+
+            <p id="menu-error" style="color: #ff6666; margin-top: 15px;"></p>
+        </div>
+
+        <!-- Lobby Screen -->
+        <div id="lobby-screen" class="screen lobby-screen">
+            <h2>Game Lobby</h2>
+
+            <div class="room-code-display">
+                <label>Share this code:</label>
+                <div class="room-code" id="lobby-room-code">ABCD</div>
+            </div>
+
+            <div class="player-list" id="player-list">
+                <h3>Players</h3>
+                <!-- Player items added dynamically -->
+            </div>
+
+            <p class="waiting-text" id="waiting-text">Waiting for players...</p>
+
+            <button class="menu-btn" id="start-game-btn" disabled>Start Game</button>
+            <button class="control-btn danger" id="leave-lobby-btn">Leave</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen game-screen">
+            <!-- Scoreboard -->
+            <div class="scoreboard" id="scoreboard">
+                <!-- Score items added dynamically -->
+            </div>
+
+            <!-- Status Bar -->
+            <div class="status-bar">
+                <div class="turn-indicator" id="turn-indicator">Your turn!</div>
+                <div class="tiles-remaining" id="tiles-remaining">Tiles remaining: 100</div>
+            </div>
+
+            <!-- Last Play Info -->
+            <div class="last-play-info hidden" id="last-play-info">
+                <div class="last-play-text" id="last-play-text">Alice played:</div>
+                <div class="last-play-words" id="last-play-words">"EXAMPLE" for 18 points</div>
+                <div class="challenge-buttons" id="challenge-buttons">
+                    <button class="control-btn danger" id="challenge-btn">Challenge</button>
+                    <button class="control-btn" id="accept-word-btn">Looks Good</button>
+                </div>
+            </div>
+
+            <!-- Challenge Pending -->
+            <div class="challenge-pending hidden" id="challenge-pending">
+                <div class="challenge-title">Challenge in Progress!</div>
+                <div class="challenge-word" id="challenge-word">"QOPH"</div>
+                <p style="color: #aaa;">Is it a valid Scrabble word?</p>
+                <div class="challenge-buttons">
+                    <button class="control-btn" id="challenge-valid-btn">Valid - Challenger Loses Turn</button>
+                    <button class="control-btn danger" id="challenge-invalid-btn">Invalid - Remove Word</button>
+                </div>
+            </div>
+
+            <!-- Board -->
+            <div class="board-container">
+                <div class="scrabble-board" id="scrabble-board">
+                    <!-- Cells generated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Rack -->
+            <div class="rack-container" id="rack">
+                <!-- Rack tiles generated by JavaScript -->
+            </div>
+
+            <!-- Game Controls -->
+            <div class="game-controls">
+                <button class="control-btn primary" id="play-btn" disabled>Play Word</button>
+                <button class="control-btn" id="shuffle-btn">Shuffle</button>
+                <button class="control-btn" id="recall-btn">Recall</button>
+                <button class="control-btn" id="pass-btn">Pass</button>
+                <button class="control-btn" id="swap-btn">Swap</button>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over-screen" class="screen game-over-screen">
+            <h2 style="color: #00ffff;">Game Over!</h2>
+
+            <div class="final-scores" id="final-scores">
+                <h3>Final Scores</h3>
+                <!-- Score items added dynamically -->
+            </div>
+
+            <div class="winner-announcement" id="winner-announcement">Alice wins!</div>
+
+            <button class="menu-btn" id="play-again-btn">Play Again</button>
+            <button class="control-btn" id="back-to-menu-btn">Back to Menu</button>
+        </div>
+
+        <!-- Letter Picker Modal (for blank tiles) -->
+        <div id="letter-picker-modal" class="modal">
+            <div class="modal-content">
+                <h3>Choose a letter:</h3>
+                <div class="letter-grid" id="letter-grid">
+                    <!-- A-Z buttons generated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <p style="text-align: center; margin-top: 20px;">
+            <a href="games.html">&laquo; Back to Games</a>
+        </p>
+    </div>
+
+    <script type="module">
+        // ============================================
+        // FIREBASE SETUP
+        // ============================================
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, get, update, onValue, onDisconnect, remove }
+            from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAfCXBDLYYZdfLSB9FjVuMHGrAmis2CfKw",
+            authDomain: "nino-buzz.firebaseapp.com",
+            projectId: "nino-buzz",
+            databaseURL: "https://nino-buzz-default-rtdb.firebaseio.com",
+            storageBucket: "nino-buzz.firebasestorage.app",
+            messagingSenderId: "1005714997679",
+            appId: "1:1005714997679:web:94c1301de6620a0f53af5a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        let gameRef = null;
+        let unsubscribe = null;
+
+        // ============================================
+        // CONSTANTS
+        // ============================================
+
+        const BOARD_SIZE = 15;
+        const RACK_SIZE = 7;
+
+        const TILE_DISTRIBUTION = {
+            'A': 9, 'B': 2, 'C': 2, 'D': 4, 'E': 12, 'F': 2, 'G': 3, 'H': 2,
+            'I': 9, 'J': 1, 'K': 1, 'L': 4, 'M': 2, 'N': 6, 'O': 8, 'P': 2,
+            'Q': 1, 'R': 6, 'S': 4, 'T': 6, 'U': 4, 'V': 2, 'W': 2, 'X': 1,
+            'Y': 2, 'Z': 1, '_': 2
+        };
+
+        const TILE_SCORES = {
+            'A': 1, 'B': 3, 'C': 3, 'D': 2, 'E': 1, 'F': 4, 'G': 2, 'H': 4,
+            'I': 1, 'J': 8, 'K': 5, 'L': 1, 'M': 3, 'N': 1, 'O': 1, 'P': 3,
+            'Q': 10, 'R': 1, 'S': 1, 'T': 1, 'U': 1, 'V': 4, 'W': 4, 'X': 8,
+            'Y': 4, 'Z': 10, '_': 0
+        };
+
+        const BINGO_BONUS = 50;
+
+        // Special square positions
+        const SPECIAL_SQUARES = {
+            TW: [[0,0], [0,7], [0,14], [7,0], [7,14], [14,0], [14,7], [14,14]],
+            DW: [[1,1], [2,2], [3,3], [4,4], [1,13], [2,12], [3,11], [4,10],
+                 [10,4], [11,3], [12,2], [13,1], [10,10], [11,11], [12,12], [13,13]],
+            TL: [[1,5], [1,9], [5,1], [5,5], [5,9], [5,13],
+                 [9,1], [9,5], [9,9], [9,13], [13,5], [13,9]],
+            DL: [[0,3], [0,11], [2,6], [2,8], [3,0], [3,7], [3,14],
+                 [6,2], [6,6], [6,8], [6,12], [7,3], [7,11],
+                 [8,2], [8,6], [8,8], [8,12], [11,0], [11,7], [11,14],
+                 [12,6], [12,8], [14,3], [14,11]]
+        };
+
+        // ============================================
+        // GAME STATE
+        // ============================================
+
+        let gameState = null;
+        let localState = {
+            playerId: null,
+            playerName: '',
+            roomCode: null,
+            selectedRackIndex: null,
+            placedTiles: [],  // { rackIndex, row, col, letter, isBlank, blankLetter }
+            isHost: false
+        };
+
+        // ============================================
+        // DOM ELEMENTS
+        // ============================================
+
+        const screens = {
+            menu: document.getElementById('menu-screen'),
+            lobby: document.getElementById('lobby-screen'),
+            game: document.getElementById('game-screen'),
+            gameOver: document.getElementById('game-over-screen')
+        };
+
+        const elements = {
+            playerNameInput: document.getElementById('player-name'),
+            roomCodeInput: document.getElementById('room-code-input'),
+            menuError: document.getElementById('menu-error'),
+            lobbyRoomCode: document.getElementById('lobby-room-code'),
+            playerList: document.getElementById('player-list'),
+            waitingText: document.getElementById('waiting-text'),
+            startGameBtn: document.getElementById('start-game-btn'),
+            board: document.getElementById('scrabble-board'),
+            rack: document.getElementById('rack'),
+            scoreboard: document.getElementById('scoreboard'),
+            turnIndicator: document.getElementById('turn-indicator'),
+            tilesRemaining: document.getElementById('tiles-remaining'),
+            lastPlayInfo: document.getElementById('last-play-info'),
+            challengePending: document.getElementById('challenge-pending'),
+            letterPickerModal: document.getElementById('letter-picker-modal'),
+            letterGrid: document.getElementById('letter-grid'),
+            playBtn: document.getElementById('play-btn'),
+            finalScores: document.getElementById('final-scores'),
+            winnerAnnouncement: document.getElementById('winner-announcement')
+        };
+
+        // ============================================
+        // SCREEN MANAGEMENT
+        // ============================================
+
+        function showScreen(screenName) {
+            Object.values(screens).forEach(s => s.classList.remove('active'));
+            screens[screenName].classList.add('active');
+        }
+
+        // ============================================
+        // BOARD RENDERING
+        // ============================================
+
+        function getSquareType(row, col) {
+            if (row === 7 && col === 7) return 'center';
+            for (const [type, positions] of Object.entries(SPECIAL_SQUARES)) {
+                if (positions.some(([r, c]) => r === row && c === col)) {
+                    return type.toLowerCase();
+                }
+            }
+            return 'normal';
+        }
+
+        function createBoard() {
+            elements.board.innerHTML = '';
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    const cell = document.createElement('div');
+                    const squareType = getSquareType(row, col);
+                    cell.className = `cell ${squareType}`;
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    cell.onclick = () => handleCellClick(row, col);
+                    elements.board.appendChild(cell);
+                }
+            }
+        }
+
+        function renderBoard() {
+            // Clear placed tiles display
+            document.querySelectorAll('.cell').forEach(cell => {
+                const row = parseInt(cell.dataset.row);
+                const col = parseInt(cell.dataset.col);
+                const key = `${row},${col}`;
+
+                // Check if there's a permanent tile here
+                const boardTile = gameState?.board?.[key];
+                // Check if there's a temporarily placed tile here
+                const placedTile = localState.placedTiles.find(t => t.row === row && t.col === col);
+
+                cell.classList.remove('has-tile', 'placed-this-turn', 'last-play');
+                cell.innerHTML = '';
+
+                if (placedTile) {
+                    cell.classList.add('has-tile', 'placed-this-turn');
+                    const letter = placedTile.blankLetter || placedTile.letter;
+                    const score = placedTile.isBlank ? '' : TILE_SCORES[placedTile.letter];
+                    cell.innerHTML = `<span class="tile-letter">${letter}</span>
+                                      <span class="tile-score">${score}</span>`;
+                } else if (boardTile) {
+                    cell.classList.add('has-tile');
+                    const score = boardTile.isBlank ? '' : TILE_SCORES[boardTile.letter];
+                    cell.innerHTML = `<span class="tile-letter">${boardTile.letter}</span>
+                                      <span class="tile-score">${score}</span>`;
+                    // Highlight last play
+                    if (gameState?.lastPlay?.tiles?.some(t => t.row === row && t.col === col)) {
+                        cell.classList.add('last-play');
+                    }
+                } else {
+                    // Restore special square label
+                    const squareType = getSquareType(row, col);
+                    cell.className = `cell ${squareType}`;
+                }
+            });
+
+            updatePlayButton();
+        }
+
+        // ============================================
+        // RACK RENDERING
+        // ============================================
+
+        function renderRack() {
+            elements.rack.innerHTML = '';
+
+            const rack = gameState?.players?.[localState.playerId]?.rack || [];
+
+            for (let i = 0; i < RACK_SIZE; i++) {
+                const tile = document.createElement('div');
+
+                // Check if this rack position has been placed on board
+                const isPlaced = localState.placedTiles.some(t => t.rackIndex === i);
+
+                if (i < rack.length && !isPlaced) {
+                    const letter = rack[i];
+                    const isBlank = letter === '_';
+                    tile.className = 'rack-tile' + (isBlank ? ' blank' : '');
+                    tile.innerHTML = `${isBlank ? ' ' : letter}<span class="tile-score">${TILE_SCORES[letter]}</span>`;
+                    tile.onclick = () => handleRackClick(i);
+
+                    if (localState.selectedRackIndex === i) {
+                        tile.classList.add('selected');
+                    }
+                } else {
+                    tile.className = 'rack-tile empty';
+                }
+
+                elements.rack.appendChild(tile);
+            }
+        }
+
+        // ============================================
+        // TILE PLACEMENT
+        // ============================================
+
+        function handleRackClick(index) {
+            const rack = gameState?.players?.[localState.playerId]?.rack || [];
+            if (index >= rack.length) return;
+
+            // Check if already placed
+            if (localState.placedTiles.some(t => t.rackIndex === index)) return;
+
+            // Toggle selection
+            if (localState.selectedRackIndex === index) {
+                localState.selectedRackIndex = null;
+            } else {
+                localState.selectedRackIndex = index;
+            }
+
+            renderRack();
+        }
+
+        function handleCellClick(row, col) {
+            // Check if we're clicking on a placed tile to remove it
+            const placedIndex = localState.placedTiles.findIndex(t => t.row === row && t.col === col);
+            if (placedIndex !== -1) {
+                localState.placedTiles.splice(placedIndex, 1);
+                localState.selectedRackIndex = null;
+                renderBoard();
+                renderRack();
+                return;
+            }
+
+            // Check if cell already has a permanent tile
+            const key = `${row},${col}`;
+            if (gameState?.board?.[key]) return;
+
+            // Place selected tile
+            if (localState.selectedRackIndex !== null) {
+                const rack = gameState?.players?.[localState.playerId]?.rack || [];
+                const letter = rack[localState.selectedRackIndex];
+                const isBlank = letter === '_';
+
+                if (isBlank) {
+                    // Show letter picker
+                    showLetterPicker((chosenLetter) => {
+                        localState.placedTiles.push({
+                            rackIndex: localState.selectedRackIndex,
+                            row,
+                            col,
+                            letter: '_',
+                            isBlank: true,
+                            blankLetter: chosenLetter
+                        });
+                        localState.selectedRackIndex = null;
+                        renderBoard();
+                        renderRack();
+                    });
+                } else {
+                    localState.placedTiles.push({
+                        rackIndex: localState.selectedRackIndex,
+                        row,
+                        col,
+                        letter,
+                        isBlank: false,
+                        blankLetter: null
+                    });
+                    localState.selectedRackIndex = null;
+                    renderBoard();
+                    renderRack();
+                }
+            }
+        }
+
+        function showLetterPicker(callback) {
+            elements.letterGrid.innerHTML = '';
+            for (let i = 0; i < 26; i++) {
+                const letter = String.fromCharCode(65 + i);
+                const btn = document.createElement('button');
+                btn.className = 'letter-btn';
+                btn.textContent = letter;
+                btn.onclick = () => {
+                    elements.letterPickerModal.classList.remove('active');
+                    callback(letter);
+                };
+                elements.letterGrid.appendChild(btn);
+            }
+            elements.letterPickerModal.classList.add('active');
+        }
+
+        function recallTiles() {
+            localState.placedTiles = [];
+            localState.selectedRackIndex = null;
+            renderBoard();
+            renderRack();
+        }
+
+        function shuffleRack() {
+            if (!gameState?.players?.[localState.playerId]?.rack) return;
+
+            // Fisher-Yates shuffle
+            const rack = [...gameState.players[localState.playerId].rack];
+            for (let i = rack.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [rack[i], rack[j]] = [rack[j], rack[i]];
+            }
+            gameState.players[localState.playerId].rack = rack;
+
+            // Clear any placed tiles since rack order changed
+            localState.placedTiles = [];
+            localState.selectedRackIndex = null;
+            renderRack();
+            renderBoard();
+        }
+
+        // ============================================
+        // PLAY VALIDATION & GAME LOGIC
+        // ============================================
+
+        function updatePlayButton() {
+            const canPlay = localState.placedTiles.length > 0 && isMyTurn();
+            elements.playBtn.disabled = !canPlay;
+        }
+
+        function isMyTurn() {
+            return gameState?.currentTurn === localState.playerId;
+        }
+
+        // Get a tile at a position (from board or placed tiles)
+        function getTileAt(row, col) {
+            const key = `${row},${col}`;
+            const boardTile = gameState?.board?.[key];
+            if (boardTile) return boardTile;
+
+            const placedTile = localState.placedTiles.find(t => t.row === row && t.col === col);
+            if (placedTile) {
+                return {
+                    letter: placedTile.blankLetter || placedTile.letter,
+                    isBlank: placedTile.isBlank
+                };
+            }
+            return null;
+        }
+
+        // Check if board is empty (first move)
+        function isBoardEmpty() {
+            return !gameState?.board || Object.keys(gameState.board).length === 0;
+        }
+
+        // Validate tile placement
+        function validatePlacement() {
+            const placed = localState.placedTiles;
+            if (placed.length === 0) {
+                return { valid: false, error: "No tiles placed" };
+            }
+
+            // Check all tiles are in same row OR same column
+            const rows = [...new Set(placed.map(t => t.row))];
+            const cols = [...new Set(placed.map(t => t.col))];
+
+            if (rows.length > 1 && cols.length > 1) {
+                return { valid: false, error: "Tiles must be in a straight line" };
+            }
+
+            const isHorizontal = rows.length === 1;
+            const fixedAxis = isHorizontal ? rows[0] : cols[0];
+            const positions = isHorizontal
+                ? placed.map(t => t.col).sort((a, b) => a - b)
+                : placed.map(t => t.row).sort((a, b) => a - b);
+
+            // Check for gaps (all positions between min and max must have a tile)
+            const minPos = positions[0];
+            const maxPos = positions[positions.length - 1];
+
+            for (let pos = minPos; pos <= maxPos; pos++) {
+                const row = isHorizontal ? fixedAxis : pos;
+                const col = isHorizontal ? pos : fixedAxis;
+                if (!getTileAt(row, col)) {
+                    return { valid: false, error: "Gaps are not allowed" };
+                }
+            }
+
+            // Check connection to existing tiles (or center square for first move)
+            if (isBoardEmpty()) {
+                // First move must cover center square
+                const coversCenter = placed.some(t => t.row === 7 && t.col === 7);
+                if (!coversCenter) {
+                    return { valid: false, error: "First word must cover center square" };
+                }
+                // First move must be at least 2 letters
+                if (placed.length < 2) {
+                    return { valid: false, error: "Word must be at least 2 letters" };
+                }
+            } else {
+                // Must connect to at least one existing tile
+                let connected = false;
+                for (const tile of placed) {
+                    const neighbors = [
+                        [tile.row - 1, tile.col],
+                        [tile.row + 1, tile.col],
+                        [tile.row, tile.col - 1],
+                        [tile.row, tile.col + 1]
+                    ];
+                    for (const [r, c] of neighbors) {
+                        if (r >= 0 && r < 15 && c >= 0 && c < 15) {
+                            const key = `${r},${c}`;
+                            if (gameState?.board?.[key]) {
+                                connected = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (connected) break;
+                }
+                if (!connected) {
+                    return { valid: false, error: "Must connect to existing tiles" };
+                }
+            }
+
+            // Find all words formed
+            const words = findAllWords(isHorizontal);
+            if (words.length === 0) {
+                return { valid: false, error: "No valid words formed" };
+            }
+
+            // Calculate score
+            const score = calculateScore(words);
+
+            return { valid: true, words, score };
+        }
+
+        // Find all words formed by the current placement
+        function findAllWords(isHorizontal) {
+            const words = [];
+            const placed = localState.placedTiles;
+
+            // Find the main word (along the placement direction)
+            const mainWord = findWordThrough(placed[0].row, placed[0].col, isHorizontal);
+            if (mainWord.text.length > 1) {
+                words.push(mainWord);
+            }
+
+            // Find perpendicular words formed by each placed tile
+            for (const tile of placed) {
+                const crossWord = findWordThrough(tile.row, tile.col, !isHorizontal);
+                if (crossWord.text.length > 1) {
+                    // Avoid duplicates
+                    const isDuplicate = words.some(w =>
+                        w.text === crossWord.text &&
+                        w.startRow === crossWord.startRow &&
+                        w.startCol === crossWord.startCol
+                    );
+                    if (!isDuplicate) {
+                        words.push(crossWord);
+                    }
+                }
+            }
+
+            return words;
+        }
+
+        // Find a word passing through a given position
+        function findWordThrough(row, col, horizontal) {
+            let startRow = row;
+            let startCol = col;
+
+            // Find start of word
+            while (true) {
+                const prevRow = horizontal ? startRow : startRow - 1;
+                const prevCol = horizontal ? startCol - 1 : startCol;
+                if (prevRow < 0 || prevCol < 0) break;
+                if (!getTileAt(prevRow, prevCol)) break;
+                startRow = prevRow;
+                startCol = prevCol;
+            }
+
+            // Read the word
+            let text = '';
+            let tiles = [];
+            let r = startRow;
+            let c = startCol;
+
+            while (r < 15 && c < 15) {
+                const tile = getTileAt(r, c);
+                if (!tile) break;
+
+                text += tile.letter;
+                tiles.push({
+                    row: r,
+                    col: c,
+                    letter: tile.letter,
+                    isBlank: tile.isBlank,
+                    isNew: localState.placedTiles.some(t => t.row === r && t.col === c)
+                });
+
+                if (horizontal) c++; else r++;
+            }
+
+            return { text, tiles, startRow, startCol, horizontal };
+        }
+
+        // Calculate score for all words
+        function calculateScore(words) {
+            let totalScore = 0;
+
+            for (const word of words) {
+                let wordScore = 0;
+                let wordMultiplier = 1;
+
+                for (const tile of word.tiles) {
+                    let letterScore = tile.isBlank ? 0 : TILE_SCORES[tile.letter] || 0;
+
+                    // Only apply bonuses for newly placed tiles
+                    if (tile.isNew) {
+                        const squareType = getSquareType(tile.row, tile.col);
+                        switch (squareType) {
+                            case 'dl':
+                                letterScore *= 2;
+                                break;
+                            case 'tl':
+                                letterScore *= 3;
+                                break;
+                            case 'dw':
+                            case 'center':
+                                wordMultiplier *= 2;
+                                break;
+                            case 'tw':
+                                wordMultiplier *= 3;
+                                break;
+                        }
+                    }
+
+                    wordScore += letterScore;
+                }
+
+                totalScore += wordScore * wordMultiplier;
+            }
+
+            // Bingo bonus for using all 7 tiles
+            if (localState.placedTiles.length === 7) {
+                totalScore += BINGO_BONUS;
+            }
+
+            return totalScore;
+        }
+
+        // Attempt to play the current tiles
+        function attemptPlay() {
+            const validation = validatePlacement();
+
+            if (!validation.valid) {
+                showError(validation.error);
+                return null;
+            }
+
+            return {
+                tiles: localState.placedTiles.map(t => ({
+                    row: t.row,
+                    col: t.col,
+                    letter: t.blankLetter || t.letter,
+                    originalLetter: t.letter,
+                    isBlank: t.isBlank
+                })),
+                words: validation.words.map(w => w.text),
+                score: validation.score
+            };
+        }
+
+        function showError(message) {
+            // Show error in turn indicator temporarily
+            const original = elements.turnIndicator.textContent;
+            elements.turnIndicator.textContent = message;
+            elements.turnIndicator.style.color = '#ff6666';
+            setTimeout(() => {
+                elements.turnIndicator.textContent = original;
+                elements.turnIndicator.style.color = '';
+            }, 2000);
+        }
+
+        // ============================================
+        // UI UPDATES
+        // ============================================
+
+        function updateScoreboard() {
+            elements.scoreboard.innerHTML = '';
+            if (!gameState?.players) return;
+
+            const playerOrder = gameState.playerOrder || Object.keys(gameState.players);
+
+            for (const playerId of playerOrder) {
+                const player = gameState.players[playerId];
+                if (!player) continue;
+
+                const item = document.createElement('div');
+                item.className = 'score-item';
+                if (playerId === gameState.currentTurn) {
+                    item.classList.add('current-turn');
+                }
+
+                item.innerHTML = `
+                    <div class="score-name">${player.name}${playerId === localState.playerId ? ' (you)' : ''}</div>
+                    <div class="score-value">${player.score || 0}</div>
+                `;
+                elements.scoreboard.appendChild(item);
+            }
+        }
+
+        function updateTurnIndicator() {
+            if (!gameState) return;
+
+            const currentPlayer = gameState.players?.[gameState.currentTurn];
+            const isMyTurn = gameState.currentTurn === localState.playerId;
+
+            elements.turnIndicator.className = 'turn-indicator' + (isMyTurn ? ' your-turn' : '');
+            elements.turnIndicator.textContent = isMyTurn
+                ? "Your turn - play a word!"
+                : `Waiting for ${currentPlayer?.name || 'opponent'}...`;
+
+            elements.tilesRemaining.textContent = `Tiles remaining: ${gameState.tilesRemaining || 0}`;
+        }
+
+        function updateLastPlayInfo() {
+            const lastPlay = gameState?.lastPlay;
+
+            if (!lastPlay || !lastPlay.words || lastPlay.words.length === 0) {
+                elements.lastPlayInfo.classList.add('hidden');
+                return;
+            }
+
+            elements.lastPlayInfo.classList.remove('hidden');
+
+            const playerName = gameState.players?.[lastPlay.player]?.name || 'Someone';
+            document.getElementById('last-play-text').textContent = `${playerName} played:`;
+            document.getElementById('last-play-words').textContent =
+                `"${lastPlay.words.join('", "')}" for ${lastPlay.score} points`;
+
+            // Show challenge button if not my turn and play is challengeable
+            const challengeButtons = document.getElementById('challenge-buttons');
+            if (lastPlay.challengeable && lastPlay.player !== localState.playerId) {
+                challengeButtons.style.display = 'flex';
+            } else {
+                challengeButtons.style.display = 'none';
+            }
+        }
+
+        function updateLobby() {
+            if (!gameState) return;
+
+            elements.lobbyRoomCode.textContent = localState.roomCode;
+
+            // Update player list
+            const listHtml = '<h3>Players</h3>';
+            elements.playerList.innerHTML = listHtml;
+
+            const playerOrder = gameState.playerOrder || [];
+            for (const playerId of playerOrder) {
+                const player = gameState.players?.[playerId];
+                if (!player) continue;
+
+                const item = document.createElement('div');
+                item.className = 'player-item';
+                if (playerId === gameState.hostId) {
+                    item.classList.add('host');
+                }
+                item.textContent = player.name + (playerId === localState.playerId ? ' (you)' : '');
+                elements.playerList.appendChild(item);
+            }
+
+            // Update waiting text and start button
+            const playerCount = playerOrder.length;
+            elements.waitingText.textContent = `${playerCount}/4 players`;
+
+            if (localState.isHost) {
+                elements.startGameBtn.style.display = 'inline-block';
+                elements.startGameBtn.disabled = playerCount < 2;
+            } else {
+                elements.startGameBtn.style.display = 'none';
+            }
+        }
+
+        // ============================================
+        // GAME STATE SYNC (placeholder for Firebase)
+        // ============================================
+
+        function onGameStateUpdate(newState) {
+            gameState = newState;
+
+            if (gameState.status === 'waiting') {
+                showScreen('lobby');
+                updateLobby();
+            } else if (gameState.status === 'playing') {
+                showScreen('game');
+                renderBoard();
+                renderRack();
+                updateScoreboard();
+                updateTurnIndicator();
+                updateLastPlayInfo();
+                updateChallengePending();
+            } else if (gameState.status === 'finished') {
+                showScreen('gameOver');
+                showFinalScores();
+            }
+        }
+
+        function showFinalScores() {
+            if (!gameState?.players) return;
+
+            // Calculate final scores (subtract remaining rack values)
+            const finalScores = [];
+            let totalRackValue = 0;
+            let winnerPlayerId = null;
+
+            for (const [playerId, player] of Object.entries(gameState.players)) {
+                const rackValue = (player.rack || []).reduce((sum, letter) =>
+                    sum + (TILE_SCORES[letter] || 0), 0);
+                totalRackValue += rackValue;
+
+                finalScores.push({
+                    playerId,
+                    name: player.name,
+                    baseScore: player.score || 0,
+                    rackValue,
+                    finalScore: (player.score || 0) - rackValue,
+                    wentOut: (player.rack || []).length === 0
+                });
+            }
+
+            // Player who went out gets everyone's rack values added
+            const playerWhoWentOut = finalScores.find(p => p.wentOut);
+            if (playerWhoWentOut) {
+                playerWhoWentOut.finalScore += totalRackValue;
+            }
+
+            // Sort by final score
+            finalScores.sort((a, b) => b.finalScore - a.finalScore);
+
+            // Render
+            elements.finalScores.innerHTML = '<h3>Final Scores</h3>';
+            finalScores.forEach((player, index) => {
+                const item = document.createElement('div');
+                item.className = 'final-score-item' + (index === 0 ? ' winner' : '');
+                item.innerHTML = `
+                    <span class="final-rank">${index + 1}.</span>
+                    <span class="final-name">${player.name}${player.playerId === localState.playerId ? ' (you)' : ''}</span>
+                    <span class="final-points">${player.finalScore}</span>
+                `;
+                elements.finalScores.appendChild(item);
+            });
+
+            elements.winnerAnnouncement.textContent = `${finalScores[0].name} wins!`;
+        }
+
+        function updateChallengePending() {
+            const challenge = gameState?.pendingChallenge;
+
+            if (!challenge) {
+                elements.challengePending.classList.add('hidden');
+                return;
+            }
+
+            elements.challengePending.classList.remove('hidden');
+            document.getElementById('challenge-word').textContent =
+                `"${challenge.words.join('", "')}"`;
+
+            // Show/hide resolution buttons based on who can resolve
+            // Anyone can resolve (honor system)
+            const buttons = elements.challengePending.querySelectorAll('button');
+            buttons.forEach(btn => btn.style.display = 'inline-block');
+        }
+
+        // ============================================
+        // EVENT HANDLERS
+        // ============================================
+
+        document.getElementById('create-game-btn').onclick = async () => {
+            const name = elements.playerNameInput.value.trim();
+            if (!name) {
+                elements.menuError.textContent = 'Please enter your name';
+                return;
+            }
+            elements.menuError.textContent = '';
+            localState.playerName = name;
+
+            try {
+                await firebaseCreateGame(name);
+            } catch (err) {
+                elements.menuError.textContent = err.message;
+            }
+        };
+
+        document.getElementById('join-game-btn').onclick = async () => {
+            const name = elements.playerNameInput.value.trim();
+            const code = elements.roomCodeInput.value.trim().toUpperCase();
+            if (!name) {
+                elements.menuError.textContent = 'Please enter your name';
+                return;
+            }
+            if (!code || code.length !== 4) {
+                elements.menuError.textContent = 'Please enter a 4-letter room code';
+                return;
+            }
+            elements.menuError.textContent = '';
+            localState.playerName = name;
+
+            try {
+                await firebaseJoinGame(code, name);
+            } catch (err) {
+                elements.menuError.textContent = err.message;
+            }
+        };
+
+        document.getElementById('start-game-btn').onclick = async () => {
+            try {
+                await firebaseStartGame();
+            } catch (err) {
+                showError(err.message);
+            }
+        };
+
+        document.getElementById('leave-lobby-btn').onclick = async () => {
+            await firebaseLeaveGame();
+            showScreen('menu');
+        };
+
+        document.getElementById('recall-btn').onclick = recallTiles;
+        document.getElementById('shuffle-btn').onclick = shuffleRack;
+
+        document.getElementById('play-btn').onclick = async () => {
+            const result = attemptPlay();
+            if (!result) return;
+
+            try {
+                await firebasePlayWord(result);
+            } catch (err) {
+                showError(err.message);
+            }
+        };
+
+        document.getElementById('pass-btn').onclick = async () => {
+            if (!isMyTurn()) return;
+            recallTiles();
+            try {
+                await firebasePassTurn();
+            } catch (err) {
+                showError(err.message);
+            }
+        };
+
+        document.getElementById('swap-btn').onclick = async () => {
+            if (!isMyTurn()) return;
+
+            // For simplicity, swap all placed tiles (or selected tile if none placed)
+            // In a full implementation, you'd have a swap mode UI
+            const tilesToSwap = localState.placedTiles.map(t => t.rackIndex);
+            if (tilesToSwap.length === 0) {
+                showError('Select tiles to swap by placing them, then click Swap');
+                return;
+            }
+
+            recallTiles();
+            try {
+                await firebaseSwapTiles(tilesToSwap);
+            } catch (err) {
+                showError(err.message);
+            }
+        };
+
+        document.getElementById('challenge-btn').onclick = async () => {
+            try {
+                await firebaseChallenge();
+            } catch (err) {
+                showError(err.message);
+            }
+        };
+
+        document.getElementById('accept-word-btn').onclick = async () => {
+            // Just mark as not challengeable by advancing (do nothing, wait for next play)
+            // The challengeable flag will be cleared on next turn
+        };
+
+        document.getElementById('challenge-valid-btn').onclick = async () => {
+            try {
+                await firebaseResolveChallenge(false);  // Challenge failed, word was valid
+            } catch (err) {
+                showError(err.message);
+            }
+        };
+
+        document.getElementById('challenge-invalid-btn').onclick = async () => {
+            try {
+                await firebaseResolveChallenge(true);  // Challenge succeeded, word was invalid
+            } catch (err) {
+                showError(err.message);
+            }
+        };
+
+        document.getElementById('play-again-btn').onclick = async () => {
+            await firebaseLeaveGame();
+            showScreen('menu');
+        };
+
+        document.getElementById('back-to-menu-btn').onclick = async () => {
+            await firebaseLeaveGame();
+            showScreen('menu');
+        };
+
+        // ============================================
+        // FIREBASE FUNCTIONS
+        // ============================================
+
+        function generateRoomCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+            let code = '';
+            for (let i = 0; i < 4; i++) {
+                code += chars[Math.floor(Math.random() * chars.length)];
+            }
+            return code;
+        }
+
+        function generatePlayerId() {
+            return 'p_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function createTileBag() {
+            const bag = [];
+            for (const [letter, count] of Object.entries(TILE_DISTRIBUTION)) {
+                for (let i = 0; i < count; i++) {
+                    bag.push(letter);
+                }
+            }
+            // Shuffle
+            for (let i = bag.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [bag[i], bag[j]] = [bag[j], bag[i]];
+            }
+            return bag;
+        }
+
+        async function firebaseCreateGame(playerName) {
+            const roomCode = generateRoomCode();
+            const playerId = generatePlayerId();
+
+            localState.playerId = playerId;
+            localState.roomCode = roomCode;
+            localState.isHost = true;
+
+            const initialState = {
+                roomCode,
+                status: 'waiting',
+                created: Date.now(),
+                hostId: playerId,
+                playerOrder: [playerId],
+                players: {
+                    [playerId]: {
+                        name: playerName,
+                        score: 0,
+                        rack: [],
+                        connected: true
+                    }
+                },
+                currentTurn: playerId,
+                turnIndex: 0,
+                board: {},
+                tileBag: [],
+                tilesRemaining: 100,
+                turnNumber: 0,
+                consecutivePasses: 0,
+                lastPlay: null,
+                pendingChallenge: null
+            };
+
+            gameRef = ref(database, `scrabble/${roomCode}`);
+            await set(gameRef, initialState);
+
+            // Set up presence
+            const presenceRef = ref(database, `scrabble/${roomCode}/players/${playerId}/connected`);
+            onDisconnect(presenceRef).set(false);
+
+            // Subscribe to changes
+            subscribeToGame();
+        }
+
+        async function firebaseJoinGame(roomCode, playerName) {
+            gameRef = ref(database, `scrabble/${roomCode}`);
+            const snapshot = await get(gameRef);
+
+            if (!snapshot.exists()) {
+                throw new Error('Game not found');
+            }
+
+            const game = snapshot.val();
+
+            if (game.status !== 'waiting') {
+                throw new Error('Game already started');
+            }
+
+            const playerCount = game.playerOrder?.length || 0;
+            if (playerCount >= 4) {
+                throw new Error('Game is full');
+            }
+
+            const playerId = generatePlayerId();
+            localState.playerId = playerId;
+            localState.roomCode = roomCode;
+            localState.isHost = false;
+
+            const updates = {};
+            updates[`players/${playerId}`] = {
+                name: playerName,
+                score: 0,
+                rack: [],
+                connected: true
+            };
+            updates['playerOrder'] = [...game.playerOrder, playerId];
+
+            await update(gameRef, updates);
+
+            // Set up presence
+            const presenceRef = ref(database, `scrabble/${roomCode}/players/${playerId}/connected`);
+            onDisconnect(presenceRef).set(false);
+
+            // Subscribe to changes
+            subscribeToGame();
+        }
+
+        async function firebaseStartGame() {
+            if (!gameRef || !localState.isHost) return;
+
+            const snapshot = await get(gameRef);
+            const game = snapshot.val();
+
+            if (game.playerOrder.length < 2) {
+                showError('Need at least 2 players');
+                return;
+            }
+
+            // Create and shuffle tile bag
+            const tileBag = createTileBag();
+
+            const updates = {
+                status: 'playing',
+                turnNumber: 1,
+                tileBag: tileBag
+            };
+
+            // Draw 7 tiles for each player
+            let bagIndex = 0;
+            for (const playerId of game.playerOrder) {
+                const rack = tileBag.slice(bagIndex, bagIndex + 7);
+                bagIndex += 7;
+                updates[`players/${playerId}/rack`] = rack;
+            }
+            updates.tileBag = tileBag.slice(bagIndex);
+            updates.tilesRemaining = tileBag.length - bagIndex;
+
+            await update(gameRef, updates);
+        }
+
+        async function firebasePlayWord(result) {
+            if (!gameRef) return;
+
+            const snapshot = await get(gameRef);
+            const game = snapshot.val();
+
+            const updates = {};
+
+            // Add tiles to board
+            for (const tile of result.tiles) {
+                updates[`board/${tile.row},${tile.col}`] = {
+                    letter: tile.letter,
+                    isBlank: tile.isBlank,
+                    turnPlayed: game.turnNumber
+                };
+            }
+
+            // Update player score
+            const currentScore = game.players[localState.playerId].score || 0;
+            updates[`players/${localState.playerId}/score`] = currentScore + result.score;
+
+            // Remove played tiles from rack and draw new ones
+            const playedIndices = localState.placedTiles.map(t => t.rackIndex).sort((a, b) => b - a);
+            const rack = [...game.players[localState.playerId].rack];
+            for (const idx of playedIndices) {
+                rack.splice(idx, 1);
+            }
+
+            // Draw new tiles
+            const tileBag = game.tileBag || [];
+            const tilesToDraw = Math.min(7 - rack.length, tileBag.length);
+            for (let i = 0; i < tilesToDraw; i++) {
+                rack.push(tileBag.shift());
+            }
+            updates[`players/${localState.playerId}/rack`] = rack;
+            updates.tileBag = tileBag;
+            updates.tilesRemaining = tileBag.length;
+
+            // Advance turn
+            const nextTurnIndex = (game.turnIndex + 1) % game.playerOrder.length;
+            updates.currentTurn = game.playerOrder[nextTurnIndex];
+            updates.turnIndex = nextTurnIndex;
+            updates.turnNumber = game.turnNumber + 1;
+            updates.consecutivePasses = 0;
+
+            // Record last play
+            updates.lastPlay = {
+                player: localState.playerId,
+                words: result.words,
+                score: result.score,
+                tiles: result.tiles,
+                turnNumber: game.turnNumber,
+                challengeable: true
+            };
+
+            // Check for game end (player used all tiles and bag empty)
+            if (rack.length === 0 && tileBag.length === 0) {
+                updates.status = 'finished';
+            }
+
+            await update(gameRef, updates);
+
+            // Clear local state
+            localState.placedTiles = [];
+            localState.selectedRackIndex = null;
+        }
+
+        async function firebasePassTurn() {
+            if (!gameRef) return;
+
+            const snapshot = await get(gameRef);
+            const game = snapshot.val();
+
+            const playerCount = game.playerOrder.length;
+            const newConsecutivePasses = (game.consecutivePasses || 0) + 1;
+
+            const updates = {};
+
+            // Advance turn
+            const nextTurnIndex = (game.turnIndex + 1) % playerCount;
+            updates.currentTurn = game.playerOrder[nextTurnIndex];
+            updates.turnIndex = nextTurnIndex;
+            updates.consecutivePasses = newConsecutivePasses;
+
+            // Mark last play as not challengeable
+            if (game.lastPlay) {
+                updates['lastPlay/challengeable'] = false;
+            }
+
+            // Game ends if all players pass consecutively
+            if (newConsecutivePasses >= playerCount) {
+                updates.status = 'finished';
+            }
+
+            await update(gameRef, updates);
+
+            // Clear local placed tiles
+            localState.placedTiles = [];
+            localState.selectedRackIndex = null;
+        }
+
+        async function firebaseSwapTiles(indicesToSwap) {
+            if (!gameRef || indicesToSwap.length === 0) return;
+
+            const snapshot = await get(gameRef);
+            const game = snapshot.val();
+
+            const tileBag = game.tileBag || [];
+            if (tileBag.length < indicesToSwap.length) {
+                showError('Not enough tiles in bag');
+                return;
+            }
+
+            const rack = [...game.players[localState.playerId].rack];
+            const tilesToReturn = indicesToSwap.map(i => rack[i]);
+
+            // Remove swapped tiles from rack (in reverse order to preserve indices)
+            for (const idx of indicesToSwap.sort((a, b) => b - a)) {
+                rack.splice(idx, 1);
+            }
+
+            // Draw new tiles
+            const newTiles = tileBag.splice(0, tilesToReturn.length);
+            rack.push(...newTiles);
+
+            // Return swapped tiles to bag and shuffle
+            tileBag.push(...tilesToReturn);
+            for (let i = tileBag.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [tileBag[i], tileBag[j]] = [tileBag[j], tileBag[i]];
+            }
+
+            const updates = {};
+            updates[`players/${localState.playerId}/rack`] = rack;
+            updates.tileBag = tileBag;
+
+            // Advance turn (swap counts as a pass for consecutive pass counting)
+            const playerCount = game.playerOrder.length;
+            const nextTurnIndex = (game.turnIndex + 1) % playerCount;
+            updates.currentTurn = game.playerOrder[nextTurnIndex];
+            updates.turnIndex = nextTurnIndex;
+            updates.consecutivePasses = (game.consecutivePasses || 0) + 1;
+
+            if (game.lastPlay) {
+                updates['lastPlay/challengeable'] = false;
+            }
+
+            await update(gameRef, updates);
+
+            localState.placedTiles = [];
+            localState.selectedRackIndex = null;
+        }
+
+        async function firebaseChallenge() {
+            if (!gameRef || !gameState?.lastPlay?.challengeable) return;
+
+            const updates = {
+                pendingChallenge: {
+                    challengedPlayer: gameState.lastPlay.player,
+                    challenger: localState.playerId,
+                    turnNumber: gameState.lastPlay.turnNumber,
+                    words: gameState.lastPlay.words,
+                    tiles: gameState.lastPlay.tiles,
+                    score: gameState.lastPlay.score
+                },
+                'lastPlay/challengeable': false
+            };
+
+            await update(gameRef, updates);
+        }
+
+        async function firebaseResolveChallenge(challengeSucceeded) {
+            if (!gameRef || !gameState?.pendingChallenge) return;
+
+            const challenge = gameState.pendingChallenge;
+            const updates = { pendingChallenge: null };
+
+            if (challengeSucceeded) {
+                // Word was invalid - remove it from board
+                for (const tile of challenge.tiles) {
+                    updates[`board/${tile.row},${tile.col}`] = null;
+                }
+
+                // Return tiles to challenged player's rack
+                const challengedRack = [...gameState.players[challenge.challengedPlayer].rack];
+                for (const tile of challenge.tiles) {
+                    challengedRack.push(tile.originalLetter || tile.letter);
+                }
+                updates[`players/${challenge.challengedPlayer}/rack`] = challengedRack;
+
+                // Subtract score
+                const currentScore = gameState.players[challenge.challengedPlayer].score || 0;
+                updates[`players/${challenge.challengedPlayer}/score`] = currentScore - challenge.score;
+
+            } else {
+                // Word was valid - challenger loses next turn
+                updates[`players/${challenge.challenger}/skipNextTurn`] = true;
+            }
+
+            await update(gameRef, updates);
+        }
+
+        async function firebaseLeaveGame() {
+            if (unsubscribe) {
+                unsubscribe();
+                unsubscribe = null;
+            }
+
+            if (gameRef && localState.playerId) {
+                await update(gameRef, {
+                    [`players/${localState.playerId}/connected`]: false
+                });
+            }
+
+            gameRef = null;
+            gameState = null;
+            localState = {
+                playerId: null,
+                playerName: '',
+                roomCode: null,
+                selectedRackIndex: null,
+                placedTiles: [],
+                isHost: false
+            };
+        }
+
+        function subscribeToGame() {
+            if (unsubscribe) unsubscribe();
+
+            unsubscribe = onValue(gameRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    onGameStateUpdate(snapshot.val());
+                }
+            });
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+
+        createBoard();
+    </script>
+    <script type="module" src="js/analytics.js"></script>
+</body>
+</html>
