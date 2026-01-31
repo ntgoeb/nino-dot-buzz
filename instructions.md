@@ -15,7 +15,7 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans on de
 ├── tictactoe.html          # Tic-Tac-Toe game
 ├── guess-number.html       # Guess the Number game
 ├── startrek.html           # Star Trek (skeleton only - needs implementation)
-├── chess.html              # Chess vs Stockfish AI
+├── chess.html              # Chess vs Stockfish AI + mate puzzles
 ├── links.html              # Links page
 ├── style/
 │   └── default-style.css   # Retro styling
@@ -34,7 +34,7 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans on de
 - [x] News feed (BBC + NPR via RSS)
 - [x] Personal notes (saved to localStorage)
 - [x] Music player (26 retro tracks, random play)
-- [x] Games: Hangman, Tic-Tac-Toe, Guess the Number, Chess (vs Stockfish AI)
+- [x] Games: Hangman, Tic-Tac-Toe, Guess the Number, Chess (vs AI + puzzles)
 - [x] Links page
 - [x] Wider layout (1040px)
 - [x] Mobile-friendly fonts
@@ -51,11 +51,13 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans on de
 
 ## Technical Notes
 
-### Chess Implementation
-- Use **chess.js** for game logic/validation (~15KB)
-- Use **Stockfish WASM** for AI opponent (~5MB)
-- Adjustable difficulty via search depth/time limits
-- Chessboard UI: chessboard.js or custom
+### Chess (Implemented)
+- **chess.js v0.12.0** (CDN) for move validation and game state
+- **Stockfish.js v10** (~1.5MB, local) for AI via Web Worker
+- 5 difficulty levels using Stockfish Skill Level (0-16) + think time limits
+- Custom CSS Grid board with traditional tan/brown colors
+- Click-to-move and algebraic notation text input
+- Mate-in-2 and Mate-in-3 puzzle modes (20 puzzles each)
 
 ### Scrabble Multiplayer
 - Use **Firebase Realtime Database** for game state sync (free tier: 100 connections, 1GB)
