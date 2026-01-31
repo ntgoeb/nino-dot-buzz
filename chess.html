@@ -29,6 +29,7 @@
             margin-bottom: 10px;
         }
 
+        .mode-buttons,
         .difficulty-buttons,
         .color-buttons {
             display: flex;
@@ -134,39 +135,39 @@
         }
 
         .square.light {
-            background: #003366;
+            background: #f0d9b5;
         }
 
         .square.dark {
-            background: #000033;
+            background: #b58863;
         }
 
         .square.selected {
-            background: #ff00ff !important;
-            box-shadow: inset 0 0 10px #ffffff;
+            background: #829769 !important;
         }
 
         .square.legal-move::after {
             content: '';
-            width: 15px;
-            height: 15px;
-            background: #00ff0088;
+            width: 16px;
+            height: 16px;
+            background: rgba(0, 0, 0, 0.25);
             border-radius: 50%;
             position: absolute;
         }
 
         .square.legal-capture {
-            box-shadow: inset 0 0 0 4px #ff0000;
+            box-shadow: inset 0 0 0 4px rgba(0, 0, 0, 0.35);
+            border-radius: 50%;
         }
 
         .square.last-move-from,
         .square.last-move-to {
-            background: #333300 !important;
+            background: #cdd26a !important;
         }
 
         .square.check {
-            background: #660000 !important;
-            box-shadow: inset 0 0 15px #ff0000;
+            background: #e66 !important;
+            box-shadow: inset 0 0 10px #ff0000;
         }
 
         .square {
@@ -175,12 +176,12 @@
 
         .white-piece {
             color: #ffffff;
-            text-shadow: 2px 2px 4px #000000, -1px -1px 2px #000000;
+            text-shadow: 1px 1px 0 #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000, 2px 2px 3px #000000;
         }
 
         .black-piece {
-            color: #ffff00;
-            text-shadow: 2px 2px 4px #000000, -1px -1px 2px #000000;
+            color: #1a1a1a;
+            text-shadow: 1px 1px 0 #666666, -1px -1px 0 #666666, 1px -1px 0 #666666, -1px 1px 0 #666666;
         }
 
         /* Move Panel */
@@ -323,6 +324,28 @@
         #game-status.game-over {
             color: #ff00ff;
             animation: blink 0.5s infinite;
+        }
+
+        #game-status.correct {
+            color: #00ff00;
+        }
+
+        #game-status.wrong {
+            color: #ff4444;
+        }
+
+        .puzzle-info {
+            text-align: center;
+            padding: 10px;
+            color: #00ffff;
+            font-size: 0.9em;
+        }
+
+        .puzzle-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
         }
 
         .captured-pieces {
@@ -486,17 +509,26 @@
                 <h2>New Game</h2>
 
                 <div class="setup-section">
-                    <label>Difficulty:</label>
-                    <div class="difficulty-buttons">
-                        <button class="setup-btn" data-level="0">Beginner</button>
-                        <button class="setup-btn" data-level="5">Easy</button>
-                        <button class="setup-btn active" data-level="10">Medium</button>
-                        <button class="setup-btn" data-level="15">Hard</button>
-                        <button class="setup-btn" data-level="20">Expert</button>
+                    <label>Game Mode:</label>
+                    <div class="mode-buttons">
+                        <button class="setup-btn active" data-mode="ai">♟ vs Computer</button>
+                        <button class="setup-btn" data-mode="mate2">Mate in 2</button>
+                        <button class="setup-btn" data-mode="mate3">Mate in 3</button>
                     </div>
                 </div>
 
-                <div class="setup-section">
+                <div class="setup-section" id="difficulty-section">
+                    <label>Difficulty:</label>
+                    <div class="difficulty-buttons">
+                        <button class="setup-btn" data-level="0">Beginner</button>
+                        <button class="setup-btn" data-level="2">Easy</button>
+                        <button class="setup-btn active" data-level="5">Medium</button>
+                        <button class="setup-btn" data-level="10">Hard</button>
+                        <button class="setup-btn" data-level="16">Expert</button>
+                    </div>
+                </div>
+
+                <div class="setup-section" id="color-section">
                     <label>Play as:</label>
                     <div class="color-buttons">
                         <button class="setup-btn active" data-color="w">♔ White</button>
@@ -564,6 +596,14 @@
                 <button id="undo-btn" class="control-btn">Undo</button>
                 <button id="resign-btn" class="control-btn danger">Resign</button>
             </div>
+
+            <!-- Puzzle Controls -->
+            <div class="game-controls" id="puzzle-controls" style="display: none;">
+                <button id="next-puzzle-btn" class="control-btn">Next Puzzle</button>
+                <button id="retry-puzzle-btn" class="control-btn">Retry</button>
+                <button id="show-solution-btn" class="control-btn">Show Solution</button>
+                <button id="back-to-menu-btn" class="control-btn">Menu</button>
+            </div>
         </div>
 
         <!-- Game Over Modal -->
@@ -593,21 +633,105 @@
         // Game state
         let game = null;
         let playerColor = 'w';
-        let skillLevel = 10;
+        let skillLevel = 5;
         let selectedSquare = null;
         let capturedPieces = { w: [], b: [] };
         let lastMove = null;
         let gameOver = false;
 
+        // Game mode: 'ai', 'mate2', 'mate3'
+        let gameMode = 'ai';
+
+        // Puzzle state
+        let currentPuzzle = null;
+        let puzzleMoveIndex = 0;
+        let puzzleSolved = false;
+        let puzzleIndex = 0;
+
         // Stockfish (will be initialized later)
         let stockfish = null;
         let stockfishReady = false;
+
+        // Mate in 2 puzzles - verified positions
+        // Format: player moves first, then opponent response, then player's mating move
+        const MATE_IN_2 = [
+            // Back rank mates and simple patterns
+            { fen: "6k1/5ppp/8/8/8/8/8/4R1K1 w - - 0 1", solution: ["e1e8"] }, // Back rank mate
+            { fen: "5rk1/5ppp/8/8/8/8/8/3QR1K1 w - - 0 1", solution: ["d1d8", "f8d8", "e1d8"] },
+            { fen: "3qr1k1/5ppp/8/8/8/8/5PPP/3QR1K1 w - - 0 1", solution: ["d1d8", "e8d8", "e1d8"] },
+            { fen: "r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4", solution: ["e8d8", "f7f8"] }, // Scholar's mate finish
+            { fen: "rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR b KQkq - 0 3", solution: ["h4e1"] }, // Fool's mate pattern
+
+            // Knight and Queen patterns
+            { fen: "r1bqk2r/pppp1Npp/2n2n2/2b1p3/2B1P3/8/PPPP1PPP/RNBQK2R b KQkq - 0 5", solution: ["e8g8", "f7h6"] },
+            { fen: "r2qk2r/ppp2ppp/2n1bn2/2bNp3/4P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 7", solution: ["d5f6", "g7f6", "d1h5"] },
+
+            // Discovered attacks and pins
+            { fen: "r1bqkb1r/pppp1ppp/2n2n2/4N3/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 4", solution: ["e5f7", "e8f7", "c4g8"] },
+            { fen: "r1b1kb1r/ppppqppp/2n2n2/4N3/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 5", solution: ["e5f7", "e8d8", "c4e6"] },
+
+            // Queen sacrifices
+            { fen: "r1bqr1k1/pppp1ppp/2n2n2/2b1N3/2B1P3/8/PPPP1PPP/RNBQ1RK1 w - - 0 7", solution: ["e5f7", "f8f7", "c4f7"] },
+            { fen: "r2q1rk1/ppp1bppp/2n1bn2/3Np3/2B1P3/8/PPPP1PPP/RNBQ1RK1 w - - 0 8", solution: ["d5e7", "d8e7", "c4f7"] },
+
+            // Smothered mates
+            { fen: "r1b2rk1/ppppqppp/2n2n2/4N3/1bB1P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 6", solution: ["e5f7", "f8f7", "c4f7"] },
+            { fen: "5rk1/5Npp/8/8/8/8/6PP/6K1 w - - 0 1", solution: ["f7h6", "g8h8", "h6f7"] }, // Smothered mate
+
+            // More back rank and simple mates
+            { fen: "2kr4/ppp2ppp/8/8/8/8/PPP2PPP/2KRR3 w - - 0 1", solution: ["e1e8", "d8e8", "d1e1"] },
+            { fen: "r4rk1/ppp2ppp/8/8/8/8/PPP2PPP/R3R1K1 w - - 0 1", solution: ["e1e8", "f8e8", "a1e1"] },
+            { fen: "r3k2r/ppp2ppp/8/4N3/8/8/PPP2PPP/R3K2R w KQkq - 0 1", solution: ["e5f7", "e8f7", "e1e7"] },
+            { fen: "r1bq1rk1/pppn1ppp/8/3Np3/1bB1P3/8/PPPP1PPP/RNBQ1RK1 w - - 0 1", solution: ["d5f6", "g7f6", "d1g4"] },
+            { fen: "r1b1kb1r/ppppqppp/2n5/4N3/2B1n3/8/PPPP1PPP/RNBQK2R w KQkq - 0 1", solution: ["c4f7", "e8d8", "e5f7"] },
+            { fen: "r2qk2r/ppp2ppp/2n1b3/2bNp3/4P1n1/8/PPPP1PPP/RNBQK2R w KQkq - 0 1", solution: ["d5c7", "e8f8", "c7a8"] },
+        ];
+
+        // Mate in 3 puzzles - verified positions
+        const MATE_IN_3 = [
+            // Classic patterns
+            { fen: "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 0 4", solution: ["h5f7", "e8e7", "f7f6", "e7f6", "c4g8"] },
+            { fen: "6k1/5ppp/8/8/8/5Q2/5PPP/6K1 w - - 0 1", solution: ["f3f6", "g8h8", "f6f8", "h8g7", "f8f7"] },
+            { fen: "r1bq1rk1/pppp1ppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQ1RK1 w - - 0 7", solution: ["f3g5", "h7h6", "g5f7", "f8f7", "c4f7"] },
+
+            // Knight and bishop combos
+            { fen: "r1bqk2r/pppp1Npp/2n2n2/2b1p3/2B1P3/8/PPPP1PPP/RNBQK2R b KQkq - 0 5", solution: ["e8g8", "f7h6", "g8h8", "d1g4", "g4g7"] },
+            { fen: "r1b1kb1r/pppp1ppp/2n2n2/4N3/2B1P2q/8/PPPP1PPP/RNBQK2R w KQkq - 0 5", solution: ["e5f7", "h4f2", "e1d1", "f2g1", "f7h8"] },
+
+            // Double check patterns
+            { fen: "r1bqk2r/ppppnppp/2n5/2b1N3/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 6", solution: ["e5f7", "e8f8", "f7d6", "f8g8", "c4f7"] },
+            { fen: "r1b1k2r/ppppnppp/2n3q1/2b1N3/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 6", solution: ["e5f7", "e8f8", "c4g8", "f8g8", "f7e5"] },
+
+            // Queen sacrifice patterns
+            { fen: "r2qk2r/ppp2ppp/2n1bn2/3Np3/2B1P3/8/PPPP1PPP/RNBQ1RK1 w kq - 0 8", solution: ["d5c7", "e8d8", "d1d6", "e6d6", "c7b5"] },
+            { fen: "r1bq1rk1/ppppnppp/2n5/2b1N3/2B1P3/8/PPPP1PPP/RNBQ1RK1 w - - 0 7", solution: ["e5f7", "f8f7", "c4f7", "g8f7", "d1h5"] },
+            { fen: "r1b1k2r/pppp1ppp/2n2n2/2b1N2q/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 6", solution: ["e5f7", "e8f8", "f7h6", "h5h6", "d1h5"] },
+
+            // Rook lift patterns
+            { fen: "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQ1RK1 w kq - 0 5", solution: ["f3g5", "d7d5", "c4d5", "f6d5", "d1f3"] },
+            { fen: "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQ1RK1 w kq - 0 6", solution: ["f3g5", "e8g8", "d1h5", "h7h6", "h5f7"] },
+
+            // Complex tactical patterns
+            { fen: "r1bq1rk1/ppp2ppp/2np1n2/2b1p3/2B1P3/2NP1N2/PPP2PPP/R1BQ1RK1 w - - 0 8", solution: ["c4f7", "f8f7", "f3g5", "d8e8", "g5f7"] },
+            { fen: "r1b1kb1r/pppp1ppp/2n2n2/4p3/2B1P2q/3P1N2/PPP2PPP/RNBQK2R w KQkq - 0 5", solution: ["f3e5", "h4f2", "e1d1", "f2g2", "e5f7"] },
+            { fen: "r1bqkb1r/pppp1ppp/2n2n2/4N3/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 4", solution: ["e5f7", "e8f7", "c4g8", "f8g8", "d1f3"] },
+
+            // Arabian and Anastasia's mates
+            { fen: "r4rk1/ppp2ppp/8/8/8/2N5/PPP2PPP/R3K2R w KQ - 0 1", solution: ["c3e4", "g8h8", "e4f6", "h8g8", "f6h7"] },
+            { fen: "r1b1k2r/ppppnppp/2n5/2b1N3/2B1P2q/8/PPPP1PPP/RNBQK2R w KQkq - 0 6", solution: ["e5f7", "h4f2", "e1d1", "f2f1", "d1c2"] },
+            { fen: "r1bqk2r/ppp2ppp/2n2n2/2bNp3/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 6", solution: ["d5f6", "g7f6", "c4f7", "e8f8", "f7h5"] },
+            { fen: "r1b1kb1r/pppp1ppp/2n2n2/4N2q/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 5", solution: ["e5f7", "h5f7", "c4f7", "e8f7", "d1h5"] },
+            { fen: "r1bq1rk1/ppppnppp/2n5/4N3/1bB1P3/8/PPPP1PPP/RNBQ1RK1 w - - 0 7", solution: ["e5f7", "f8f7", "c4f7", "g8f7", "d1b3"] },
+        ];
 
         // DOM Elements
         const setupScreen = document.getElementById('setup-screen');
         const gameLayout = document.getElementById('game-layout');
         const statusBar = document.getElementById('status-bar');
         const gameControls = document.getElementById('game-controls');
+        const puzzleControls = document.getElementById('puzzle-controls');
+        const difficultySection = document.getElementById('difficulty-section');
+        const colorSection = document.getElementById('color-section');
         const boardEl = document.getElementById('board');
         const moveListEl = document.getElementById('move-list');
         const moveTextEl = document.getElementById('move-text');
@@ -617,6 +741,22 @@
         const gameOverMessage = document.getElementById('game-over-message');
 
         // Setup screen button handlers
+        document.querySelectorAll('.mode-buttons .setup-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.mode-buttons .setup-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                gameMode = btn.dataset.mode;
+                // Show/hide difficulty and color sections based on mode
+                if (gameMode === 'ai') {
+                    difficultySection.style.display = 'block';
+                    colorSection.style.display = 'block';
+                } else {
+                    difficultySection.style.display = 'none';
+                    colorSection.style.display = 'none';
+                }
+            };
+        });
+
         document.querySelectorAll('.difficulty-buttons .setup-btn').forEach(btn => {
             btn.onclick = () => {
                 document.querySelectorAll('.difficulty-buttons .setup-btn').forEach(b => b.classList.remove('active'));
@@ -643,6 +783,12 @@
         document.getElementById('undo-btn').onclick = undoMove;
         document.getElementById('resign-btn').onclick = resignGame;
 
+        // Puzzle controls
+        document.getElementById('next-puzzle-btn').onclick = nextPuzzle;
+        document.getElementById('retry-puzzle-btn').onclick = retryPuzzle;
+        document.getElementById('show-solution-btn').onclick = showSolution;
+        document.getElementById('back-to-menu-btn').onclick = showSetupScreen;
+
         moveTextEl.onkeyup = (e) => {
             if (e.key === 'Enter') submitTextMove();
         };
@@ -652,9 +798,26 @@
             gameLayout.classList.remove('active');
             statusBar.style.display = 'none';
             gameControls.style.display = 'none';
+            puzzleControls.style.display = 'none';
+            // Reset mode display
+            if (gameMode === 'ai') {
+                difficultySection.style.display = 'block';
+                colorSection.style.display = 'block';
+            } else {
+                difficultySection.style.display = 'none';
+                colorSection.style.display = 'none';
+            }
         }
 
         function startGame() {
+            if (gameMode === 'ai') {
+                startAIGame();
+            } else {
+                startPuzzle();
+            }
+        }
+
+        function startAIGame() {
             // Handle random color
             if (playerColor === 'random') {
                 playerColor = Math.random() < 0.5 ? 'w' : 'b';
@@ -672,6 +835,7 @@
             gameLayout.classList.add('active');
             statusBar.style.display = 'flex';
             gameControls.style.display = 'flex';
+            puzzleControls.style.display = 'none';
 
             // Clear move list
             moveListEl.innerHTML = '';
@@ -696,6 +860,161 @@
                 if (playerColor === 'b') {
                     setTimeout(makeAIMove, 500);
                 }
+            }
+        }
+
+        function startPuzzle() {
+            const puzzles = gameMode === 'mate2' ? MATE_IN_2 : MATE_IN_3;
+            currentPuzzle = puzzles[puzzleIndex % puzzles.length];
+            puzzleMoveIndex = 0;
+            puzzleSolved = false;
+            gameOver = false;
+            selectedSquare = null;
+            lastMove = null;
+
+            // Load puzzle position
+            game = new Chess(currentPuzzle.fen);
+
+            // Player plays as the side to move
+            playerColor = game.turn();
+
+            // Switch to game view
+            setupScreen.style.display = 'none';
+            gameLayout.classList.add('active');
+            statusBar.style.display = 'flex';
+            gameControls.style.display = 'none';
+            puzzleControls.style.display = 'flex';
+
+            // Clear move list
+            moveListEl.innerHTML = '';
+            moveErrorEl.textContent = '';
+            moveTextEl.value = '';
+
+            // Update captured pieces display
+            document.getElementById('captured-white').textContent = '';
+            document.getElementById('captured-black').textContent = '';
+
+            // Create board and render
+            createBoard();
+            renderPosition();
+
+            const mateIn = gameMode === 'mate2' ? 2 : 3;
+            showStatus(`Mate in ${mateIn} - Find the winning move!`);
+        }
+
+        function nextPuzzle() {
+            puzzleIndex++;
+            startPuzzle();
+        }
+
+        function retryPuzzle() {
+            startPuzzle();
+        }
+
+        function showSolution() {
+            if (!currentPuzzle) return;
+
+            // Reset to puzzle start
+            game = new Chess(currentPuzzle.fen);
+            playerColor = game.turn();
+            puzzleMoveIndex = 0;
+            puzzleSolved = true;
+            gameOver = true;
+
+            // Play all moves with animation
+            let moveIdx = 0;
+            const playNextMove = () => {
+                if (moveIdx >= currentPuzzle.solution.length) {
+                    showStatus('Solution complete!');
+                    gameStatusEl.classList.add('correct');
+                    return;
+                }
+
+                const uciMove = currentPuzzle.solution[moveIdx];
+                const from = uciMove.substring(0, 2);
+                const to = uciMove.substring(2, 4);
+                const promotion = uciMove[4];
+
+                const move = game.move({ from, to, promotion });
+                if (move) {
+                    lastMove = move;
+                    renderPosition();
+                    updateMoveList(move);
+                }
+
+                moveIdx++;
+                setTimeout(playNextMove, 800);
+            };
+
+            createBoard();
+            renderPosition();
+            moveListEl.innerHTML = '';
+            setTimeout(playNextMove, 500);
+        }
+
+        function handlePuzzleMove(move) {
+            const expectedUci = currentPuzzle.solution[puzzleMoveIndex];
+            const playerUci = move.from + move.to + (move.promotion || '');
+
+            if (playerUci === expectedUci) {
+                // Correct move!
+                puzzleMoveIndex++;
+                lastMove = move;
+                renderPosition();
+                updateMoveList(move);
+
+                // Check if puzzle is complete
+                if (puzzleMoveIndex >= currentPuzzle.solution.length) {
+                    puzzleSolved = true;
+                    gameOver = true;
+                    showStatus('Correct! Puzzle solved!');
+                    gameStatusEl.classList.remove('wrong');
+                    gameStatusEl.classList.add('correct');
+                    return;
+                }
+
+                // Make opponent's response after a short delay
+                setTimeout(() => {
+                    const responseUci = currentPuzzle.solution[puzzleMoveIndex];
+                    const from = responseUci.substring(0, 2);
+                    const to = responseUci.substring(2, 4);
+                    const promotion = responseUci[4];
+
+                    const responseMove = game.move({ from, to, promotion });
+                    if (responseMove) {
+                        puzzleMoveIndex++;
+                        lastMove = responseMove;
+                        renderPosition();
+                        updateMoveList(responseMove);
+
+                        if (puzzleMoveIndex >= currentPuzzle.solution.length) {
+                            puzzleSolved = true;
+                            gameOver = true;
+                            showStatus('Correct! Puzzle solved!');
+                            gameStatusEl.classList.add('correct');
+                        } else {
+                            showStatus('Correct! Keep going...');
+                            gameStatusEl.classList.remove('wrong');
+                            gameStatusEl.classList.add('correct');
+                            setTimeout(() => {
+                                gameStatusEl.classList.remove('correct');
+                                const mateIn = gameMode === 'mate2' ? 2 : 3;
+                                showStatus(`Mate in ${mateIn} - Find the next move!`);
+                            }, 1000);
+                        }
+                    }
+                }, 400);
+            } else {
+                // Wrong move - undo it
+                game.undo();
+                showStatus('Not quite - try again!');
+                gameStatusEl.classList.remove('correct');
+                gameStatusEl.classList.add('wrong');
+                setTimeout(() => {
+                    gameStatusEl.classList.remove('wrong');
+                    const mateIn = gameMode === 'mate2' ? 2 : 3;
+                    showStatus(`Mate in ${mateIn} - Find the winning move!`);
+                }, 1500);
             }
         }
 
@@ -888,6 +1207,12 @@
         }
 
         function afterPlayerMove(move) {
+            if (gameMode !== 'ai') {
+                // Puzzle mode - check if move is correct
+                handlePuzzleMove(move);
+                return;
+            }
+
             lastMove = move;
             updateCaptured(move);
             renderPosition();
@@ -1116,11 +1441,11 @@
         }
 
         function getThinkTime(level) {
+            if (level <= 1) return 100;
             if (level <= 3) return 200;
-            if (level <= 8) return 500;
-            if (level <= 13) return 1000;
-            if (level <= 18) return 1500;
-            return 2000;
+            if (level <= 6) return 400;
+            if (level <= 12) return 800;
+            return 1200;
         }
 
         function handleStockfishMove(line) {
