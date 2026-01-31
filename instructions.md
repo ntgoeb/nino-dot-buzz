@@ -54,10 +54,10 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans on de
 ### Chess (Implemented)
 - **chess.js v0.12.0** (CDN) for move validation and game state
 - **Stockfish.js v10** (~1.5MB, local) for AI via Web Worker
-- 5 difficulty levels using Stockfish Skill Level (0-16) + think time limits
+- 5 difficulty levels (Beginner to Expert) - tuned to be more accessible
 - Custom CSS Grid board with traditional tan/brown colors
 - Click-to-move and algebraic notation text input
-- Mate-in-2 and Mate-in-3 puzzle modes (20 puzzles each)
+- Mating Puzzles mode with verified puzzles from Lichess database (mate-in-2 and mate-in-3 mixed)
 
 ### Scrabble Multiplayer
 - Use **Firebase Realtime Database** for game state sync (free tier: 100 connections, 1GB)

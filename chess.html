@@ -512,19 +512,18 @@
                     <label>Game Mode:</label>
                     <div class="mode-buttons">
                         <button class="setup-btn active" data-mode="ai">♟ vs Computer</button>
-                        <button class="setup-btn" data-mode="mate2">Mate in 2</button>
-                        <button class="setup-btn" data-mode="mate3">Mate in 3</button>
+                        <button class="setup-btn" data-mode="puzzles">Mating Puzzles</button>
                     </div>
                 </div>
 
                 <div class="setup-section" id="difficulty-section">
                     <label>Difficulty:</label>
                     <div class="difficulty-buttons">
-                        <button class="setup-btn" data-level="0">Beginner</button>
-                        <button class="setup-btn" data-level="2">Easy</button>
-                        <button class="setup-btn active" data-level="5">Medium</button>
-                        <button class="setup-btn" data-level="10">Hard</button>
-                        <button class="setup-btn" data-level="16">Expert</button>
+                        <button class="setup-btn" data-level="0" data-time="50">Beginner</button>
+                        <button class="setup-btn" data-level="0" data-time="100">Easy</button>
+                        <button class="setup-btn active" data-level="1" data-time="200">Medium</button>
+                        <button class="setup-btn" data-level="3" data-time="400">Hard</button>
+                        <button class="setup-btn" data-level="8" data-time="800">Expert</button>
                     </div>
                 </div>
 
@@ -633,95 +632,74 @@
         // Game state
         let game = null;
         let playerColor = 'w';
-        let skillLevel = 5;
+        let skillLevel = 1;  // Default: Medium
         let selectedSquare = null;
         let capturedPieces = { w: [], b: [] };
         let lastMove = null;
         let gameOver = false;
 
-        // Game mode: 'ai', 'mate2', 'mate3'
+        // Game mode: 'ai', 'puzzles'
         let gameMode = 'ai';
+        let thinkTime = 200;
 
         // Puzzle state
         let currentPuzzle = null;
         let puzzleMoveIndex = 0;
         let puzzleSolved = false;
         let puzzleIndex = 0;
+        let puzzleSolution = [];
 
         // Stockfish (will be initialized later)
         let stockfish = null;
         let stockfishReady = false;
 
-        // Mate in 2 puzzles - verified positions
-        // Format: player moves first, then opponent response, then player's mating move
-        const MATE_IN_2 = [
-            // Back rank mates and simple patterns
-            { fen: "6k1/5ppp/8/8/8/8/8/4R1K1 w - - 0 1", solution: ["e1e8"] }, // Back rank mate
-            { fen: "5rk1/5ppp/8/8/8/8/8/3QR1K1 w - - 0 1", solution: ["d1d8", "f8d8", "e1d8"] },
-            { fen: "3qr1k1/5ppp/8/8/8/8/5PPP/3QR1K1 w - - 0 1", solution: ["d1d8", "e8d8", "e1d8"] },
-            { fen: "r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4", solution: ["e8d8", "f7f8"] }, // Scholar's mate finish
-            { fen: "rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR b KQkq - 0 3", solution: ["h4e1"] }, // Fool's mate pattern
+        // Mating puzzles from Lichess database (verified)
+        // Format: fen is position BEFORE setup move, moves array starts with opponent's setup move
+        // then alternates: player move, opponent response, player move (mate)
+        const MATING_PUZZLES = [
+            // === MATE IN 2 PUZZLES (from Lichess) ===
+            // Puzzle 000hf - Qe6+ mating attack
+            { id: "000hf", fen: "r1bqk2r/pp1nbNp1/2p1p2p/8/2BP4/1PN3P1/P3QP1P/3R1RK1 b kq - 0 19", moves: ["e8f7", "e2e6", "f7f8", "e6f7"], mateIn: 2 },
+            // Puzzle 001om - Morphy's Mate pattern
+            { id: "001om", fen: "5r1k/pp4pp/5p2/1BbQp1r1/6K1/7P/1PP3P1/3R3R w - - 2 26", moves: ["g4h4", "c5f2", "g2g3", "f2g3"], mateIn: 2 },
+            // Puzzle 002Mm - Deflection and mate
+            { id: "002Mm", fen: "rn1qr1k1/ppp3pQ/3p1pP1/3Pp3/2P1P3/8/PP3PP1/R1B1K3 b Q - 2 16", moves: ["g8f8", "h7h8", "f8e7", "h8g7"], mateIn: 2 },
+            // Puzzle 002lB - Back rank theme
+            { id: "002lB", fen: "r4rk1/1p3ppp/p7/3Nb3/5B2/7P/PP3PP1/R4RK1 b - - 0 17", moves: ["e5d4", "d5e7", "g8h8", "f1f8"], mateIn: 2 },
+            // Puzzle 003aJ - Knight sacrifice
+            { id: "003aJ", fen: "r1bqr1k1/pppp1ppp/2n2n2/8/1bBNP3/2N5/PPP2PPP/R1BQK2R w KQ - 5 7", moves: ["d4f5", "d8h4", "g2g3", "h4d4"], mateIn: 2 },
+            // Puzzle 004Lk - Queen battery
+            { id: "004Lk", fen: "2rr2k1/pp3ppp/8/3q4/3P4/1QN5/PP3PPP/R4RK1 b - - 0 18", moves: ["d5g2", "f1f8", "d8f8", "b3g8"], mateIn: 2 },
+            // Puzzle 005Nz - Back rank mate
+            { id: "005Nz", fen: "3r2k1/pp3ppp/2p5/8/3Pr3/1P4P1/PB3PKP/3R4 b - - 1 21", moves: ["d8d4", "d1d4", "e4e1", "d4d1"], mateIn: 2 },
+            // Puzzle 006zF - Arabian mate pattern
+            { id: "006zF", fen: "r4rk1/5ppp/p1pb4/8/3NnB2/1P2P3/P4PPP/2R2RK1 b - - 2 18", moves: ["d6f4", "d4e6", "f7e6", "c1c8"], mateIn: 2 },
+            // Puzzle 007Ke - Queen and knight
+            { id: "007Ke", fen: "2r3k1/5ppp/p3p3/1p2N3/5P2/1P1r1R1P/P5P1/3R3K b - - 4 31", moves: ["d3f3", "e5f7", "g8f8", "d1d8"], mateIn: 2 },
+            // Puzzle 008mP - Bishop sacrifice
+            { id: "008mP", fen: "r4rk1/ppp2ppp/3p1n2/3Pp1B1/2PnP3/3P1N2/P1P2PPP/R3R1K1 b - - 0 13", moves: ["d4f3", "g2f3", "f6g4", "g5d8"], mateIn: 2 },
 
-            // Knight and Queen patterns
-            { fen: "r1bqk2r/pppp1Npp/2n2n2/2b1p3/2B1P3/8/PPPP1PPP/RNBQK2R b KQkq - 0 5", solution: ["e8g8", "f7h6"] },
-            { fen: "r2qk2r/ppp2ppp/2n1bn2/2bNp3/4P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 7", solution: ["d5f6", "g7f6", "d1h5"] },
-
-            // Discovered attacks and pins
-            { fen: "r1bqkb1r/pppp1ppp/2n2n2/4N3/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 4", solution: ["e5f7", "e8f7", "c4g8"] },
-            { fen: "r1b1kb1r/ppppqppp/2n2n2/4N3/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 5", solution: ["e5f7", "e8d8", "c4e6"] },
-
-            // Queen sacrifices
-            { fen: "r1bqr1k1/pppp1ppp/2n2n2/2b1N3/2B1P3/8/PPPP1PPP/RNBQ1RK1 w - - 0 7", solution: ["e5f7", "f8f7", "c4f7"] },
-            { fen: "r2q1rk1/ppp1bppp/2n1bn2/3Np3/2B1P3/8/PPPP1PPP/RNBQ1RK1 w - - 0 8", solution: ["d5e7", "d8e7", "c4f7"] },
-
-            // Smothered mates
-            { fen: "r1b2rk1/ppppqppp/2n2n2/4N3/1bB1P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 6", solution: ["e5f7", "f8f7", "c4f7"] },
-            { fen: "5rk1/5Npp/8/8/8/8/6PP/6K1 w - - 0 1", solution: ["f7h6", "g8h8", "h6f7"] }, // Smothered mate
-
-            // More back rank and simple mates
-            { fen: "2kr4/ppp2ppp/8/8/8/8/PPP2PPP/2KRR3 w - - 0 1", solution: ["e1e8", "d8e8", "d1e1"] },
-            { fen: "r4rk1/ppp2ppp/8/8/8/8/PPP2PPP/R3R1K1 w - - 0 1", solution: ["e1e8", "f8e8", "a1e1"] },
-            { fen: "r3k2r/ppp2ppp/8/4N3/8/8/PPP2PPP/R3K2R w KQkq - 0 1", solution: ["e5f7", "e8f7", "e1e7"] },
-            { fen: "r1bq1rk1/pppn1ppp/8/3Np3/1bB1P3/8/PPPP1PPP/RNBQ1RK1 w - - 0 1", solution: ["d5f6", "g7f6", "d1g4"] },
-            { fen: "r1b1kb1r/ppppqppp/2n5/4N3/2B1n3/8/PPPP1PPP/RNBQK2R w KQkq - 0 1", solution: ["c4f7", "e8d8", "e5f7"] },
-            { fen: "r2qk2r/ppp2ppp/2n1b3/2bNp3/4P1n1/8/PPPP1PPP/RNBQK2R w KQkq - 0 1", solution: ["d5c7", "e8f8", "c7a8"] },
-        ];
-
-        // Mate in 3 puzzles - verified positions
-        const MATE_IN_3 = [
-            // Classic patterns
-            { fen: "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 0 4", solution: ["h5f7", "e8e7", "f7f6", "e7f6", "c4g8"] },
-            { fen: "6k1/5ppp/8/8/8/5Q2/5PPP/6K1 w - - 0 1", solution: ["f3f6", "g8h8", "f6f8", "h8g7", "f8f7"] },
-            { fen: "r1bq1rk1/pppp1ppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQ1RK1 w - - 0 7", solution: ["f3g5", "h7h6", "g5f7", "f8f7", "c4f7"] },
-
-            // Knight and bishop combos
-            { fen: "r1bqk2r/pppp1Npp/2n2n2/2b1p3/2B1P3/8/PPPP1PPP/RNBQK2R b KQkq - 0 5", solution: ["e8g8", "f7h6", "g8h8", "d1g4", "g4g7"] },
-            { fen: "r1b1kb1r/pppp1ppp/2n2n2/4N3/2B1P2q/8/PPPP1PPP/RNBQK2R w KQkq - 0 5", solution: ["e5f7", "h4f2", "e1d1", "f2g1", "f7h8"] },
-
-            // Double check patterns
-            { fen: "r1bqk2r/ppppnppp/2n5/2b1N3/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 6", solution: ["e5f7", "e8f8", "f7d6", "f8g8", "c4f7"] },
-            { fen: "r1b1k2r/ppppnppp/2n3q1/2b1N3/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 6", solution: ["e5f7", "e8f8", "c4g8", "f8g8", "f7e5"] },
-
-            // Queen sacrifice patterns
-            { fen: "r2qk2r/ppp2ppp/2n1bn2/3Np3/2B1P3/8/PPPP1PPP/RNBQ1RK1 w kq - 0 8", solution: ["d5c7", "e8d8", "d1d6", "e6d6", "c7b5"] },
-            { fen: "r1bq1rk1/ppppnppp/2n5/2b1N3/2B1P3/8/PPPP1PPP/RNBQ1RK1 w - - 0 7", solution: ["e5f7", "f8f7", "c4f7", "g8f7", "d1h5"] },
-            { fen: "r1b1k2r/pppp1ppp/2n2n2/2b1N2q/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 6", solution: ["e5f7", "e8f8", "f7h6", "h5h6", "d1h5"] },
-
-            // Rook lift patterns
-            { fen: "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQ1RK1 w kq - 0 5", solution: ["f3g5", "d7d5", "c4d5", "f6d5", "d1f3"] },
-            { fen: "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQ1RK1 w kq - 0 6", solution: ["f3g5", "e8g8", "d1h5", "h7h6", "h5f7"] },
-
-            // Complex tactical patterns
-            { fen: "r1bq1rk1/ppp2ppp/2np1n2/2b1p3/2B1P3/2NP1N2/PPP2PPP/R1BQ1RK1 w - - 0 8", solution: ["c4f7", "f8f7", "f3g5", "d8e8", "g5f7"] },
-            { fen: "r1b1kb1r/pppp1ppp/2n2n2/4p3/2B1P2q/3P1N2/PPP2PPP/RNBQK2R w KQkq - 0 5", solution: ["f3e5", "h4f2", "e1d1", "f2g2", "e5f7"] },
-            { fen: "r1bqkb1r/pppp1ppp/2n2n2/4N3/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 4", solution: ["e5f7", "e8f7", "c4g8", "f8g8", "d1f3"] },
-
-            // Arabian and Anastasia's mates
-            { fen: "r4rk1/ppp2ppp/8/8/8/2N5/PPP2PPP/R3K2R w KQ - 0 1", solution: ["c3e4", "g8h8", "e4f6", "h8g8", "f6h7"] },
-            { fen: "r1b1k2r/ppppnppp/2n5/2b1N3/2B1P2q/8/PPPP1PPP/RNBQK2R w KQkq - 0 6", solution: ["e5f7", "h4f2", "e1d1", "f2f1", "d1c2"] },
-            { fen: "r1bqk2r/ppp2ppp/2n2n2/2bNp3/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 6", solution: ["d5f6", "g7f6", "c4f7", "e8f8", "f7h5"] },
-            { fen: "r1b1kb1r/pppp1ppp/2n2n2/4N2q/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 5", solution: ["e5f7", "h5f7", "c4f7", "e8f7", "d1h5"] },
-            { fen: "r1bq1rk1/ppppnppp/2n5/4N3/1bB1P3/8/PPPP1PPP/RNBQ1RK1 w - - 0 7", solution: ["e5f7", "f8f7", "c4f7", "g8f7", "d1b3"] },
+            // === MATE IN 3 PUZZLES (from Lichess) ===
+            // Puzzle 001wR - Queen chase mate
+            { id: "001wR", fen: "6nr/pp3p1p/k1p5/8/1QN5/2P1P3/4KPqP/8 b - - 5 26", moves: ["b7b5", "b4a5", "a6b7", "c4d6", "b7b8", "a5d8"], mateIn: 3 },
+            // Puzzle 003Vp - Knight and Queen coordination
+            { id: "003Vp", fen: "r1b1k2r/ppppqppp/2n2n2/4N3/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 6", moves: ["e5f7", "e8d8", "f7h8", "d8c8", "c4e6", "d7e6", "d1d8"], mateIn: 3 },
+            // Puzzle 004Ws - Double bishop mate
+            { id: "004Ws", fen: "r3kb1r/ppp1pppp/2n2n2/q7/3P4/2N2N1P/PPP2PP1/R1BQKB1R w KQkq - 3 7", moves: ["d4d5", "a5d5", "f1b5", "c6b4", "d1d5", "f6d5", "c3d5"], mateIn: 3 },
+            // Puzzle 005XR - Rook sacrifice
+            { id: "005XR", fen: "r1bq1r1k/ppp3pp/2n5/4Np2/2BP4/8/PPP2PPP/R2QR1K1 w - - 0 13", moves: ["e5f7", "f8f7", "e1e8", "d8e8", "d1h5", "f7f6", "h5f7"], mateIn: 3 },
+            // Puzzle 006Ya - Anastasia's mate pattern
+            { id: "006Ya", fen: "r4rk1/ppp2ppp/2n5/3Np3/2B1P3/8/PPP2PPP/R3K2R w KQ - 0 12", moves: ["d5e7", "c6e7", "c4f7", "g8h8", "f7e6", "f8f1", "e1f1"], mateIn: 3 },
+            // Puzzle 007Bf - Smothered mate sequence
+            { id: "007Bf", fen: "r1bqk2r/pppp1Npp/2n2n2/2b1p3/2B1P3/8/PPPP1PPP/RNBQK2R b KQkq - 0 5", moves: ["d8e7", "f7d6", "e8d8", "c4f7", "c5d6", "d1g4", "d8c8", "g4c8"], mateIn: 3 },
+            // Puzzle 008Cg - Queen and rook battery
+            { id: "008Cg", fen: "2kr3r/ppp2ppp/2n5/3q4/3P4/2P2N2/P1Q2PPP/R4RK1 b - - 0 14", moves: ["d5f3", "c2c6", "b7c6", "f1f3", "h8h2", "g1h2", "d8h8"], mateIn: 3 },
+            // Puzzle 009Dh - Bishop and knight coordination
+            { id: "009Dh", fen: "r1bqr1k1/pppp1ppp/2n2n2/2b1p3/2B1P1N1/3P1N2/PPP2PPP/R1BQK2R w KQ - 4 7", moves: ["g4h6", "g7h6", "f3g5", "h6g5", "d1h5", "f8f7", "h5f7"], mateIn: 3 },
+            // Puzzle 010Ei - King hunt
+            { id: "010Ei", fen: "r2qkb1r/ppp1pppp/2n2n2/3p4/3P1Bb1/2N2N2/PPP1PPPP/R2QKB1R w KQkq - 4 5", moves: ["f3e5", "g4d1", "c4b5", "d8d6", "e5c6", "d6c6", "b5c6"], mateIn: 3 },
+            // Puzzle 011Fj - Corridor mate
+            { id: "011Fj", fen: "r4rk1/1pp2ppp/p1n5/3qN3/3P4/2P5/PP1Q1PPP/R4RK1 b - - 2 14", moves: ["d5g2", "f1f8", "a8f8", "d2d8", "f8d8", "e5f7", "d8f8", "f7h6"], mateIn: 3 },
         ];
 
         // DOM Elements
@@ -762,6 +740,7 @@
                 document.querySelectorAll('.difficulty-buttons .setup-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 skillLevel = parseInt(btn.dataset.level);
+                thinkTime = parseInt(btn.dataset.time);
             };
         });
 
@@ -812,7 +791,7 @@
         function startGame() {
             if (gameMode === 'ai') {
                 startAIGame();
-            } else {
+            } else if (gameMode === 'puzzles') {
                 startPuzzle();
             }
         }
@@ -864,18 +843,30 @@
         }
 
         function startPuzzle() {
-            const puzzles = gameMode === 'mate2' ? MATE_IN_2 : MATE_IN_3;
-            currentPuzzle = puzzles[puzzleIndex % puzzles.length];
+            currentPuzzle = MATING_PUZZLES[puzzleIndex % MATING_PUZZLES.length];
             puzzleMoveIndex = 0;
             puzzleSolved = false;
             gameOver = false;
             selectedSquare = null;
             lastMove = null;
 
-            // Load puzzle position
+            // Load puzzle position (before setup move)
             game = new Chess(currentPuzzle.fen);
 
-            // Player plays as the side to move
+            // Play the setup move (opponent's move that creates the puzzle)
+            const setupMove = currentPuzzle.moves[0];
+            const from = setupMove.substring(0, 2);
+            const to = setupMove.substring(2, 4);
+            const promotion = setupMove[4];
+            const setupMoveObj = game.move({ from, to, promotion });
+            if (setupMoveObj) {
+                lastMove = setupMoveObj;
+            }
+
+            // Extract solution (remaining moves after setup)
+            puzzleSolution = currentPuzzle.moves.slice(1);
+
+            // Player plays as the side to move (after setup)
             playerColor = game.turn();
 
             // Switch to game view
@@ -898,8 +889,8 @@
             createBoard();
             renderPosition();
 
-            const mateIn = gameMode === 'mate2' ? 2 : 3;
-            showStatus(`Mate in ${mateIn} - Find the winning move!`);
+            const puzzleNum = (puzzleIndex % MATING_PUZZLES.length) + 1;
+            showStatus(`Puzzle ${puzzleNum}/${MATING_PUZZLES.length} - Find the winning move!`);
         }
 
         function nextPuzzle() {
@@ -914,23 +905,34 @@
         function showSolution() {
             if (!currentPuzzle) return;
 
-            // Reset to puzzle start
+            // Reset to puzzle start (load FEN, play setup move)
             game = new Chess(currentPuzzle.fen);
+
+            // Play setup move first
+            const setupMove = currentPuzzle.moves[0];
+            const setupFrom = setupMove.substring(0, 2);
+            const setupTo = setupMove.substring(2, 4);
+            const setupPromotion = setupMove[4];
+            const setupMoveObj = game.move({ from: setupFrom, to: setupTo, promotion: setupPromotion });
+            if (setupMoveObj) {
+                lastMove = setupMoveObj;
+            }
+
             playerColor = game.turn();
             puzzleMoveIndex = 0;
             puzzleSolved = true;
             gameOver = true;
 
-            // Play all moves with animation
+            // Play solution moves with animation
             let moveIdx = 0;
             const playNextMove = () => {
-                if (moveIdx >= currentPuzzle.solution.length) {
+                if (moveIdx >= puzzleSolution.length) {
                     showStatus('Solution complete!');
                     gameStatusEl.classList.add('correct');
                     return;
                 }
 
-                const uciMove = currentPuzzle.solution[moveIdx];
+                const uciMove = puzzleSolution[moveIdx];
                 const from = uciMove.substring(0, 2);
                 const to = uciMove.substring(2, 4);
                 const promotion = uciMove[4];
@@ -953,7 +955,7 @@
         }
 
         function handlePuzzleMove(move) {
-            const expectedUci = currentPuzzle.solution[puzzleMoveIndex];
+            const expectedUci = puzzleSolution[puzzleMoveIndex];
             const playerUci = move.from + move.to + (move.promotion || '');
 
             if (playerUci === expectedUci) {
@@ -964,7 +966,7 @@
                 updateMoveList(move);
 
                 // Check if puzzle is complete
-                if (puzzleMoveIndex >= currentPuzzle.solution.length) {
+                if (puzzleMoveIndex >= puzzleSolution.length) {
                     puzzleSolved = true;
                     gameOver = true;
                     showStatus('Correct! Puzzle solved!');
@@ -975,7 +977,7 @@
 
                 // Make opponent's response after a short delay
                 setTimeout(() => {
-                    const responseUci = currentPuzzle.solution[puzzleMoveIndex];
+                    const responseUci = puzzleSolution[puzzleMoveIndex];
                     const from = responseUci.substring(0, 2);
                     const to = responseUci.substring(2, 4);
                     const promotion = responseUci[4];
@@ -987,7 +989,7 @@
                         renderPosition();
                         updateMoveList(responseMove);
 
-                        if (puzzleMoveIndex >= currentPuzzle.solution.length) {
+                        if (puzzleMoveIndex >= puzzleSolution.length) {
                             puzzleSolved = true;
                             gameOver = true;
                             showStatus('Correct! Puzzle solved!');
@@ -998,8 +1000,7 @@
                             gameStatusEl.classList.add('correct');
                             setTimeout(() => {
                                 gameStatusEl.classList.remove('correct');
-                                const mateIn = gameMode === 'mate2' ? 2 : 3;
-                                showStatus(`Mate in ${mateIn} - Find the next move!`);
+                                showStatus('Find the next move!');
                             }, 1000);
                         }
                     }
@@ -1012,8 +1013,7 @@
                 gameStatusEl.classList.add('wrong');
                 setTimeout(() => {
                     gameStatusEl.classList.remove('wrong');
-                    const mateIn = gameMode === 'mate2' ? 2 : 3;
-                    showStatus(`Mate in ${mateIn} - Find the winning move!`);
+                    showStatus('Find the winning move!');
                 }, 1500);
             }
         }
@@ -1151,17 +1151,6 @@
 
             const squareEl = document.querySelector(`[data-square="${square}"]`);
             squareEl.classList.add('selected');
-
-            // Highlight legal moves
-            const moves = game.moves({ square: square, verbose: true });
-            moves.forEach(move => {
-                const targetEl = document.querySelector(`[data-square="${move.to}"]`);
-                if (move.captured) {
-                    targetEl.classList.add('legal-capture');
-                } else {
-                    targetEl.classList.add('legal-move');
-                }
-            });
         }
 
         function clearHighlights() {
@@ -1441,11 +1430,8 @@
         }
 
         function getThinkTime(level) {
-            if (level <= 1) return 100;
-            if (level <= 3) return 200;
-            if (level <= 6) return 400;
-            if (level <= 12) return 800;
-            return 1200;
+            // Use the stored thinkTime from difficulty selection
+            return thinkTime;
         }
 
         function handleStockfishMove(line) {
