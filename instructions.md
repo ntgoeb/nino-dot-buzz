@@ -15,12 +15,17 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans on de
 ├── tictactoe.html          # Tic-Tac-Toe game
 ├── guess-number.html       # Guess the Number game
 ├── startrek.html           # Star Trek (skeleton only - needs implementation)
+├── chess.html              # Chess vs Stockfish AI
 ├── links.html              # Links page
 ├── style/
 │   └── default-style.css   # Retro styling
+├── js/
+│   ├── analytics.js        # Firebase analytics
+│   └── stockfish.min.js    # Chess AI engine (~1.5MB)
 ├── music/                  # 26 MP3 tracks (~166MB)
 ├── CNAME                   # Custom domain config (nino.buzz)
 ├── startrek-implementation-plan.md  # Detailed plan for Star Trek game
+├── chess-implementation-plan.md     # Detailed plan for Chess game
 └── README.txt              # Original feature wishlist
 ```
 
@@ -29,14 +34,14 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans on de
 - [x] News feed (BBC + NPR via RSS)
 - [x] Personal notes (saved to localStorage)
 - [x] Music player (26 retro tracks, random play)
-- [x] Games: Hangman, Tic-Tac-Toe, Guess the Number
+- [x] Games: Hangman, Tic-Tac-Toe, Guess the Number, Chess (vs Stockfish AI)
 - [x] Links page
 - [x] Wider layout (1040px)
 - [x] Mobile-friendly fonts
 
 ## Feature Wishlist (remaining)
 - [ ] **Super Star Trek** - Full implementation (see `startrek-implementation-plan.md`)
-- [ ] **Chess** - vs computer using Stockfish.js/WASM (~5MB, runs in browser)
+- [x] **Chess** - vs computer using Stockfish.js (see `chess-implementation-plan.md`)
 - [ ] **Scrabble** - 2-player online using Firebase Realtime DB for multiplayer sync
 - [ ] "Login" page (novelty/fake)
 - [ ] Style and background color tweaks
