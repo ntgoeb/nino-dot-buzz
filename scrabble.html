@@ -598,6 +598,16 @@
             text-align: center;
             padding: 30px;
         }
+        .final-board-container {
+            margin: 20px auto;
+        }
+        .final-board-image {
+            border: 3px ridge #00ff00;
+            box-shadow: 0 0 15px #00ff0066;
+            image-rendering: pixelated;
+            max-width: 100%;
+            height: auto;
+        }
         .final-scores {
             background: #000033;
             border: 3px ridge #00ffff;
@@ -973,6 +983,10 @@
         <!-- Game Over Screen -->
         <div id="game-over-screen" class="screen game-over-screen">
             <h2 style="color: #00ffff;">Game Over!</h2>
+
+            <div class="final-board-container">
+                <img id="final-board-image" class="final-board-image" alt="Final board state">
+            </div>
 
             <div class="final-scores" id="final-scores">
                 <h3>Final Scores</h3>
@@ -2189,6 +2203,10 @@
 
         function showFinalScores() {
             if (!gameState?.players) return;
+
+            // Capture and display the final board state
+            const boardImage = captureBoardImage();
+            document.getElementById('final-board-image').src = boardImage;
 
             // Calculate final scores (subtract remaining rack values)
             const finalScores = [];
