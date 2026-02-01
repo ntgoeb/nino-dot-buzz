@@ -26,11 +26,9 @@
         <main>
             <h1>Nino's Webhome</h1>
             
-            <div class="under-construction">
-                🚧 WE ARE WORKING ON THIS PART 🚧
+            <div id="birthday-banner" class="birthday-banner" style="display: none;">
+                🎂 HAPPY BIRTHDAY NINO! 🎉🎈🎁
             </div>
-
-            <p>Placeholder text</p>
 
             <!-- Notes Section -->
             <div class="notes-container">
@@ -48,7 +46,6 @@
                 <ul id="news-list">
                     <li>Loading news...</li>
                 </ul>
-                <p class="news-sources">Sources: BBC News, NPR</p>
             </div>
         </main>
 
@@ -78,15 +75,17 @@
                 general: [
                     'https://feeds.bbci.co.uk/news/rss.xml',
                     'https://feeds.npr.org/1001/rss.xml'
-                ]
+                ],
+                onion: 'https://www.theonion.com/rss'
             };
 
             // Fetch all feeds in parallel
-            const [entBBC, entNPR, genBBC, genNPR] = await Promise.all([
+            const [entBBC, entNPR, genBBC, genNPR, onionItems] = await Promise.all([
                 fetchRSS(feeds.entertainment[0]),
                 fetchRSS(feeds.entertainment[1]),
                 fetchRSS(feeds.general[0]),
-                fetchRSS(feeds.general[1])
+                fetchRSS(feeds.general[1]),
+                fetchRSS(feeds.onion)
             ]);
 
             // Tag items with their source type
@@ -99,6 +98,8 @@
                 ...genBBC.slice(0, 5).map(item => ({ ...item, type: 'general', source: 'BBC' })),
                 ...genNPR.slice(0, 5).map(item => ({ ...item, type: 'general', source: 'NPR' }))
             ];
+
+            const satireItems = onionItems.slice(0, 3).map(item => ({ ...item, type: 'satire', source: 'The Onion' }));
 
             // Pick 2 entertainment headlines (1 from each source if possible)
             const selectedEntertainment = [];
@@ -114,8 +115,11 @@
                 else break;
             }
 
+            // Pick 2 Onion headlines
+            const selectedOnion = satireItems.slice(0, 2);
+
             // Shuffle general items and pick 5 (excluding duplicates by title)
-            const usedTitles = new Set(selectedEntertainment.map(i => i.title));
+            const usedTitles = new Set([...selectedEntertainment, ...selectedOnion].map(i => i.title));
             const availableGeneral = generalItems.filter(i => !usedTitles.has(i.title));
 
             // Interleave sources for variety
@@ -134,25 +138,45 @@
                 }
             }
 
-            // Combine: general headlines first, then entertainment at the end
-            const allHeadlines = [...selectedGeneral, ...selectedEntertainment].slice(0, 7);
+            // Combine: 5 general, then intersperse 2 Onion and 2 entertainment
+            // Final order: gen, gen, onion, gen, gen, onion, gen, ent, ent (9 total)
+            const allHeadlines = [];
+            allHeadlines.push(selectedGeneral[0]);
+            allHeadlines.push(selectedGeneral[1]);
+            if (selectedOnion[0]) allHeadlines.push(selectedOnion[0]);
+            allHeadlines.push(selectedGeneral[2]);
+            allHeadlines.push(selectedGeneral[3]);
+            if (selectedOnion[1]) allHeadlines.push(selectedOnion[1]);
+            allHeadlines.push(selectedGeneral[4]);
+            allHeadlines.push(...selectedEntertainment);
+
+            // Filter out any undefined entries and limit to 9
+            const finalHeadlines = allHeadlines.filter(Boolean).slice(0, 9);
 
             // Render the news list
             const newsList = document.getElementById('news-list');
 
-            if (allHeadlines.length === 0) {
+            if (finalHeadlines.length === 0) {
                 newsList.innerHTML = '<li>Unable to load news. Check back later!</li>';
                 return;
             }
 
-            newsList.innerHTML = allHeadlines.map(item => {
-                const label = item.type === 'entertainment' ? ' 🎬' : '';
+            newsList.innerHTML = finalHeadlines.map(item => {
+                const label = item.type === 'entertainment' ? ' 🎬' : (item.type === 'satire' ? ' 🧅' : '');
                 return `<li><a href="${item.link}" target="_blank" rel="noopener">${item.title}</a>${label} <span class="news-source">[${item.source}]</span></li>`;
             }).join('');
         }
 
         // Load news when page loads
         loadNews();
+
+        // Show birthday banner on February 4th
+        (function() {
+            const today = new Date();
+            if (today.getMonth() === 1 && today.getDate() === 4) {
+                document.getElementById('birthday-banner').style.display = 'block';
+            }
+        })();
 
         // Notes functionality
         const notesArea = document.getElementById('user-notes');

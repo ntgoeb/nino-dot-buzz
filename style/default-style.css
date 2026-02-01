@@ -3,7 +3,6 @@ body {
     background-color: #000000;
     color: #00ff00;
     font-family: "Comic Sans MS", cursive;
-    cursor: url('https://cur.cursors-4u.net/nature/nat-10/nat956.cur'), auto;
     margin: 0;
     padding: 20px;
 }
@@ -156,13 +155,25 @@ a:hover {
     word-wrap: break-word;
 }
 
-/* Under construction gif replacement */
-.under-construction {
+/* Birthday banner */
+.birthday-banner {
     text-align: center;
     padding: 20px;
-    border: 2px dashed #ff0000;
-    background-color: #330000;
+    border: 4px double #ff00ff;
+    background: linear-gradient(90deg, #ff0066, #ffcc00, #00ff00, #00ccff, #ff00ff);
+    background-size: 400% 100%;
+    animation: birthday-gradient 3s ease infinite, blink 1s ease-in-out infinite;
     margin: 20px 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 2px 2px 4px #000000;
+}
+
+@keyframes birthday-gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 /* News container */
@@ -326,5 +337,10 @@ a:hover {
 
     .notes-footer button {
         font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .birthday-banner {
+        font-size: 18px;
+        padding: 15px;
     }
 }

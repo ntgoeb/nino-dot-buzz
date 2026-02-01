@@ -403,6 +403,73 @@
             cursor: default;
         }
 
+        /* Drag and Drop */
+        .rack-tile[draggable="true"],
+        .cell[draggable="true"] {
+            cursor: grab;
+        }
+        .rack-tile[draggable="true"]:active,
+        .cell[draggable="true"]:active {
+            cursor: grabbing;
+        }
+        .rack-tile.dragging,
+        .cell.dragging {
+            opacity: 0.4;
+            transform: scale(0.95);
+        }
+        .rack-tile.drag-over {
+            background: #90EE90;
+            border-style: inset;
+            transform: scale(1.1);
+        }
+        .cell.drag-over {
+            background: #90EE90 !important;
+            box-shadow: inset 0 0 0 3px #00ff00;
+        }
+        .drag-ghost {
+            position: fixed;
+            pointer-events: none;
+            z-index: 2000;
+            opacity: 0.9;
+            transform: translate(-50%, -50%) scale(1.2);
+            width: 36px;
+            height: 36px;
+            background: #f5deb3;
+            border: 2px outset #d4a574;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+        .drag-ghost .tile-score {
+            position: absolute;
+            bottom: 1px;
+            right: 3px;
+            font-size: 9px;
+            color: #666;
+        }
+        .drag-ghost .tile-letter {
+            font-size: 20px;
+        }
+        .rack-slot {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background-color 0.15s;
+        }
+        .rack-slot.drag-over {
+            background: rgba(144, 238, 144, 0.5);
+        }
+        .rack-slot .rack-tile {
+            margin: 0;
+        }
+
         /* Game Controls */
         .game-controls {
             display: flex;
@@ -1080,9 +1147,34 @@
                     cell.dataset.row = row;
                     cell.dataset.col = col;
                     cell.onclick = () => handleCellClick(row, col);
+
+                    // Drag and drop handlers for receiving drops
+                    cell.addEventListener('dragover', handleCellDragOver);
+                    cell.addEventListener('dragleave', handleCellDragLeave);
+                    cell.addEventListener('drop', handleCellDrop);
+
                     elements.board.appendChild(cell);
                 }
             }
+
+            // Event delegation for dragging placed tiles (added once on container)
+            elements.board.addEventListener('dragstart', (e) => {
+                const cell = e.target.closest('.cell');
+                if (cell && cell.classList.contains('placed-this-turn')) {
+                    handleBoardDragStart(e);
+                }
+            });
+            elements.board.addEventListener('dragend', handleDragEnd);
+
+            // Touch event delegation for dragging placed tiles
+            elements.board.addEventListener('touchstart', (e) => {
+                const cell = e.target.closest('.cell');
+                if (cell && cell.classList.contains('placed-this-turn')) {
+                    handleBoardTouchStart(e);
+                }
+            }, { passive: false });
+            elements.board.addEventListener('touchmove', handleTouchMove, { passive: false });
+            elements.board.addEventListener('touchend', handleTouchEnd);
         }
 
         function renderBoard() {
@@ -1106,8 +1198,14 @@
                     const score = placedTile.isBlank ? '' : TILE_SCORES[placedTile.letter];
                     cell.innerHTML = `<span class="tile-letter">${letter}</span>
                                       <span class="tile-score">${score}</span>`;
+
+                    // Make placed tiles draggable
+                    cell.draggable = true;
+                    cell.dataset.placedRow = row;
+                    cell.dataset.placedCol = col;
                 } else if (boardTile) {
                     cell.classList.add('has-tile');
+                    cell.draggable = false;
                     const score = boardTile.isBlank ? '' : TILE_SCORES[boardTile.letter];
                     cell.innerHTML = `<span class="tile-letter">${boardTile.letter}</span>
                                       <span class="tile-score">${score}</span>`;
@@ -1119,6 +1217,7 @@
                     // Restore special square label
                     const squareType = getSquareType(row, col);
                     cell.className = `cell ${squareType}`;
+                    cell.draggable = false;
                 }
             });
 
@@ -1135,6 +1234,11 @@
             const rack = gameState?.players?.[localState.playerId]?.rack || [];
 
             for (let i = 0; i < RACK_SIZE; i++) {
+                // Create a slot wrapper for drag-over detection
+                const slot = document.createElement('div');
+                slot.className = 'rack-slot';
+                slot.dataset.rackIndex = i;
+
                 const tile = document.createElement('div');
 
                 // Check if this rack position has been placed on board
@@ -1146,6 +1250,18 @@
                     tile.className = 'rack-tile' + (isBlank ? ' blank' : '');
                     tile.innerHTML = `${isBlank ? ' ' : letter}<span class="tile-score">${TILE_SCORES[letter]}</span>`;
                     tile.onclick = () => handleRackClick(i);
+                    tile.dataset.rackIndex = i;
+                    tile.dataset.letter = letter;
+
+                    // Drag attributes
+                    tile.draggable = true;
+                    tile.addEventListener('dragstart', handleRackDragStart);
+                    tile.addEventListener('dragend', handleDragEnd);
+
+                    // Touch drag support
+                    tile.addEventListener('touchstart', handleTouchStart, { passive: false });
+                    tile.addEventListener('touchmove', handleTouchMove, { passive: false });
+                    tile.addEventListener('touchend', handleTouchEnd);
 
                     if (localState.selectedRackIndex === i) {
                         tile.classList.add('selected');
@@ -1154,7 +1270,13 @@
                     tile.className = 'rack-tile empty';
                 }
 
-                elements.rack.appendChild(tile);
+                // Rack slot drop handlers (for reordering)
+                slot.addEventListener('dragover', handleRackSlotDragOver);
+                slot.addEventListener('dragleave', handleRackSlotDragLeave);
+                slot.addEventListener('drop', handleRackSlotDrop);
+
+                slot.appendChild(tile);
+                elements.rack.appendChild(slot);
             }
         }
 
@@ -1273,16 +1395,404 @@
         }
 
         // ============================================
+        // DRAG AND DROP
+        // ============================================
+
+        let dragState = {
+            sourceType: null,      // 'rack' or 'board'
+            rackIndex: null,
+            boardRow: null,
+            boardCol: null,
+            letter: null,
+            ghostElement: null,
+            touchIdentifier: null
+        };
+
+        function handleRackDragStart(e) {
+            const rackIndex = parseInt(e.target.dataset.rackIndex);
+            dragState.sourceType = 'rack';
+            dragState.rackIndex = rackIndex;
+            dragState.letter = e.target.dataset.letter;
+            e.target.classList.add('dragging');
+
+            // Set drag image
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', rackIndex.toString());
+        }
+
+        function handleBoardDragStart(e) {
+            const cell = e.target.closest('.cell');
+            if (!cell) return;
+
+            const row = parseInt(cell.dataset.placedRow);
+            const col = parseInt(cell.dataset.placedCol);
+            const placedTile = localState.placedTiles.find(t => t.row === row && t.col === col);
+            if (!placedTile) return;
+
+            dragState.sourceType = 'board';
+            dragState.boardRow = row;
+            dragState.boardCol = col;
+            dragState.rackIndex = placedTile.rackIndex;
+            dragState.letter = placedTile.blankLetter || placedTile.letter;
+            cell.classList.add('dragging');
+
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', `${row},${col}`);
+        }
+
+        function handleDragEnd(e) {
+            const el = e.target.closest('.cell') || e.target.closest('.rack-tile') || e.target;
+            el.classList.remove('dragging');
+            clearDragState();
+        }
+
+        function clearDragState() {
+            dragState.sourceType = null;
+            dragState.rackIndex = null;
+            dragState.boardRow = null;
+            dragState.boardCol = null;
+            dragState.letter = null;
+            if (dragState.ghostElement) {
+                dragState.ghostElement.remove();
+                dragState.ghostElement = null;
+            }
+            dragState.touchIdentifier = null;
+
+            // Remove all drag-over states
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+        }
+
+        // Rack slot handlers (for reordering)
+        function handleRackSlotDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function handleRackSlotDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleRackSlotDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+
+            const targetIndex = parseInt(e.currentTarget.dataset.rackIndex);
+
+            if (dragState.sourceType === 'rack') {
+                // Reorder rack
+                swapRackTiles(dragState.rackIndex, targetIndex);
+            } else if (dragState.sourceType === 'board') {
+                // Return tile from board to rack
+                returnTileToRack(dragState.boardRow, dragState.boardCol);
+            }
+
+            clearDragState();
+        }
+
+        // Board cell handlers
+        function handleCellDragOver(e) {
+            e.preventDefault();
+            const cell = e.target.closest('.cell');
+            if (!cell) return;
+
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+            const key = `${row},${col}`;
+
+            // Only allow dropping on empty cells or cells we placed this turn
+            if (gameState?.board?.[key]) return;
+
+            // Don't allow dropping on the same cell for board drags
+            if (dragState.sourceType === 'board' && dragState.boardRow === row && dragState.boardCol === col) return;
+
+            e.dataTransfer.dropEffect = 'move';
+            cell.classList.add('drag-over');
+        }
+
+        function handleCellDragLeave(e) {
+            const cell = e.target.closest('.cell');
+            if (cell) cell.classList.remove('drag-over');
+        }
+
+        function handleCellDrop(e) {
+            e.preventDefault();
+            const cell = e.target.closest('.cell');
+            if (!cell) return;
+            cell.classList.remove('drag-over');
+
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+            const key = `${row},${col}`;
+
+            // Check if cell has permanent tile
+            if (gameState?.board?.[key]) return;
+
+            // Check if already has a placed tile
+            const existingPlacedIndex = localState.placedTiles.findIndex(t => t.row === row && t.col === col);
+            if (existingPlacedIndex !== -1) return;
+
+            if (dragState.sourceType === 'rack') {
+                // Place tile from rack to board
+                placeTileOnBoard(dragState.rackIndex, row, col);
+            } else if (dragState.sourceType === 'board') {
+                // Move tile from one board position to another
+                movePlacedTile(dragState.boardRow, dragState.boardCol, row, col);
+            }
+
+            clearDragState();
+        }
+
+        function swapRackTiles(fromIndex, toIndex) {
+            if (fromIndex === toIndex) return;
+            if (!gameState?.players?.[localState.playerId]?.rack) return;
+
+            const rack = gameState.players[localState.playerId].rack;
+            if (fromIndex >= rack.length || toIndex >= rack.length) return;
+
+            // Simple swap
+            const temp = rack[fromIndex];
+            rack[fromIndex] = rack[toIndex];
+            rack[toIndex] = temp;
+
+            // Update placed tiles indices
+            localState.placedTiles.forEach(tile => {
+                if (tile.rackIndex === fromIndex) {
+                    tile.rackIndex = toIndex;
+                } else if (tile.rackIndex === toIndex) {
+                    tile.rackIndex = fromIndex;
+                }
+            });
+
+            localState.selectedRackIndex = null;
+            renderRack();
+        }
+
+        function returnTileToRack(row, col) {
+            const index = localState.placedTiles.findIndex(t => t.row === row && t.col === col);
+            if (index !== -1) {
+                localState.placedTiles.splice(index, 1);
+                localState.selectedRackIndex = null;
+                renderBoard();
+                renderRack();
+            }
+        }
+
+        function placeTileOnBoard(rackIndex, row, col) {
+            const rack = gameState?.players?.[localState.playerId]?.rack || [];
+            const letter = rack[rackIndex];
+            const isBlank = letter === '_';
+
+            // Check if already placed
+            if (localState.placedTiles.some(t => t.rackIndex === rackIndex)) return;
+
+            if (isBlank) {
+                showLetterPicker((chosenLetter) => {
+                    localState.placedTiles.push({
+                        rackIndex,
+                        row,
+                        col,
+                        letter: '_',
+                        isBlank: true,
+                        blankLetter: chosenLetter
+                    });
+                    localState.selectedRackIndex = null;
+                    renderBoard();
+                    renderRack();
+                });
+            } else {
+                localState.placedTiles.push({
+                    rackIndex,
+                    row,
+                    col,
+                    letter,
+                    isBlank: false,
+                    blankLetter: null
+                });
+                localState.selectedRackIndex = null;
+                renderBoard();
+                renderRack();
+            }
+        }
+
+        function movePlacedTile(fromRow, fromCol, toRow, toCol) {
+            const tile = localState.placedTiles.find(t => t.row === fromRow && t.col === fromCol);
+            if (tile) {
+                tile.row = toRow;
+                tile.col = toCol;
+                renderBoard();
+            }
+        }
+
+        // ============================================
+        // TOUCH DRAG SUPPORT
+        // ============================================
+
+        function handleTouchStart(e) {
+            if (e.touches.length !== 1) return;
+
+            const touch = e.touches[0];
+            const tile = e.target.closest('.rack-tile');
+            if (!tile || tile.classList.contains('empty')) return;
+
+            e.preventDefault();
+
+            dragState.touchIdentifier = touch.identifier;
+            dragState.sourceType = 'rack';
+            dragState.rackIndex = parseInt(tile.dataset.rackIndex);
+            dragState.letter = tile.dataset.letter;
+
+            tile.classList.add('dragging');
+
+            // Create ghost element
+            createTouchGhost(tile, touch.clientX, touch.clientY);
+        }
+
+        function handleBoardTouchStart(e) {
+            if (e.touches.length !== 1) return;
+
+            const touch = e.touches[0];
+            const cell = e.target.closest('.cell');
+            if (!cell || !cell.classList.contains('placed-this-turn')) return;
+
+            e.preventDefault();
+
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+            const placedTile = localState.placedTiles.find(t => t.row === row && t.col === col);
+            if (!placedTile) return;
+
+            dragState.touchIdentifier = touch.identifier;
+            dragState.sourceType = 'board';
+            dragState.boardRow = row;
+            dragState.boardCol = col;
+            dragState.rackIndex = placedTile.rackIndex;
+            dragState.letter = placedTile.blankLetter || placedTile.letter;
+
+            cell.classList.add('dragging');
+
+            createTouchGhost(cell, touch.clientX, touch.clientY);
+        }
+
+        function createTouchGhost(sourceEl, x, y) {
+            const ghost = document.createElement('div');
+            ghost.className = 'rack-tile drag-ghost';
+            ghost.innerHTML = sourceEl.innerHTML;
+            ghost.style.left = x + 'px';
+            ghost.style.top = y + 'px';
+            document.body.appendChild(ghost);
+            dragState.ghostElement = ghost;
+        }
+
+        function handleTouchMove(e) {
+            if (dragState.touchIdentifier === null) return;
+
+            const touch = Array.from(e.touches).find(t => t.identifier === dragState.touchIdentifier);
+            if (!touch) return;
+
+            e.preventDefault();
+
+            // Move ghost
+            if (dragState.ghostElement) {
+                dragState.ghostElement.style.left = touch.clientX + 'px';
+                dragState.ghostElement.style.top = touch.clientY + 'px';
+            }
+
+            // Find element under touch
+            const elemUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+
+            // Clear previous drag-over states
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+            if (elemUnder) {
+                // Check for rack slot
+                const rackSlot = elemUnder.closest('.rack-slot');
+                if (rackSlot) {
+                    rackSlot.classList.add('drag-over');
+                    return;
+                }
+
+                // Check for board cell
+                const cell = elemUnder.closest('.cell');
+                if (cell) {
+                    const row = parseInt(cell.dataset.row);
+                    const col = parseInt(cell.dataset.col);
+                    const key = `${row},${col}`;
+
+                    // Only show drop indicator on valid cells
+                    if (!gameState?.board?.[key]) {
+                        if (dragState.sourceType !== 'board' ||
+                            dragState.boardRow !== row ||
+                            dragState.boardCol !== col) {
+                            cell.classList.add('drag-over');
+                        }
+                    }
+                }
+            }
+        }
+
+        function handleTouchEnd(e) {
+            if (dragState.touchIdentifier === null) return;
+
+            const touch = Array.from(e.changedTouches).find(t => t.identifier === dragState.touchIdentifier);
+            if (!touch) {
+                clearDragState();
+                return;
+            }
+
+            e.preventDefault();
+
+            // Find drop target
+            const elemUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+
+            if (elemUnder) {
+                // Check for rack slot drop
+                const rackSlot = elemUnder.closest('.rack-slot');
+                if (rackSlot) {
+                    const targetIndex = parseInt(rackSlot.dataset.rackIndex);
+                    if (dragState.sourceType === 'rack') {
+                        swapRackTiles(dragState.rackIndex, targetIndex);
+                    } else if (dragState.sourceType === 'board') {
+                        returnTileToRack(dragState.boardRow, dragState.boardCol);
+                    }
+                } else {
+                    // Check for board cell drop
+                    const cell = elemUnder.closest('.cell');
+                    if (cell) {
+                        const row = parseInt(cell.dataset.row);
+                        const col = parseInt(cell.dataset.col);
+                        const key = `${row},${col}`;
+
+                        if (!gameState?.board?.[key]) {
+                            const existingPlacedIndex = localState.placedTiles.findIndex(t => t.row === row && t.col === col);
+                            if (existingPlacedIndex === -1) {
+                                if (dragState.sourceType === 'rack') {
+                                    placeTileOnBoard(dragState.rackIndex, row, col);
+                                } else if (dragState.sourceType === 'board') {
+                                    movePlacedTile(dragState.boardRow, dragState.boardCol, row, col);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Remove dragging state from source
+            document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+            clearDragState();
+        }
+
+        // ============================================
         // PLAY VALIDATION & GAME LOGIC
         // ============================================
 
         function updatePlayButton() {
-            const canPlay = localState.placedTiles.length > 0 && isMyTurn();
+            const canPlay = localState.placedTiles.length > 0 && isMyTurn() && !gameState?.pendingChallenge;
             elements.playBtn.disabled = !canPlay;
         }
 
         function isMyTurn() {
-            return gameState?.currentTurn === localState.playerId;
+            return gameState?.currentTurn === localState.playerId && !gameState?.pendingChallenge;
         }
 
         // Get a tile at a position (from board or placed tiles)
@@ -1781,6 +2291,10 @@
             const playerIds = gameState.playerOrder || [];
             const ackListEl = document.getElementById('ack-player-list');
             ackListEl.innerHTML = '';
+
+            // Reset the header text
+            document.getElementById('acknowledgment-status').querySelector('h4').textContent =
+                'Waiting for all players to acknowledge...';
 
             for (const playerId of playerIds) {
                 const player = gameState.players[playerId];
@@ -2794,9 +3308,13 @@
                 updates.tileBag = tileBag;
                 updates.tilesRemaining = tileBag.length;
 
-                // Subtract score
+                // Subtract score (player scores 0 for this turn)
                 const currentScore = gameState.players[challenge.challengedPlayer].score || 0;
                 updates[`players/${challenge.challengedPlayer}/score`] = currentScore - challenge.score;
+
+                // Turn should already be on the next player (it advanced when word was played)
+                // But ensure we don't have any stale skipNextTurn on the challenged player
+                updates[`players/${challenge.challengedPlayer}/skipNextTurn`] = null;
 
             } else {
                 // Word was valid - challenger loses next turn
