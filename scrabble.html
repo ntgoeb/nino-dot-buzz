@@ -67,6 +67,115 @@
             margin: 25px 0;
         }
 
+        /* Recent Games */
+        .recent-games-section {
+            margin-top: 20px;
+        }
+        .recent-game-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #001a00;
+            border: 2px solid #00ff00;
+            padding: 10px 15px;
+            margin: 8px auto;
+            max-width: 320px;
+            cursor: pointer;
+        }
+        .recent-game-item:hover {
+            background: #003300;
+        }
+        .recent-game-info {
+            text-align: left;
+        }
+        .recent-game-code {
+            color: #00ffff;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .recent-game-players {
+            color: #ffff00;
+            font-size: 0.9em;
+        }
+        .recent-game-details {
+            color: #888;
+            font-size: 0.85em;
+        }
+        .recent-game-remove {
+            background: none;
+            border: none;
+            color: #ff6666;
+            cursor: pointer;
+            font-size: 1.2em;
+            padding: 5px;
+        }
+        .recent-game-remove:hover {
+            color: #ff0000;
+        }
+
+        /* Gallery Screen */
+        .gallery-screen {
+            text-align: center;
+            padding: 20px;
+        }
+        .gallery-btn {
+            background: #000033;
+            color: #00ffff;
+            border-color: #00ffff;
+        }
+        .gallery-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin: 20px 0;
+            max-width: 800px;
+        }
+        .gallery-item {
+            background: #001a00;
+            border: 2px solid #00ff00;
+            padding: 10px;
+            position: relative;
+            max-width: 200px;
+        }
+        .gallery-screenshot {
+            width: 180px;
+            height: 180px;
+            image-rendering: pixelated;
+            border: 1px solid #333;
+        }
+        .gallery-info {
+            margin-top: 8px;
+            text-align: left;
+        }
+        .gallery-winner {
+            color: #ffff00;
+            font-weight: bold;
+        }
+        .gallery-scores {
+            color: #00ff00;
+            font-size: 0.85em;
+            margin-top: 4px;
+        }
+        .gallery-date {
+            color: #888;
+            font-size: 0.8em;
+            margin-top: 4px;
+        }
+        .gallery-remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: none;
+            border: none;
+            color: #ff6666;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+        .gallery-remove:hover {
+            color: #ff0000;
+        }
+
         /* Lobby Screen */
         .lobby-screen {
             text-align: center;
@@ -129,6 +238,20 @@
         }
         .game-screen.active {
             display: flex;
+        }
+
+        /* Room Code in Game */
+        .game-room-code {
+            background: #001a00;
+            border: 2px solid #00ff00;
+            padding: 5px 15px;
+            color: #888;
+            font-size: 0.9em;
+        }
+        .game-room-code span {
+            color: #00ff00;
+            font-weight: bold;
+            letter-spacing: 2px;
         }
 
         /* Scoreboard */
@@ -624,6 +747,28 @@
             <button class="menu-btn" id="join-game-btn">Join Game</button>
 
             <p id="menu-error" style="color: #ff6666; margin-top: 15px;"></p>
+
+            <!-- Recent Games Section -->
+            <div id="recent-games-section" class="recent-games-section" style="display: none;">
+                <div class="menu-divider">- Recent Games -</div>
+                <div id="recent-games-list"></div>
+            </div>
+
+            <!-- Gallery Link -->
+            <div class="menu-divider"></div>
+            <button class="menu-btn gallery-btn" id="view-gallery-btn">View Gallery</button>
+        </div>
+
+        <!-- Gallery Screen -->
+        <div id="gallery-screen" class="screen gallery-screen">
+            <h2>Game Gallery</h2>
+            <p style="color: #888;">Screenshots of finished games</p>
+
+            <div id="gallery-games" class="gallery-container">
+                <!-- Gallery items added dynamically -->
+            </div>
+
+            <button class="menu-btn" id="gallery-back-btn">Back to Menu</button>
         </div>
 
         <!-- Lobby Screen -->
@@ -648,6 +793,11 @@
 
         <!-- Game Screen -->
         <div id="game-screen" class="screen game-screen">
+            <!-- Room Code Display -->
+            <div class="game-room-code" id="game-room-code">
+                Room: <span id="game-room-code-value">ABCD</span>
+            </div>
+
             <!-- Scoreboard -->
             <div class="scoreboard" id="scoreboard">
                 <!-- Score items added dynamically -->
@@ -867,7 +1017,8 @@
             menu: document.getElementById('menu-screen'),
             lobby: document.getElementById('lobby-screen'),
             game: document.getElementById('game-screen'),
-            gameOver: document.getElementById('game-over-screen')
+            gameOver: document.getElementById('game-over-screen'),
+            gallery: document.getElementById('gallery-screen')
         };
 
         const elements = {
@@ -898,6 +1049,11 @@
         function showScreen(screenName) {
             Object.values(screens).forEach(s => s.classList.remove('active'));
             screens[screenName].classList.add('active');
+
+            // Refresh recent games when returning to menu
+            if (screenName === 'menu') {
+                renderRecentGames();
+            }
         }
 
         // ============================================
@@ -1505,6 +1661,7 @@
                 updateLobby();
             } else if (gameState.status === 'playing') {
                 showScreen('game');
+                document.getElementById('game-room-code-value').textContent = localState.roomCode;
                 renderBoard();
                 renderRack();
                 updateScoreboard();
@@ -1515,6 +1672,9 @@
                 showScreen('gameOver');
                 showFinalScores();
             }
+
+            // Keep session updated with latest player info
+            updateSessionFromGameState();
         }
 
         function showFinalScores() {
@@ -1549,6 +1709,11 @@
             // Sort by final score
             finalScores.sort((a, b) => b.finalScore - a.finalScore);
 
+            // Mark winner
+            finalScores.forEach((player, index) => {
+                player.isWinner = index === 0;
+            });
+
             // Render
             elements.finalScores.innerHTML = '<h3>Final Scores</h3>';
             finalScores.forEach((player, index) => {
@@ -1563,6 +1728,13 @@
             });
 
             elements.winnerAnnouncement.textContent = `${finalScores[0].name} wins!`;
+
+            // Save to gallery (only once per game, check if already saved)
+            const galleryGames = getGalleryGames();
+            const alreadySaved = galleryGames.some(g => g.roomCode === localState.roomCode);
+            if (!alreadySaved) {
+                saveFinishedGame(finalScores);
+            }
         }
 
         function updateChallengePending() {
@@ -1691,6 +1863,15 @@
             showScreen('menu');
         };
 
+        document.getElementById('view-gallery-btn').onclick = () => {
+            renderGallery();
+            showScreen('gallery');
+        };
+
+        document.getElementById('gallery-back-btn').onclick = () => {
+            showScreen('menu');
+        };
+
         document.getElementById('recall-btn').onclick = recallTiles;
         document.getElementById('shuffle-btn').onclick = shuffleRack;
 
@@ -1803,6 +1984,256 @@
             return 'p_' + Math.random().toString(36).substr(2, 9);
         }
 
+        // localStorage helpers for game persistence
+        const STORAGE_KEY = 'scrabble_sessions';
+
+        function getSavedSessions() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+            } catch {
+                return {};
+            }
+        }
+
+        function saveSession(roomCode, playerId, playerName, extraData = {}) {
+            const sessions = getSavedSessions();
+            sessions[roomCode] = {
+                playerId,
+                playerName,
+                lastPlayed: Date.now(),
+                ...extraData
+            };
+            // Keep only the 10 most recent sessions
+            const sorted = Object.entries(sessions)
+                .sort((a, b) => b[1].lastPlayed - a[1].lastPlayed)
+                .slice(0, 10);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(Object.fromEntries(sorted)));
+        }
+
+        function updateSessionFromGameState() {
+            if (!localState.roomCode || !localState.playerId || !gameState) return;
+
+            const allPlayerNames = Object.values(gameState.players || {}).map(p => p.name);
+            const myName = gameState.players?.[localState.playerId]?.name || localState.playerName;
+
+            saveSession(localState.roomCode, localState.playerId, myName, {
+                allPlayers: allPlayerNames,
+                status: gameState.status
+            });
+        }
+
+        function getSession(roomCode) {
+            const sessions = getSavedSessions();
+            return sessions[roomCode] || null;
+        }
+
+        function removeSession(roomCode) {
+            const sessions = getSavedSessions();
+            delete sessions[roomCode];
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+        }
+
+        function renderRecentGames() {
+            const sessions = getSavedSessions();
+            const entries = Object.entries(sessions).sort((a, b) => b[1].lastPlayed - a[1].lastPlayed);
+
+            const section = document.getElementById('recent-games-section');
+            const list = document.getElementById('recent-games-list');
+
+            if (entries.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            list.innerHTML = '';
+
+            for (const [roomCode, session] of entries) {
+                const item = document.createElement('div');
+                item.className = 'recent-game-item';
+
+                const timeAgo = getTimeAgo(session.lastPlayed);
+                const allPlayers = session.allPlayers || [session.playerName];
+                const playerList = allPlayers.join(', ');
+                const statusBadge = session.status === 'finished' ? ' (finished)' :
+                                   session.status === 'playing' ? ' (in progress)' : '';
+
+                item.innerHTML = `
+                    <div class="recent-game-info">
+                        <div class="recent-game-code">${roomCode}${statusBadge}</div>
+                        <div class="recent-game-players">${playerList}</div>
+                        <div class="recent-game-details">You: ${session.playerName} • ${timeAgo}</div>
+                    </div>
+                    <button class="recent-game-remove" title="Remove">&times;</button>
+                `;
+
+                // Click on item to rejoin
+                item.querySelector('.recent-game-info').addEventListener('click', () => {
+                    document.getElementById('room-code-input').value = roomCode;
+                    document.getElementById('player-name').value = session.playerName;
+                    document.getElementById('join-game-btn').click();
+                });
+
+                // Click X to remove
+                item.querySelector('.recent-game-remove').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    removeSession(roomCode);
+                    renderRecentGames();
+                });
+
+                list.appendChild(item);
+            }
+        }
+
+        function getTimeAgo(timestamp) {
+            const seconds = Math.floor((Date.now() - timestamp) / 1000);
+            if (seconds < 60) return 'just now';
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes}m ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours}h ago`;
+            const days = Math.floor(hours / 24);
+            if (days === 1) return 'yesterday';
+            if (days < 7) return `${days}d ago`;
+            return new Date(timestamp).toLocaleDateString();
+        }
+
+        // ============================================
+        // GALLERY FUNCTIONS
+        // ============================================
+
+        const GALLERY_KEY = 'scrabble_gallery';
+
+        function getGalleryGames() {
+            try {
+                return JSON.parse(localStorage.getItem(GALLERY_KEY) || '[]');
+            } catch {
+                return [];
+            }
+        }
+
+        function saveToGallery(gameData) {
+            const gallery = getGalleryGames();
+            gallery.unshift(gameData);
+            // Keep only last 20 games
+            localStorage.setItem(GALLERY_KEY, JSON.stringify(gallery.slice(0, 20)));
+        }
+
+        function removeFromGallery(index) {
+            const gallery = getGalleryGames();
+            gallery.splice(index, 1);
+            localStorage.setItem(GALLERY_KEY, JSON.stringify(gallery));
+        }
+
+        function captureBoardImage() {
+            const canvas = document.createElement('canvas');
+            const cellSize = 24;
+            const boardSize = 15 * cellSize;
+            canvas.width = boardSize;
+            canvas.height = boardSize;
+            const ctx = canvas.getContext('2d');
+
+            // Draw board
+            for (let row = 0; row < 15; row++) {
+                for (let col = 0; col < 15; col++) {
+                    const x = col * cellSize;
+                    const y = row * cellSize;
+                    const key = `${row},${col}`;
+                    const tile = gameState.board?.[key];
+
+                    // Background color
+                    let bgColor = '#d4b896'; // normal
+                    const squareType = getSquareType(row, col);
+                    if (squareType === 'TW') bgColor = '#ff4444';
+                    else if (squareType === 'DW' || squareType === 'center') bgColor = '#ffaaaa';
+                    else if (squareType === 'TL') bgColor = '#4444ff';
+                    else if (squareType === 'DL') bgColor = '#aaaaff';
+
+                    if (tile) bgColor = '#f5deb3'; // tile color
+
+                    ctx.fillStyle = bgColor;
+                    ctx.fillRect(x, y, cellSize, cellSize);
+                    ctx.strokeStyle = '#000';
+                    ctx.strokeRect(x, y, cellSize, cellSize);
+
+                    // Draw letter
+                    if (tile) {
+                        ctx.fillStyle = tile.isBlank ? '#666' : '#000';
+                        ctx.font = 'bold 14px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(tile.letter, x + cellSize/2, y + cellSize/2);
+
+                        // Draw score
+                        if (!tile.isBlank) {
+                            ctx.font = '8px Arial';
+                            ctx.fillText(TILE_SCORES[tile.letter], x + cellSize - 6, y + cellSize - 4);
+                        }
+                    }
+                }
+            }
+
+            return canvas.toDataURL('image/png');
+        }
+
+        function saveFinishedGame(finalScores) {
+            const screenshot = captureBoardImage();
+            const gameData = {
+                roomCode: localState.roomCode,
+                date: Date.now(),
+                players: finalScores.map(p => ({
+                    name: p.name,
+                    score: p.finalScore,
+                    isWinner: p.isWinner
+                })),
+                screenshot
+            };
+            saveToGallery(gameData);
+        }
+
+        function renderGallery() {
+            const gallery = getGalleryGames();
+            const container = document.getElementById('gallery-games');
+
+            if (gallery.length === 0) {
+                container.innerHTML = '<p style="color: #888; text-align: center;">No finished games yet.</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            gallery.forEach((game, index) => {
+                const item = document.createElement('div');
+                item.className = 'gallery-item';
+
+                const winner = game.players.find(p => p.isWinner);
+                const playerScores = game.players
+                    .sort((a, b) => b.score - a.score)
+                    .map(p => `${p.name}: ${p.score}`)
+                    .join(', ');
+
+                item.innerHTML = `
+                    <img src="${game.screenshot}" alt="Game ${game.roomCode}" class="gallery-screenshot">
+                    <div class="gallery-info">
+                        <div class="gallery-winner">${winner ? winner.name + ' wins!' : 'Game finished'}</div>
+                        <div class="gallery-scores">${playerScores}</div>
+                        <div class="gallery-date">${new Date(game.date).toLocaleDateString()}</div>
+                    </div>
+                    <button class="gallery-remove" data-index="${index}">&times;</button>
+                `;
+
+                container.appendChild(item);
+            });
+
+            // Add remove handlers
+            container.querySelectorAll('.gallery-remove').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    removeFromGallery(parseInt(btn.dataset.index));
+                    renderGallery();
+                };
+            });
+        }
+
         function createTileBag() {
             const bag = [];
             for (const [letter, count] of Object.entries(TILE_DISTRIBUTION)) {
@@ -1854,6 +2285,9 @@
             gameRef = ref(database, `scrabble/${roomCode}`);
             await set(gameRef, initialState);
 
+            // Save session for later reconnection
+            saveSession(roomCode, playerId, playerName);
+
             // Set up presence
             const presenceRef = ref(database, `scrabble/${roomCode}/players/${playerId}/connected`);
             onDisconnect(presenceRef).set(false);
@@ -1867,15 +2301,49 @@
             const snapshot = await get(gameRef);
 
             if (!snapshot.exists()) {
+                // Game doesn't exist - remove any stale session
+                removeSession(roomCode);
                 throw new Error('Game not found');
             }
 
             const game = snapshot.val();
 
-            // Check for reconnection (game in progress, disconnected player with same name)
+            // Check for stored session first (most reliable reconnection method)
+            const savedSession = getSession(roomCode);
+            if (savedSession && game.players?.[savedSession.playerId]) {
+                // We have a stored session and the player still exists in the game
+                const existingPlayerId = savedSession.playerId;
+                localState.playerId = existingPlayerId;
+                localState.roomCode = roomCode;
+                localState.isHost = existingPlayerId === game.hostId;
+                localState.playerName = game.players[existingPlayerId].name;
+
+                // Mark as connected
+                await update(gameRef, {
+                    [`players/${existingPlayerId}/connected`]: true
+                });
+
+                // Update session timestamp
+                saveSession(roomCode, existingPlayerId, game.players[existingPlayerId].name);
+
+                // Set up presence
+                const presenceRef = ref(database, `scrabble/${roomCode}/players/${existingPlayerId}/connected`);
+                onDisconnect(presenceRef).set(false);
+
+                // Subscribe to changes
+                subscribeToGame();
+                return;
+            }
+
+            // No stored session - check game status
+            if (game.status === 'finished') {
+                throw new Error('Game already finished');
+            }
+
             if (game.status === 'playing') {
+                // Game in progress - try to reconnect by name matching
                 const disconnectedPlayer = Object.entries(game.players || {}).find(
-                    ([id, player]) => player.name === playerName && !player.connected
+                    ([id, player]) => player.name.toLowerCase() === playerName.toLowerCase() && !player.connected
                 );
 
                 if (disconnectedPlayer) {
@@ -1884,11 +2352,15 @@
                     localState.playerId = existingPlayerId;
                     localState.roomCode = roomCode;
                     localState.isHost = existingPlayerId === game.hostId;
+                    localState.playerName = player.name;
 
                     // Mark as connected
                     await update(gameRef, {
                         [`players/${existingPlayerId}/connected`]: true
                     });
+
+                    // Save session for future reconnection
+                    saveSession(roomCode, existingPlayerId, player.name);
 
                     // Set up presence
                     const presenceRef = ref(database, `scrabble/${roomCode}/players/${existingPlayerId}/connected`);
@@ -1899,15 +2371,41 @@
                     return;
                 } else {
                     // No matching disconnected player
-                    throw new Error('Game in progress. To rejoin, enter your exact name.');
+                    throw new Error('Game in progress. To rejoin, use the same device or enter your exact name.');
                 }
             }
 
-            // Game is waiting - normal join flow
-            if (game.status !== 'waiting') {
-                throw new Error('Game already finished');
+            // Game is waiting - check if player with same name exists (reconnecting)
+            const existingPlayer = Object.entries(game.players || {}).find(
+                ([id, player]) => player.name.toLowerCase() === playerName.toLowerCase()
+            );
+
+            if (existingPlayer) {
+                // Reconnect as existing player in lobby
+                const [existingPlayerId, player] = existingPlayer;
+                localState.playerId = existingPlayerId;
+                localState.roomCode = roomCode;
+                localState.isHost = existingPlayerId === game.hostId;
+                localState.playerName = player.name;
+
+                // Mark as connected
+                await update(gameRef, {
+                    [`players/${existingPlayerId}/connected`]: true
+                });
+
+                // Save session for future reconnection
+                saveSession(roomCode, existingPlayerId, player.name);
+
+                // Set up presence
+                const presenceRef = ref(database, `scrabble/${roomCode}/players/${existingPlayerId}/connected`);
+                onDisconnect(presenceRef).set(false);
+
+                // Subscribe to changes
+                subscribeToGame();
+                return;
             }
 
+            // New player joining
             const playerCount = game.playerOrder?.length || 0;
             if (playerCount >= 4) {
                 throw new Error('Game is full');
@@ -1917,6 +2415,7 @@
             localState.playerId = playerId;
             localState.roomCode = roomCode;
             localState.isHost = false;
+            localState.playerName = playerName;
 
             const updates = {};
             updates[`players/${playerId}`] = {
@@ -1928,6 +2427,9 @@
             updates['playerOrder'] = [...game.playerOrder, playerId];
 
             await update(gameRef, updates);
+
+            // Save session for future reconnection
+            saveSession(roomCode, playerId, playerName);
 
             // Set up presence
             const presenceRef = ref(database, `scrabble/${roomCode}/players/${playerId}/connected`);
@@ -1970,6 +2472,27 @@
             await update(gameRef, updates);
         }
 
+        // Helper to get next player, handling skipNextTurn
+        function getNextPlayer(game, currentTurnIndex) {
+            const playerOrder = game.playerOrder;
+            const playerCount = playerOrder.length;
+            let nextIndex = (currentTurnIndex + 1) % playerCount;
+            let skippedPlayer = null;
+
+            // Check if the next player should be skipped
+            const nextPlayerId = playerOrder[nextIndex];
+            if (game.players[nextPlayerId]?.skipNextTurn) {
+                skippedPlayer = nextPlayerId;
+                nextIndex = (nextIndex + 1) % playerCount;
+            }
+
+            return {
+                playerId: playerOrder[nextIndex],
+                index: nextIndex,
+                skippedPlayer: skippedPlayer
+            };
+        }
+
         async function firebasePlayWord(result) {
             if (!gameRef) return;
 
@@ -2001,26 +2524,33 @@
             // Draw new tiles
             const tileBag = game.tileBag || [];
             const tilesToDraw = Math.min(7 - rack.length, tileBag.length);
+            const drawnTiles = [];
             for (let i = 0; i < tilesToDraw; i++) {
-                rack.push(tileBag.shift());
+                const tile = tileBag.shift();
+                drawnTiles.push(tile);
+                rack.push(tile);
             }
             updates[`players/${localState.playerId}/rack`] = rack;
             updates.tileBag = tileBag;
             updates.tilesRemaining = tileBag.length;
 
-            // Advance turn
-            const nextTurnIndex = (game.turnIndex + 1) % game.playerOrder.length;
-            updates.currentTurn = game.playerOrder[nextTurnIndex];
-            updates.turnIndex = nextTurnIndex;
+            // Advance turn (check for skipped players)
+            const nextTurn = getNextPlayer(game, game.turnIndex);
+            updates.currentTurn = nextTurn.playerId;
+            updates.turnIndex = nextTurn.index;
+            if (nextTurn.skippedPlayer) {
+                updates[`players/${nextTurn.skippedPlayer}/skipNextTurn`] = null;
+            }
             updates.turnNumber = game.turnNumber + 1;
             updates.consecutivePasses = 0;
 
-            // Record last play
+            // Record last play (include drawn tiles for challenge reversal)
             updates.lastPlay = {
                 player: localState.playerId,
                 words: result.words,
                 score: result.score,
                 tiles: result.tiles,
+                drawnTiles: drawnTiles,
                 turnNumber: game.turnNumber,
                 challengeable: true
             };
@@ -2048,10 +2578,13 @@
 
             const updates = {};
 
-            // Advance turn
-            const nextTurnIndex = (game.turnIndex + 1) % playerCount;
-            updates.currentTurn = game.playerOrder[nextTurnIndex];
-            updates.turnIndex = nextTurnIndex;
+            // Advance turn (check for skipped players)
+            const nextTurn = getNextPlayer(game, game.turnIndex);
+            updates.currentTurn = nextTurn.playerId;
+            updates.turnIndex = nextTurn.index;
+            if (nextTurn.skippedPlayer) {
+                updates[`players/${nextTurn.skippedPlayer}/skipNextTurn`] = null;
+            }
             updates.consecutivePasses = newConsecutivePasses;
 
             // Mark last play as not challengeable
@@ -2107,10 +2640,12 @@
             updates.tileBag = tileBag;
 
             // Advance turn (swap counts as a pass for consecutive pass counting)
-            const playerCount = game.playerOrder.length;
-            const nextTurnIndex = (game.turnIndex + 1) % playerCount;
-            updates.currentTurn = game.playerOrder[nextTurnIndex];
-            updates.turnIndex = nextTurnIndex;
+            const nextTurn = getNextPlayer(game, game.turnIndex);
+            updates.currentTurn = nextTurn.playerId;
+            updates.turnIndex = nextTurn.index;
+            if (nextTurn.skippedPlayer) {
+                updates[`players/${nextTurn.skippedPlayer}/skipNextTurn`] = null;
+            }
             updates.consecutivePasses = (game.consecutivePasses || 0) + 1;
 
             if (game.lastPlay) {
@@ -2175,6 +2710,7 @@
                     turnNumber: gameState.lastPlay.turnNumber,
                     words: gameState.lastPlay.words,
                     tiles: gameState.lastPlay.tiles,
+                    drawnTiles: gameState.lastPlay.drawnTiles || [],
                     score: gameState.lastPlay.score,
                     // New fields for automatic resolution
                     result: challengeSucceeded ? 'invalid' : 'valid',
@@ -2230,12 +2766,33 @@
                     updates[`board/${tile.row},${tile.col}`] = null;
                 }
 
-                // Return tiles to challenged player's rack
-                const challengedRack = [...gameState.players[challenge.challengedPlayer].rack];
+                // Get current rack and remove the drawn tiles, then add back played tiles
+                let challengedRack = [...gameState.players[challenge.challengedPlayer].rack];
+                const drawnTiles = challenge.drawnTiles || [];
+
+                // Remove drawn tiles from rack (find and remove each one)
+                for (const tile of drawnTiles) {
+                    const idx = challengedRack.indexOf(tile);
+                    if (idx !== -1) {
+                        challengedRack.splice(idx, 1);
+                    }
+                }
+
+                // Add played tiles back to rack
                 for (const tile of challenge.tiles) {
                     challengedRack.push(tile.originalLetter || tile.letter);
                 }
                 updates[`players/${challenge.challengedPlayer}/rack`] = challengedRack;
+
+                // Return drawn tiles to the bag
+                const tileBag = [...(gameState.tileBag || []), ...drawnTiles];
+                // Shuffle the returned tiles into the bag
+                for (let i = tileBag.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [tileBag[i], tileBag[j]] = [tileBag[j], tileBag[i]];
+                }
+                updates.tileBag = tileBag;
+                updates.tilesRemaining = tileBag.length;
 
                 // Subtract score
                 const currentScore = gameState.players[challenge.challengedPlayer].score || 0;
@@ -2291,6 +2848,7 @@
         // ============================================
 
         createBoard();
+        renderRecentGames();
     </script>
     <script type="module" src="js/analytics.js"></script>
 </body>

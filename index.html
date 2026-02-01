@@ -32,13 +32,6 @@
 
             <p>Placeholder text</p>
 
-            <!-- Featured Game -->
-            <div class="game-container">
-                <h2>Featured Game</h2>
-                <div id="featured-game"></div>
-                <p style="margin-top: 15px; font-size: 0.9em;"><a href="games.html">See all games &raquo;</a></p>
-            </div>
-
             <!-- Notes Section -->
             <div class="notes-container">
                 <h2>My Notes</h2>
@@ -199,36 +192,6 @@
                 }, 2000);
             }
         }
-
-        // Featured Game - random selection on each page load
-        const games = [
-            {
-                name: 'Hangman',
-                url: 'hangman.html',
-                description: 'Guess the word before the stick figure meets its fate!'
-            },
-            {
-                name: 'Tic-Tac-Toe',
-                url: 'tictactoe.html',
-                description: 'Classic X\'s and O\'s - play against a friend or the computer!'
-            },
-            {
-                name: 'Guess the Number',
-                url: 'guess-number.html',
-                description: 'I\'m thinking of a number between 1 and 100...'
-            },
-            {
-                name: 'Super Star Trek',
-                url: 'startrek.html',
-                description: 'Command the Enterprise in this classic text-based adventure.'
-            }
-        ];
-
-        const randomGame = games[Math.floor(Math.random() * games.length)];
-        document.getElementById('featured-game').innerHTML = `
-            <p style="font-size: 1.3em;"><a href="${randomGame.url}">${randomGame.name}</a></p>
-            <p>${randomGame.description}</p>
-        `;
 
         // Music Player
         const musicTracks = [
