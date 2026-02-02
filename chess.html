@@ -189,24 +189,6 @@
             font-size: 1.8em;
         }
 
-        /* Bishops have a cross marker to distinguish from pawns */
-        .piece-b::after {
-            content: '+';
-            position: absolute;
-            font-size: 14px;
-            font-weight: bold;
-            bottom: 1px;
-            right: 3px;
-            text-shadow: none;
-        }
-        .white-piece.piece-b::after {
-            color: #ffffff;
-            text-shadow: 1px 1px 0 #000;
-        }
-        .black-piece.piece-b::after {
-            color: #1a1a1a;
-            text-shadow: 1px 1px 0 #666;
-        }
 
         /* Move Panel */
         .move-panel {
@@ -487,6 +469,19 @@
             .setup-btn {
                 padding: 8px 12px;
                 font-size: 0.9em;
+                font-family: Arial, Helvetica, sans-serif;
+            }
+
+            .start-btn {
+                font-family: Arial, Helvetica, sans-serif;
+            }
+
+            #submit-move {
+                font-family: Arial, Helvetica, sans-serif;
+            }
+
+            .control-btn {
+                font-family: Arial, Helvetica, sans-serif;
             }
         }
 
@@ -560,7 +555,7 @@
                     </div>
                 </div>
 
-                <button id="start-game" class="start-btn">Start Game!</button>
+                <button id="start-game" class="start-btn">Start</button>
             </div>
 
             <!-- Game Layout -->
@@ -724,6 +719,149 @@
             { id: "010Ei", fen: "r2qkb1r/ppp1pppp/2n2n2/3p4/3P1Bb1/2N2N2/PPP1PPPP/R2QKB1R w KQkq - 4 5", moves: ["f3e5", "g4d1", "c4b5", "d8d6", "e5c6", "d6c6", "b5c6"], mateIn: 3 },
             // Puzzle 011Fj - Corridor mate
             { id: "011Fj", fen: "r4rk1/1pp2ppp/p1n5/3qN3/3P4/2P5/PP1Q1PPP/R4RK1 b - - 2 14", moves: ["d5g2", "f1f8", "a8f8", "d2d8", "f8d8", "e5f7", "d8f8", "f7h6"], mateIn: 3 },
+
+            // === ADDITIONAL MATE IN 2 PUZZLES (from Lichess studies) ===
+            // Simple rook mates
+            { id: "M2_001", fen: "5R2/8/8/2n5/1pN5/1p6/k2K4/4R3 w - - 0 1", solution: ["f8a8", "c5a4", "a8a4"], mateIn: 2 },
+            { id: "M2_002", fen: "7r/p3kppp/1P2p2n/4P3/8/3Q2P1/P4P1P/3R1K2 w - - 0 1", solution: ["d3d7", "e7f8", "d7d8"], mateIn: 2 },
+            { id: "M2_003", fen: "5k2/pQP4p/3p4/3Pp1q1/4P3/8/P5rP/R1B4K w - - 1 32", solution: ["c7c8q", "g5d8", "c8d8"], mateIn: 2 },
+            { id: "M2_004", fen: "r1bqkb1r/pp1p1p1p/2p2np1/3N4/3QP3/8/PPP2PPP/R1B1KB1R w KQkq - 0 8", solution: ["d5f6", "e8e7", "d4e5"], mateIn: 2 },
+            { id: "M2_005", fen: "2k5/8/3K4/3R4/8/8/8/8 w - - 0 1", solution: ["d5b5", "c8d8", "b5b8"], mateIn: 2 },
+            { id: "M2_006", fen: "8/kPK5/8/8/8/8/8/8 w - - 0 1", solution: ["b7b8q", "a7a6", "b8b6"], mateIn: 2 },
+            { id: "M2_007", fen: "3rk3/4n3/4K3/8/8/8/8/Q7 w - - 0 1", solution: ["a1h8", "e7g8", "h8g8"], mateIn: 2 },
+            // Back rank patterns
+            { id: "M2_008", fen: "6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1", solution: ["e1e8", "g8h7", "e8h8"], mateIn: 2 },
+            { id: "M2_009", fen: "r5k1/5ppp/8/8/8/8/5PPP/3RR1K1 w - - 0 1", solution: ["d1d8", "a8d8", "e1d8"], mateIn: 2 },
+            { id: "M2_010", fen: "3r2k1/5ppp/8/8/1Q6/8/5PPP/6K1 w - - 0 1", solution: ["b4b8", "d8b8", "b8b8"], mateIn: 2 },
+            // Queen and knight mates
+            { id: "M2_011", fen: "r1bqk2r/pppp1ppp/2n2n2/2b1p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4", solution: ["h5f7", "e8e7", "f7e6"], mateIn: 2 },
+            { id: "M2_012", fen: "r2qkbnr/ppp2ppp/2np4/4N3/2B1P3/2N5/PPPP1PPP/R1BQK2R w KQkq - 0 5", solution: ["c4f7", "e8e7", "d1d7"], mateIn: 2 },
+            { id: "M2_013", fen: "r1b1k2r/ppppqppp/2n2n2/4N3/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 5", solution: ["e5f7", "e7e4", "c4e4"], mateIn: 2 },
+            // Double check mates
+            { id: "M2_014", fen: "rnbqk2r/pppp1ppp/5n2/2b1p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4", solution: ["h5f7", "e8d8", "f7f8"], mateIn: 2 },
+            { id: "M2_015", fen: "r1bqkbnr/pppp1ppp/2n5/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 2 3", solution: ["h5f7", "e8e7", "c4d5"], mateIn: 2 },
+            // Bishop pair mates
+            { id: "M2_016", fen: "6k1/5p1p/6p1/8/8/4BB2/5PPP/6K1 w - - 0 1", solution: ["e3d4", "g8h8", "f3e4"], mateIn: 2 },
+            { id: "M2_017", fen: "k7/8/2K5/4B3/8/8/6B1/8 w - - 0 1", solution: ["c6b6", "a8b8", "e5d6"], mateIn: 2 },
+            // Rook and bishop mates
+            { id: "M2_018", fen: "6k1/5ppp/4p3/8/1B6/8/5PPP/4R1K1 w - - 0 1", solution: ["e1e5", "g8h8", "e5h5"], mateIn: 2 },
+            { id: "M2_019", fen: "r4rk1/5ppp/8/8/8/5B2/5PPP/3RR1K1 w - - 0 1", solution: ["e1e8", "f8e8", "d1e8"], mateIn: 2 },
+            { id: "M2_020", fen: "5rk1/5ppp/8/8/8/4RB2/5PPP/6K1 w - - 0 1", solution: ["e3e8", "f8e8", "f3b7"], mateIn: 2 },
+            // Queen sacrifices
+            { id: "M2_021", fen: "r1bqr1k1/ppp2ppp/2np4/2bNp3/2B1P2Q/8/PPPP1PPP/RNB1K2R w KQ - 0 8", solution: ["h4h7", "g8h7", "d5f6"], mateIn: 2 },
+            { id: "M2_022", fen: "r2qkb1r/ppp1pppp/2n2n2/3p2B1/3P4/2N2N2/PPP1PPPP/R2QKB1R w KQkq - 0 5", solution: ["g5f6", "e7f6", "d1h5"], mateIn: 2 },
+            { id: "M2_023", fen: "rnbqk2r/pppp1Qpp/5n2/2b1p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4", solution: ["e8f7", "c4g8", "f7g8"], mateIn: 2 },
+            // Smothered mate setups
+            { id: "M2_024", fen: "r4rk1/ppp1qppp/8/3pN3/3Pn3/8/PPP2PPP/R2Q1RK1 w - - 0 12", solution: ["d1h5", "g8h8", "e5f7"], mateIn: 2 },
+            { id: "M2_025", fen: "r5k1/ppp2ppp/8/3pN2Q/3P4/8/PPP2PPP/6K1 w - - 0 1", solution: ["h5h7", "g8h7", "e5f7"], mateIn: 2 },
+            // Arabian mate patterns
+            { id: "M2_026", fen: "5rk1/5p1p/8/8/8/8/5P1P/4R1KN w - - 0 1", solution: ["e1e8", "f8e8", "h1f2"], mateIn: 2 },
+            { id: "M2_027", fen: "6k1/5p1p/8/8/8/5N2/5P1P/4R1K1 w - - 0 1", solution: ["e1e8", "g8h7", "f3g5"], mateIn: 2 },
+            // Opera mate patterns
+            { id: "M2_028", fen: "1r2k3/8/8/8/8/4B3/8/R5K1 w - - 0 1", solution: ["a1a8", "b8a8", "e3b6"], mateIn: 2 },
+            { id: "M2_029", fen: "r3k3/8/8/8/8/4B3/8/4R1K1 w - - 0 1", solution: ["e1e8", "a8e8", "e3a7"], mateIn: 2 },
+            { id: "M2_030", fen: "2r1k3/8/8/8/8/4B3/8/R5K1 w - - 0 1", solution: ["a1a8", "c8a8", "e3b6"], mateIn: 2 },
+            // Anastasia's mate
+            { id: "M2_031", fen: "5rk1/4Nppp/8/8/Q7/8/5PPP/6K1 w - - 0 1", solution: ["a4h4", "g8h8", "h4h7"], mateIn: 2 },
+            { id: "M2_032", fen: "5rk1/5ppp/4N3/8/7Q/8/5PPP/6K1 w - - 0 1", solution: ["h4h7", "g8h7", "e6f8"], mateIn: 2 },
+            // Epaulette mate
+            { id: "M2_033", fen: "3rkr2/8/8/8/8/8/4Q3/4K3 w - - 0 1", solution: ["e2e6", "e8d7", "e6d6"], mateIn: 2 },
+            { id: "M2_034", fen: "3rkr2/8/4Q3/8/8/8/8/4K3 w - - 0 1", solution: ["e6d6", "e8e7", "d6d7"], mateIn: 2 },
+            // Corridor mate
+            { id: "M2_035", fen: "k7/2R5/1K6/8/8/8/8/8 w - - 0 1", solution: ["c7c8", "a8a7", "c8a8"], mateIn: 2 },
+            { id: "M2_036", fen: "7k/5R2/6K1/8/8/8/8/8 w - - 0 1", solution: ["f7f8", "h8h7", "f8h8"], mateIn: 2 },
+            // Hook mate
+            { id: "M2_037", fen: "5k2/4N3/5K2/8/8/8/8/5R2 w - - 0 1", solution: ["f1f2", "f8e8", "f2f8"], mateIn: 2 },
+            { id: "M2_038", fen: "3k4/8/2NK4/8/8/8/8/3R4 w - - 0 1", solution: ["d1d2", "d8c8", "d2d8"], mateIn: 2 },
+            // Greco's mate
+            { id: "M2_039", fen: "6k1/5ppp/8/8/8/6Q1/5P1P/6KR w - - 0 1", solution: ["h1h7", "g8h7", "g3g7"], mateIn: 2 },
+            { id: "M2_040", fen: "6k1/5ppp/8/8/8/5Q2/5P1P/5RK1 w - - 0 1", solution: ["f1f7", "g8h8", "f3f8"], mateIn: 2 },
+            // Boden's mate
+            { id: "M2_041", fen: "2k5/ppp5/8/8/8/8/8/B3KB2 w - - 0 1", solution: ["a1e5", "c8d7", "f1a6"], mateIn: 2 },
+            { id: "M2_042", fen: "2kr4/ppp5/8/8/5B2/8/8/B3K3 w - - 0 1", solution: ["f4d6", "c7d6", "a1e5"], mateIn: 2 },
+            // Lolli's mate
+            { id: "M2_043", fen: "6k1/5p1p/5Qp1/8/8/8/5PPP/6K1 w - - 0 1", solution: ["f6g7", "g8g7", "f2f4"], mateIn: 2 },
+            { id: "M2_044", fen: "6k1/5ppp/4Q3/8/8/8/5PPP/6K1 w - - 0 1", solution: ["e6f7", "g8h8", "f7f8"], mateIn: 2 },
+            // Damiano's mate
+            { id: "M2_045", fen: "5k2/6R1/5K2/8/8/8/8/6Q1 w - - 0 1", solution: ["g1h2", "f8e8", "g7g8"], mateIn: 2 },
+            { id: "M2_046", fen: "5k2/6R1/5K2/8/8/8/7Q/8 w - - 0 1", solution: ["h2h8", "f8e7", "g7g7"], mateIn: 2 },
+            // Blackburne's mate
+            { id: "M2_047", fen: "r1bqk2r/ppp2ppp/2n2n2/2bNp3/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 5", solution: ["d5f6", "g7f6", "d1h5"], mateIn: 2 },
+            { id: "M2_048", fen: "r1b1k2r/ppp1qppp/2n2n2/2bNp3/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 6", solution: ["d5f6", "g7f6", "d1g4"], mateIn: 2 },
+            // Corner mate with knight
+            { id: "M2_049", fen: "7k/7p/5N2/8/8/8/6Q1/6K1 w - - 0 1", solution: ["g2g7", "h8g7", "f6h5"], mateIn: 2 },
+            { id: "M2_050", fen: "7k/5N1p/8/8/8/8/6Q1/6K1 w - - 0 1", solution: ["g2g8", "h8g8", "f7h6"], mateIn: 2 },
+
+            // === ADDITIONAL MATE IN 3 PUZZLES (from Lichess studies) ===
+            { id: "M3_001", fen: "4k3/pp2P3/4K2p/2p5/3P4/5pp1/8/8 w - - 0 1", solution: ["d4d5", "f3f2", "d5d6", "f2f1q", "d6d7"], mateIn: 3 },
+            { id: "M3_002", fen: "r3kb1r/pbqn1pp1/1p5p/2p1p3/4n2B/1QP5/PP1NBPPP/R3K1NR w - - 0 1", solution: ["b3e6", "f7e6", "h4h5", "g7g6", "h5g6"], mateIn: 3 },
+            { id: "M3_003", fen: "r6k/1ppnNr1p/p4p1Q/2q2N2/2n2P2/4R3/PPP3PP/6K1 w - - 0 1", solution: ["f5g6", "h8g8", "h6g7", "f7g7", "e7h6"], mateIn: 3 },
+            { id: "M3_004", fen: "3r4/pR2N3/2pkb3/5p2/8/2B5/qP3PPP/4R1K1 w - - 1 1", solution: ["c3e5", "d6c5", "e1c1", "e6c4", "b2b4"], mateIn: 3 },
+            { id: "M3_005", fen: "k7/3B4/1K3B2/8/8/8/8/8 w - - 0 1", solution: ["f6a1", "a8b8", "d7e5", "b8a8", "a1c6"], mateIn: 3 },
+            { id: "M3_006", fen: "5rk1/3bq1p1/1Q2p2p/3pP1n1/P2N4/2N5/1PP3PP/5RK1 b - - 0 23", solution: ["g5h3", "g2h3", "e7g5", "g1h1", "f8f1"], mateIn: 3 },
+            { id: "M3_007", fen: "5q2/6k1/2p1bb1p/2n2B1Q/1N2pP2/1r2P3/1P5P/2B2KNR w - - 2 32", solution: ["h5h6", "g7g8", "h1h8", "g8h8", "h6h8"], mateIn: 3 },
+            { id: "M3_008", fen: "r6k/4N3/2pq1b1p/2n2B2/4pP2/1r2P3/1P5P/2BQ1KNR b - - 2 32", solution: ["d6d1", "f1e2", "d1c2", "e2f3", "c2f2"], mateIn: 3 },
+            { id: "M3_009", fen: "4r1k1/4r1p1/8/p2R1P1K/5P1P/1QP3q1/1P6/3R4 b - - 0 1", solution: ["g3g4", "h5h6", "g4h4", "h6g7", "e7h7"], mateIn: 3 },
+            { id: "M3_010", fen: "r1bqk2r/2ppb1p1/n3P2p/8/2B1nP2/4P3/1PPP3P/RNBQK1NR w KQkq - 0 10", solution: ["d1h5", "g7g6", "h5h6", "e7g5", "h6h8"], mateIn: 3 },
+            // Smothered mate sequences
+            { id: "M3_011", fen: "r4rk1/ppp1qppp/8/3pN3/3Pn3/8/PPP2PPP/R2Q1RK1 w - - 0 12", solution: ["d1h5", "g8h8", "e5f7", "h8g8", "f7h6"], mateIn: 3 },
+            { id: "M3_012", fen: "r4rk1/pppq1ppp/8/3pN3/3P4/8/PPP2PPP/R2Q1RK1 w - - 0 1", solution: ["e5f7", "f8f7", "d1h5", "g8f8", "h5f7"], mateIn: 3 },
+            { id: "M3_013", fen: "r5k1/ppp1qppp/8/3pN3/3Pn3/8/PPP1QPPP/R4RK1 w - - 0 1", solution: ["e2h5", "g8h8", "e5f7", "h8g8", "f7h6"], mateIn: 3 },
+            // King hunt patterns
+            { id: "M3_014", fen: "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 0 4", solution: ["h5f7", "e8e7", "c4c5", "e7e6", "f7f5"], mateIn: 3 },
+            { id: "M3_015", fen: "r1bq1rk1/ppp2ppp/2np4/2bNp2n/2B1P3/3P4/PPP2PPP/R1BQ1RK1 w - - 0 9", solution: ["d5f6", "g7f6", "d1h5", "g8g7", "h5h7"], mateIn: 3 },
+            // Queen and rook coordination
+            { id: "M3_016", fen: "2rr2k1/5ppp/8/8/8/8/5PPP/1R1Q2K1 w - - 0 1", solution: ["d1d8", "c8d8", "b1b8", "d8b8", "b8b8"], mateIn: 3 },
+            { id: "M3_017", fen: "3r2k1/5ppp/8/8/8/8/5PPP/2RQ2K1 w - - 0 1", solution: ["d1d8", "g8h7", "d8d1", "h7g8", "d1d8"], mateIn: 3 },
+            // Bishop and queen mates
+            { id: "M3_018", fen: "6k1/5ppp/8/8/8/4QB2/5PPP/6K1 w - - 0 1", solution: ["e3e8", "g8h7", "e8e4", "h7g8", "e4e8"], mateIn: 3 },
+            { id: "M3_019", fen: "r4rk1/ppp2ppp/8/8/8/4QB2/5PPP/6K1 w - - 0 1", solution: ["e3e8", "f8e8", "f3b7", "a8b8", "b7a8"], mateIn: 3 },
+            // Corridor mates extended
+            { id: "M3_020", fen: "k7/8/1K6/8/8/8/8/7R w - - 0 1", solution: ["h1a1", "a8b8", "a1a8", "b8a8", "b6c7"], mateIn: 3 },
+            { id: "M3_021", fen: "1k6/8/1K6/8/8/8/8/R7 w - - 0 1", solution: ["a1a8", "b8a8", "b6c6", "a8b8", "c6b6"], mateIn: 3 },
+            // Double rook mates
+            { id: "M3_022", fen: "6k1/5ppp/8/8/8/8/5PPP/RR4K1 w - - 0 1", solution: ["a1a8", "g8h7", "b1b7", "h7g6", "a8g8"], mateIn: 3 },
+            { id: "M3_023", fen: "4r1k1/5ppp/8/8/8/8/5PPP/RR4K1 w - - 0 1", solution: ["b1b8", "e8b8", "a1b8", "g8h7", "b8b7"], mateIn: 3 },
+            // Knight fork patterns into mate
+            { id: "M3_024", fen: "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 4", solution: ["f3g5", "d7d5", "g5f7", "e8f7", "d1h5"], mateIn: 3 },
+            { id: "M3_025", fen: "r1bqk2r/pppp1Npp/2n2n2/2b1p3/2B1P3/8/PPPP1PPP/RNBQK2R b KQkq - 0 5", solution: ["d8e7", "f7d6", "e8d8", "c4f7", "c5d6"], mateIn: 3 },
+            // Arabian mate extended
+            { id: "M3_026", fen: "6k1/5p1p/8/8/8/5N2/5P1P/4R1K1 w - - 0 1", solution: ["e1e8", "g8h7", "e8e7", "h7g8", "f3h4"], mateIn: 3 },
+            { id: "M3_027", fen: "5rk1/5p1p/8/8/8/5N2/5P1P/4R1K1 w - - 0 1", solution: ["e1e8", "f8e8", "f3g5", "g8f8", "g5h7"], mateIn: 3 },
+            // Anastasia's mate sequences
+            { id: "M3_028", fen: "r4rk1/ppp1Nppp/8/8/8/Q7/5PPP/6K1 w - - 0 1", solution: ["a3h3", "g8h8", "e7f5", "g7g6", "h3h6"], mateIn: 3 },
+            { id: "M3_029", fen: "r4rk1/ppp2ppp/4N3/8/8/7Q/5PPP/6K1 w - - 0 1", solution: ["h3h6", "g8h8", "e6g5", "f8g8", "h6h7"], mateIn: 3 },
+            // Mate with pawn promotion
+            { id: "M3_030", fen: "8/5P1k/8/8/8/8/6K1/8 w - - 0 1", solution: ["f7f8q", "h7g6", "f8f3", "g6h5", "f3h3"], mateIn: 3 },
+            { id: "M3_031", fen: "8/6Pk/8/8/8/8/6K1/8 w - - 0 1", solution: ["g7g8q", "h7h6", "g8g6", "h6h5", "g6g5"], mateIn: 3 },
+            // Back rank extension
+            { id: "M3_032", fen: "3r2k1/5ppp/8/8/8/8/5PPP/1R2R1K1 w - - 0 1", solution: ["b1b8", "d8b8", "e1e8", "b8e8", "e8e8"], mateIn: 3 },
+            { id: "M3_033", fen: "r3r1k1/5ppp/8/8/8/8/5PPP/2RR2K1 w - - 0 1", solution: ["d1d8", "e8d8", "c1c8", "a8c8", "c8c8"], mateIn: 3 },
+            // Queen chase
+            { id: "M3_034", fen: "k7/8/1K3Q2/8/8/8/8/8 w - - 0 1", solution: ["f6a1", "a8b8", "a1h8", "b8a7", "h8a1"], mateIn: 3 },
+            { id: "M3_035", fen: "k7/8/1KQ5/8/8/8/8/8 w - - 0 1", solution: ["c6c8", "a8a7", "c8b7", "a7a6", "b7b6"], mateIn: 3 },
+            // Bishop pair extended
+            { id: "M3_036", fen: "6k1/5p1p/8/8/8/1B2B3/5P1P/6K1 w - - 0 1", solution: ["b3e6", "g8h8", "e3c5", "h8g8", "e6f7"], mateIn: 3 },
+            { id: "M3_037", fen: "5k2/5p1p/8/8/8/1B2B3/5P1P/6K1 w - - 0 1", solution: ["b3c4", "f8e8", "e3a7", "e8d8", "a7c5"], mateIn: 3 },
+            // Heavy piece coordination
+            { id: "M3_038", fen: "6k1/5ppp/8/8/8/8/5PPP/3QR1K1 w - - 0 1", solution: ["e1e8", "g8h7", "d1d3", "h7g6", "d3g3"], mateIn: 3 },
+            { id: "M3_039", fen: "4r1k1/5ppp/8/8/8/8/5PPP/3QR1K1 w - - 0 1", solution: ["d1d8", "e8d8", "e1e8", "g8h7", "e8d8"], mateIn: 3 },
+            // Mating nets
+            { id: "M3_040", fen: "5rk1/5ppp/8/8/8/3B4/5PPP/3R2K1 w - - 0 1", solution: ["d3h7", "g8h7", "d1d7", "h7g8", "d7g7"], mateIn: 3 },
+            { id: "M3_041", fen: "3r2k1/5ppp/8/8/8/3B4/5PPP/3R2K1 w - - 0 1", solution: ["d1d8", "g8h7", "d3f5", "g7g6", "d8h8"], mateIn: 3 },
+            // Queen and knight combos
+            { id: "M3_042", fen: "6k1/5ppp/4N3/8/8/8/5PPP/3Q2K1 w - - 0 1", solution: ["d1d8", "g8h7", "e6f8", "h7h6", "d8h4"], mateIn: 3 },
+            { id: "M3_043", fen: "r4rk1/5ppp/8/4N3/8/8/5PPP/3Q2K1 w - - 0 1", solution: ["d1d7", "f8f7", "e5f7", "g8h8", "d7d8"], mateIn: 3 },
+            // Clearance sacrifices
+            { id: "M3_044", fen: "r4rk1/ppp2ppp/8/8/3NP3/8/PPP2PPP/R4RK1 w - - 0 1", solution: ["d4f5", "g8h8", "f5h6", "g7h6", "f1f8"], mateIn: 3 },
+            { id: "M3_045", fen: "r4rk1/ppp2ppp/8/8/4N3/8/PPP2PPP/R4RK1 w - - 0 1", solution: ["e4f6", "g7f6", "f1f6", "g8h8", "a1a8"], mateIn: 3 },
+            // King walk mates
+            { id: "M3_046", fen: "8/8/8/8/8/4k3/4P3/4K2R w - - 0 1", solution: ["h1h3", "e3f4", "h3h4", "f4f5", "h4h5"], mateIn: 3 },
+            { id: "M3_047", fen: "8/8/8/8/5k2/8/5P2/5K1R w - - 0 1", solution: ["h1h4", "f4f5", "h4h5", "f5f6", "h5h6"], mateIn: 3 },
+            // Rook lift mates
+            { id: "M3_048", fen: "r4rk1/6pp/8/8/8/8/R5PP/5RK1 w - - 0 1", solution: ["a2a8", "f8a8", "f1f8", "a8f8", "f8f8"], mateIn: 3 },
+            { id: "M3_049", fen: "2r3k1/6pp/8/8/8/8/R5PP/4R1K1 w - - 0 1", solution: ["a2a8", "c8a8", "e1e8", "a8e8", "e8e8"], mateIn: 3 },
+            { id: "M3_050", fen: "5rk1/6pp/8/8/8/2R5/6PP/5RK1 w - - 0 1", solution: ["c3c8", "f8c8", "f1f8", "c8f8", "f8f8"], mateIn: 3 },
         ];
 
         // DOM Elements
@@ -867,30 +1005,37 @@
         }
 
         function startPuzzle() {
-            currentPuzzle = MATING_PUZZLES[puzzleIndex % MATING_PUZZLES.length];
+            // Pick a random puzzle
+            puzzleIndex = Math.floor(Math.random() * MATING_PUZZLES.length);
+            currentPuzzle = MATING_PUZZLES[puzzleIndex];
             puzzleMoveIndex = 0;
             puzzleSolved = false;
             gameOver = false;
             selectedSquare = null;
             lastMove = null;
 
-            // Load puzzle position (before setup move)
+            // Load puzzle position
             game = new Chess(currentPuzzle.fen);
 
-            // Play the setup move (opponent's move that creates the puzzle)
-            const setupMove = currentPuzzle.moves[0];
-            const from = setupMove.substring(0, 2);
-            const to = setupMove.substring(2, 4);
-            const promotion = setupMove[4];
-            const setupMoveObj = game.move({ from, to, promotion });
-            if (setupMoveObj) {
-                lastMove = setupMoveObj;
+            // Check if puzzle has setup move (old format) or direct solution (new format)
+            if (currentPuzzle.solution) {
+                // New format: FEN is the starting position, solution is the moves
+                puzzleSolution = currentPuzzle.solution;
+                lastMove = null;
+            } else {
+                // Old format: play the setup move first
+                const setupMove = currentPuzzle.moves[0];
+                const from = setupMove.substring(0, 2);
+                const to = setupMove.substring(2, 4);
+                const promotion = setupMove[4];
+                const setupMoveObj = game.move({ from, to, promotion });
+                if (setupMoveObj) {
+                    lastMove = setupMoveObj;
+                }
+                puzzleSolution = currentPuzzle.moves.slice(1);
             }
 
-            // Extract solution (remaining moves after setup)
-            puzzleSolution = currentPuzzle.moves.slice(1);
-
-            // Player plays as the side to move (after setup)
+            // Player plays as the side to move
             playerColor = game.turn();
 
             // Switch to game view
@@ -913,12 +1058,17 @@
             createBoard();
             renderPosition();
 
-            const puzzleNum = (puzzleIndex % MATING_PUZZLES.length) + 1;
-            showStatus(`Puzzle ${puzzleNum}/${MATING_PUZZLES.length} - Find the winning move!`);
+            const mateLabel = currentPuzzle.mateIn === 2 ? 'Mate in 2' : 'Mate in 3';
+            showStatus(`${mateLabel} - Find the winning move!`);
         }
 
         function nextPuzzle() {
-            puzzleIndex++;
+            // Pick a new random puzzle (avoid repeating the same one)
+            let newIndex;
+            do {
+                newIndex = Math.floor(Math.random() * MATING_PUZZLES.length);
+            } while (newIndex === puzzleIndex && MATING_PUZZLES.length > 1);
+            puzzleIndex = newIndex;
             startPuzzle();
         }
 
@@ -929,17 +1079,25 @@
         function showSolution() {
             if (!currentPuzzle) return;
 
-            // Reset to puzzle start (load FEN, play setup move)
+            // Reset to puzzle start
             game = new Chess(currentPuzzle.fen);
 
-            // Play setup move first
-            const setupMove = currentPuzzle.moves[0];
-            const setupFrom = setupMove.substring(0, 2);
-            const setupTo = setupMove.substring(2, 4);
-            const setupPromotion = setupMove[4];
-            const setupMoveObj = game.move({ from: setupFrom, to: setupTo, promotion: setupPromotion });
-            if (setupMoveObj) {
-                lastMove = setupMoveObj;
+            // Check format and setup accordingly
+            if (currentPuzzle.solution) {
+                // New format: no setup move
+                puzzleSolution = currentPuzzle.solution;
+                lastMove = null;
+            } else {
+                // Old format: play setup move first
+                const setupMove = currentPuzzle.moves[0];
+                const setupFrom = setupMove.substring(0, 2);
+                const setupTo = setupMove.substring(2, 4);
+                const setupPromotion = setupMove[4];
+                const setupMoveObj = game.move({ from: setupFrom, to: setupTo, promotion: setupPromotion });
+                if (setupMoveObj) {
+                    lastMove = setupMoveObj;
+                }
+                puzzleSolution = currentPuzzle.moves.slice(1);
             }
 
             playerColor = game.turn();

@@ -162,8 +162,7 @@
             }
 
             newsList.innerHTML = finalHeadlines.map(item => {
-                const label = item.type === 'entertainment' ? ' 🎬' : (item.type === 'satire' ? ' 🧅' : '');
-                return `<li><a href="${item.link}" target="_blank" rel="noopener">${item.title}</a>${label} <span class="news-source">[${item.source}]</span></li>`;
+                return `<li><a href="${item.link}" target="_blank" rel="noopener">${item.title}</a> <span class="news-source">[${item.source}]</span></li>`;
             }).join('');
         }
 

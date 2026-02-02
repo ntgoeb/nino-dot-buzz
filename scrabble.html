@@ -767,27 +767,110 @@
 
         /* Mobile Responsive */
         @media (max-width: 500px) {
+            /* Maximize board size - use viewport width calculation */
             .scrabble-board {
-                grid-template-columns: repeat(15, 22px);
-                grid-template-rows: repeat(15, 22px);
+                grid-template-columns: repeat(15, calc((100vw - 40px) / 15));
+                grid-template-rows: repeat(15, calc((100vw - 40px) / 15));
             }
             .cell {
-                font-size: 12px;
+                font-size: 14px;
+            }
+            .cell.has-tile .tile-letter {
+                font-size: 14px;
+            }
+            .cell.has-tile .tile-score {
+                font-size: 6px;
+                bottom: 0;
+                right: 1px;
             }
             .cell.tw::before, .cell.dw::before,
             .cell.tl::before, .cell.dl::before {
-                font-size: 6px;
+                font-size: 5px;
+            }
+            .cell.center::before {
+                font-size: 10px;
+            }
+
+            /* Maximize rack tile size for easier tapping */
+            .rack-container {
+                padding: 6px 8px;
+                gap: 4px;
+                justify-content: center;
+                min-height: 44px;
             }
             .rack-tile {
-                width: 30px;
-                height: 30px;
-                font-size: 16px;
+                width: 40px;
+                height: 40px;
+                font-size: 22px;
             }
+            .rack-tile .tile-score {
+                font-size: 8px;
+            }
+
+            /* Reduce vertical spacing */
+            .game-screen {
+                gap: 4px;
+            }
+            .game-room-code {
+                padding: 3px 10px;
+                font-size: 0.8em;
+            }
+            .scoreboard {
+                gap: 6px;
+                padding: 6px 10px;
+                min-width: auto;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            .score-item {
+                padding: 3px 8px;
+                font-size: 0.8em;
+            }
+            .status-bar {
+                padding: 5px 10px;
+                min-width: auto;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            .turn-indicator {
+                font-size: 0.95em;
+            }
+            .tiles-remaining {
+                font-size: 0.75em;
+                margin-top: 1px;
+            }
+            .board-container {
+                margin: 0;
+            }
+            .game-controls {
+                gap: 6px;
+                padding: 2px 0;
+                width: 100%;
+            }
+
+            /* Play Word button stands out */
+            .control-btn {
+                padding: 8px 14px;
+                font-size: 0.9em;
+            }
+            #play-btn {
+                width: 100%;
+                margin-top: 6px;
+                padding: 12px 20px;
+                font-size: 1.1em;
+                order: 10; /* Push to end */
+            }
+
             .menu-btn, .control-btn {
                 font-family: Arial, Helvetica, sans-serif;
             }
             .menu-input input {
                 font-family: Arial, Helvetica, sans-serif;
+            }
+
+            /* Hide tile distribution on mobile to save space */
+            .tile-distribution {
+                display: none;
             }
         }
     </style>
@@ -1188,7 +1271,24 @@
                 }
             }, { passive: false });
             elements.board.addEventListener('touchmove', handleTouchMove, { passive: false });
-            elements.board.addEventListener('touchend', handleTouchEnd);
+            elements.board.addEventListener('touchend', (e) => {
+                // If there's an active drag, use the drag handler
+                if (dragState.touchIdentifier !== null) {
+                    handleTouchEnd(e);
+                    return;
+                }
+
+                // Otherwise, handle as a tap on a cell (for placing selected tiles)
+                const touch = e.changedTouches[0];
+                if (!touch) return;
+
+                const cell = e.target.closest('.cell');
+                if (cell) {
+                    const row = parseInt(cell.dataset.row);
+                    const col = parseInt(cell.dataset.col);
+                    handleCellClick(row, col);
+                }
+            });
         }
 
         function renderBoard() {
@@ -1419,8 +1519,15 @@
             boardCol: null,
             letter: null,
             ghostElement: null,
-            touchIdentifier: null
+            touchIdentifier: null,
+            // Touch tap vs drag detection
+            startX: null,
+            startY: null,
+            isDragging: false,
+            sourceElement: null
         };
+
+        const DRAG_THRESHOLD = 10; // pixels to move before it's considered a drag
 
         function handleRackDragStart(e) {
             const rackIndex = parseInt(e.target.dataset.rackIndex);
@@ -1471,6 +1578,13 @@
                 dragState.ghostElement = null;
             }
             dragState.touchIdentifier = null;
+            dragState.startX = null;
+            dragState.startY = null;
+            dragState.isDragging = false;
+            if (dragState.sourceElement) {
+                dragState.sourceElement.classList.remove('dragging');
+                dragState.sourceElement = null;
+            }
 
             // Remove all drag-over states
             document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
@@ -1649,17 +1763,16 @@
             const tile = e.target.closest('.rack-tile');
             if (!tile || tile.classList.contains('empty')) return;
 
-            e.preventDefault();
-
+            // Don't preventDefault yet - we need to detect if this is a tap or drag
+            // Store touch info for potential drag
             dragState.touchIdentifier = touch.identifier;
             dragState.sourceType = 'rack';
             dragState.rackIndex = parseInt(tile.dataset.rackIndex);
             dragState.letter = tile.dataset.letter;
-
-            tile.classList.add('dragging');
-
-            // Create ghost element
-            createTouchGhost(tile, touch.clientX, touch.clientY);
+            dragState.startX = touch.clientX;
+            dragState.startY = touch.clientY;
+            dragState.isDragging = false;
+            dragState.sourceElement = tile;
         }
 
         function handleBoardTouchStart(e) {
@@ -1669,23 +1782,22 @@
             const cell = e.target.closest('.cell');
             if (!cell || !cell.classList.contains('placed-this-turn')) return;
 
-            e.preventDefault();
-
             const row = parseInt(cell.dataset.row);
             const col = parseInt(cell.dataset.col);
             const placedTile = localState.placedTiles.find(t => t.row === row && t.col === col);
             if (!placedTile) return;
 
+            // Don't preventDefault yet - we need to detect if this is a tap or drag
             dragState.touchIdentifier = touch.identifier;
             dragState.sourceType = 'board';
             dragState.boardRow = row;
             dragState.boardCol = col;
             dragState.rackIndex = placedTile.rackIndex;
             dragState.letter = placedTile.blankLetter || placedTile.letter;
-
-            cell.classList.add('dragging');
-
-            createTouchGhost(cell, touch.clientX, touch.clientY);
+            dragState.startX = touch.clientX;
+            dragState.startY = touch.clientY;
+            dragState.isDragging = false;
+            dragState.sourceElement = cell;
         }
 
         function createTouchGhost(sourceEl, x, y) {
@@ -1703,6 +1815,25 @@
 
             const touch = Array.from(e.touches).find(t => t.identifier === dragState.touchIdentifier);
             if (!touch) return;
+
+            // Check if we've moved beyond the drag threshold
+            if (!dragState.isDragging) {
+                const dx = touch.clientX - dragState.startX;
+                const dy = touch.clientY - dragState.startY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < DRAG_THRESHOLD) {
+                    // Not dragging yet, don't prevent default
+                    return;
+                }
+
+                // Start dragging
+                dragState.isDragging = true;
+                if (dragState.sourceElement) {
+                    dragState.sourceElement.classList.add('dragging');
+                    createTouchGhost(dragState.sourceElement, touch.clientX, touch.clientY);
+                }
+            }
 
             e.preventDefault();
 
@@ -1750,6 +1881,19 @@
 
             const touch = Array.from(e.changedTouches).find(t => t.identifier === dragState.touchIdentifier);
             if (!touch) {
+                clearDragState();
+                return;
+            }
+
+            // If we weren't dragging, treat this as a tap
+            if (!dragState.isDragging) {
+                if (dragState.sourceType === 'rack') {
+                    // Tap on rack tile - toggle selection
+                    handleRackClick(dragState.rackIndex);
+                } else if (dragState.sourceType === 'board') {
+                    // Tap on placed tile - remove it
+                    handleCellClick(dragState.boardRow, dragState.boardCol);
+                }
                 clearDragState();
                 return;
             }
@@ -2420,6 +2564,12 @@
 
         document.getElementById('pass-btn').onclick = async () => {
             if (!isMyTurn()) return;
+
+            // Confirm before passing
+            if (!confirm('Are you sure you want to pass your turn?')) {
+                return;
+            }
+
             recallTiles();
             try {
                 await firebasePassTurn();
@@ -2436,6 +2586,12 @@
             const tilesToSwap = localState.placedTiles.map(t => t.rackIndex);
             if (tilesToSwap.length === 0) {
                 showError('Select tiles to swap by placing them, then click Swap');
+                return;
+            }
+
+            // Confirm before swapping
+            const tileCount = tilesToSwap.length;
+            if (!confirm(`Swap ${tileCount} tile${tileCount > 1 ? 's' : ''}? This will end your turn.`)) {
                 return;
             }
 
