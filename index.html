@@ -42,6 +42,32 @@
                 </div>
             </div>
 
+            <!-- Horoscope Section -->
+            <div class="horoscope-container">
+                <h2>🔮 Daily Horoscope</h2>
+                <div class="horoscope-controls">
+                    <label for="zodiac-select">Your Sign:</label>
+                    <select id="zodiac-select" onchange="fetchHoroscope()">
+                        <option value="">-- Select --</option>
+                        <option value="Aries">♈ Aries (Mar 21 - Apr 19)</option>
+                        <option value="Taurus">♉ Taurus (Apr 20 - May 20)</option>
+                        <option value="Gemini">♊ Gemini (May 21 - Jun 20)</option>
+                        <option value="Cancer">♋ Cancer (Jun 21 - Jul 22)</option>
+                        <option value="Leo">♌ Leo (Jul 23 - Aug 22)</option>
+                        <option value="Virgo">♍ Virgo (Aug 23 - Sep 22)</option>
+                        <option value="Libra">♎ Libra (Sep 23 - Oct 22)</option>
+                        <option value="Scorpio">♏ Scorpio (Oct 23 - Nov 21)</option>
+                        <option value="Sagittarius">♐ Sagittarius (Nov 22 - Dec 21)</option>
+                        <option value="Capricorn">♑ Capricorn (Dec 22 - Jan 19)</option>
+                        <option value="Aquarius">♒ Aquarius (Jan 20 - Feb 18)</option>
+                        <option value="Pisces">♓ Pisces (Feb 19 - Mar 20)</option>
+                    </select>
+                </div>
+                <div id="horoscope-content">
+                    <p class="horoscope-prompt">Select your zodiac sign to reveal today's horoscope...</p>
+                </div>
+            </div>
+
             <!-- News Section -->
             <div class="news-container">
                 <h2>📰 Today's Headlines</h2>
@@ -186,10 +212,61 @@
         // Load news when page loads
         loadNews();
 
-        // Show birthday banner on February 4th
+        // Horoscope functionality
+        const zodiacSelect = document.getElementById('zodiac-select');
+        const horoscopeContent = document.getElementById('horoscope-content');
+
+        // Load saved zodiac sign
+        const savedSign = localStorage.getItem('nino-zodiac-sign');
+        if (savedSign) {
+            zodiacSelect.value = savedSign;
+            fetchHoroscope();
+        }
+
+        async function fetchHoroscope() {
+            const sign = zodiacSelect.value;
+            if (!sign) {
+                horoscopeContent.innerHTML = '<p class="horoscope-prompt">Select your zodiac sign to reveal today\'s horoscope...</p>';
+                localStorage.removeItem('nino-zodiac-sign');
+                return;
+            }
+
+            // Save the selection
+            localStorage.setItem('nino-zodiac-sign', sign);
+
+            // Show loading state
+            horoscopeContent.innerHTML = '<p class="horoscope-loading">Consulting the stars...</p>';
+
+            try {
+                const response = await fetch(`https://horoscope-app-api.vercel.app/api/v1/get-horoscope/daily?sign=${sign}&day=TODAY`);
+                const data = await response.json();
+
+                if (data.success && data.data) {
+                    const horoscopeText = document.createElement('p');
+                    horoscopeText.className = 'horoscope-text';
+                    horoscopeText.textContent = data.data.horoscope_data;
+
+                    const horoscopeDate = document.createElement('p');
+                    horoscopeDate.className = 'horoscope-date';
+                    horoscopeDate.textContent = data.data.date;
+
+                    horoscopeContent.innerHTML = '';
+                    horoscopeContent.appendChild(horoscopeText);
+                    horoscopeContent.appendChild(horoscopeDate);
+                } else {
+                    horoscopeContent.innerHTML = '<p class="horoscope-error">The stars are unclear... try again later.</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching horoscope:', error);
+                horoscopeContent.innerHTML = '<p class="horoscope-error">The cosmic connection failed. Try again later!</p>';
+            }
+        }
+
+        // Show birthday banner Feb 3-4 (Eastern Time)
         (function() {
-            const today = new Date();
-            if (today.getMonth() === 1 && today.getDate() === 4) {
+            const etDate = new Date().toLocaleDateString('en-US', { timeZone: 'America/New_York' });
+            const [month, day] = etDate.split('/').map(Number);
+            if (month === 2 && (day === 3 || day === 4)) {
                 document.getElementById('birthday-banner').style.display = 'block';
             }
         })();
