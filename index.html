@@ -40,16 +40,6 @@
                     </span>
                 </span>
                 🎂 HAPPY BIRTHDAY NINO! 🎉
-                <span class="running-man-container">
-                    <span class="running-man">
-                        <span class="head"></span>
-                        <span class="body"></span>
-                        <span class="arm arm-left"></span>
-                        <span class="arm arm-right"></span>
-                        <span class="leg leg-left"></span>
-                        <span class="leg leg-right"></span>
-                    </span>
-                </span>
             </div>
 
             <!-- Notes Section -->
@@ -88,31 +78,36 @@
                 </div>
             </div>
 
-            <!-- Fun Widgets Section -->
-            <div class="widgets-container">
-                <div class="widget visitor-counter">
-                    <span class="widget-label">Visitors:</span>
-                    <span id="visitor-count">Loading...</span>
-                </div>
-                <div class="widget moon-phase">
-                    <span id="moon-icon">🌑</span>
-                    <span id="moon-phase-text">Loading...</span>
-                </div>
-                <div class="widget random-wiki">
-                    <a href="https://en.wikipedia.org/wiki/Special:Random" target="_blank" rel="noopener">🎲 Random Wikipedia</a>
-                </div>
+            <!-- Moon Phase Section -->
+            <div class="moon-container">
+                <h2>🌙 Moon Phase</h2>
+                <p class="moon-display">
+                    The moon is currently... <span id="moon-icon">🌑</span> <span id="moon-phase-text">Loading...</span>
+                </p>
+            </div>
+
+            <!-- Random Wikipedia Section -->
+            <div class="wiki-container">
+                <a href="https://en.wikipedia.org/wiki/Special:Random" target="_blank" rel="noopener" class="wiki-button">
+                    🎲 Random Wikipedia Article... click me!
+                </a>
             </div>
 
             <!-- News Section -->
             <div class="news-container">
                 <h2 class="news-toggle" onclick="toggleNews()">
-                    📰 Today's Headlines <span id="news-toggle-icon">▼</span>
+                    <span id="news-toggle-icon">▶</span> Today's Headlines 📰
                 </h2>
-                <div id="news-content">
+                <div id="news-content" style="display: none;">
                     <ul id="news-list">
                         <li>Loading news...</li>
                     </ul>
                 </div>
+            </div>
+
+            <!-- Visitor Counter -->
+            <div class="visitor-container">
+                <span>You are </span><span class="visitor-label">VISITOR #</span><span id="visitor-count" class="visitor-number">...</span>
             </div>
         </main>
 
@@ -407,8 +402,8 @@
         // Play next random track when current one ends
         audioPlayer.addEventListener('ended', playRandomTrack);
 
-        // News toggle functionality
-        let newsExpanded = true;
+        // News toggle functionality (collapsed by default)
+        let newsExpanded = false;
         function toggleNews() {
             const newsContent = document.getElementById('news-content');
             const toggleIcon = document.getElementById('news-toggle-icon');

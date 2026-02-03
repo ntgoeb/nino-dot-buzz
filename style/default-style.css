@@ -1,8 +1,12 @@
 /* retro-style.css */
+
+/* Import Comic Neue (Comic Sans alternative for mobile) */
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
+
 body {
     background-color: #000000;
     color: #00ff00;
-    font-family: "Comic Sans MS", "Comic Sans", sans-serif;
+    font-family: "Comic Sans MS", "Comic Sans", "Comic Neue", cursive, sans-serif;
     margin: 0;
     padding: 20px;
 }
@@ -274,54 +278,82 @@ a:hover {
     50% { transform: rotate(30deg); }
 }
 
-/* Widgets container */
-.widgets-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
+/* Moon Phase container */
+.moon-container {
+    border: 3px solid #6699ff;
+    padding: 20px;
     margin: 20px 0;
-    justify-content: center;
+    background-color: #000033;
 }
 
-.widget {
-    background: #000033;
-    border: 2px solid #ff00ff;
-    padding: 10px 15px;
-    border-radius: 5px;
-    font-size: 14px;
+.moon-container h2 {
+    color: #6699ff;
+    text-shadow: 2px 2px #000066;
+    margin-top: 0;
 }
 
-.widget-label {
-    color: #ffff00;
-}
-
-.visitor-counter #visitor-count {
-    color: #00ff00;
-    font-weight: bold;
-    font-family: monospace;
-}
-
-.moon-phase {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.moon-display {
+    color: #ccccff;
+    font-size: 1.1em;
+    margin: 0;
 }
 
 #moon-icon {
-    font-size: 1.3em;
+    font-size: 1.5em;
+    vertical-align: middle;
 }
 
 #moon-phase-text {
-    color: #ccccff;
+    color: #ffffff;
+    font-weight: bold;
 }
 
-.random-wiki a {
-    color: #00ffff;
+/* Random Wikipedia button */
+.wiki-container {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.wiki-button {
+    display: inline-block;
+    background: linear-gradient(to bottom, #006600, #003300);
+    border: 3px outset #00ff00;
+    padding: 15px 30px;
+    font-size: 1.2em;
+    color: #00ff00;
     text-decoration: none;
+    cursor: pointer;
+    transition: all 0.1s;
 }
 
-.random-wiki a:hover {
-    color: #ff00ff;
+.wiki-button:hover {
+    background: linear-gradient(to bottom, #008800, #004400);
+    color: #ffff00;
+    border-style: inset;
+}
+
+/* Visitor Counter */
+.visitor-container {
+    text-align: center;
+    margin: 30px 0 10px 0;
+    padding: 15px;
+    color: #888888;
+    font-size: 14px;
+}
+
+.visitor-label {
+    color: #ffff00;
+}
+
+.visitor-number {
+    display: inline-block;
+    background: #000000;
+    border: 2px inset #00ff00;
+    padding: 5px 12px;
+    font-family: monospace;
+    font-size: 1.1em;
+    color: #00ff00;
+    font-weight: bold;
 }
 
 /* News container */
@@ -420,7 +452,7 @@ a:hover {
     color: #00ff00;
     border: 2px inset #cc66ff;
     padding: 8px 12px;
-    font-family: "Comic Sans MS", cursive;
+    font-family: "Comic Sans MS", "Comic Sans", "Comic Neue", cursive, sans-serif;
     font-size: 14px;
     cursor: pointer;
 }
@@ -483,7 +515,7 @@ a:hover {
     color: #00ff00;
     border: 2px inset #00ff00;
     padding: 10px;
-    font-family: "Comic Sans MS", cursive;
+    font-family: "Comic Sans MS", "Comic Sans", "Comic Neue", cursive, sans-serif;
     font-size: 14px;
     resize: vertical;
     box-sizing: border-box;
@@ -510,7 +542,7 @@ a:hover {
     color: #ff9900;
     border: 2px outset #ff9900;
     padding: 5px 15px;
-    font-family: "Comic Sans MS", cursive;
+    font-family: "Comic Sans MS", "Comic Sans", "Comic Neue", cursive, sans-serif;
     cursor: pointer;
 }
 
@@ -566,12 +598,12 @@ a:hover {
         padding: 15px;
     }
 
-    .widgets-container {
-        flex-direction: column;
-        align-items: stretch;
+    .wiki-button {
+        font-size: 1em;
+        padding: 12px 20px;
     }
 
-    .widget {
-        text-align: center;
+    .visitor-container {
+        font-size: 12px;
     }
 }
