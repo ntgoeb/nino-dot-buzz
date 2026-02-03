@@ -5,9 +5,10 @@
 The following security issues were identified in a security audit (2026-02-02) and have been addressed:
 
 ### Critical - FIXED
-1. **~~Exposed Firebase API Key~~** - API key rotated, Firebase Security Rules configured
+1. **~~Exposed Firebase API Key~~** - Firebase Security Rules configured, API key restricted
    - Rules restrict access to `/scrabble/{roomCode}` only
    - Validates room code format, player names, data structure
+   - API key has HTTP referrer restriction: only works from `nino.buzz/*` and `www.nino.buzz/*`
 
 2. **~~XSS via Player Names~~** - Fixed in `scrabble.html`
    - Changed `innerHTML` to `createElement` + `textContent` for all player name rendering
