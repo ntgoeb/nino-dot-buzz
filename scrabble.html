@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <title>Scrabble - Nino's Webhome</title>
     <link rel="stylesheet" href="style/default-style.css">
     <style>
@@ -892,7 +894,7 @@
 
             <div class="menu-input">
                 <label>Your Name:</label>
-                <input type="text" id="player-name" placeholder="Enter name" maxlength="12">
+                <input type="text" id="player-name" placeholder="Enter name" maxlength="20">
             </div>
 
             <button class="menu-btn" id="create-game-btn">Create Game</button>
@@ -2227,11 +2229,22 @@
                     item.classList.add('disconnected');
                 }
 
-                const disconnectedIcon = !player.connected ? ' <span style="color:#ff6666;">⚠</span>' : '';
-                item.innerHTML = `
-                    <div class="score-name">${player.name}${playerId === localState.playerId ? ' (you)' : ''}${disconnectedIcon}</div>
-                    <div class="score-value">${player.score || 0}</div>
-                `;
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'score-name';
+                nameDiv.textContent = player.name + (playerId === localState.playerId ? ' (you)' : '');
+                if (!player.connected) {
+                    const icon = document.createElement('span');
+                    icon.style.color = '#ff6666';
+                    icon.textContent = ' ⚠';
+                    nameDiv.appendChild(icon);
+                }
+
+                const scoreDiv = document.createElement('div');
+                scoreDiv.className = 'score-value';
+                scoreDiv.textContent = player.score || 0;
+
+                item.appendChild(nameDiv);
+                item.appendChild(scoreDiv);
                 elements.scoreboard.appendChild(item);
             }
         }
@@ -2391,15 +2404,26 @@
             finalScores.forEach((player, index) => {
                 const item = document.createElement('div');
                 item.className = 'final-score-item' + (index === 0 ? ' winner' : '');
-                item.innerHTML = `
-                    <span class="final-rank">${index + 1}.</span>
-                    <span class="final-name">${player.name}${player.playerId === localState.playerId ? ' (you)' : ''}</span>
-                    <span class="final-points">${player.finalScore}</span>
-                `;
+
+                const rankSpan = document.createElement('span');
+                rankSpan.className = 'final-rank';
+                rankSpan.textContent = `${index + 1}.`;
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'final-name';
+                nameSpan.textContent = player.name + (player.playerId === localState.playerId ? ' (you)' : '');
+
+                const pointsSpan = document.createElement('span');
+                pointsSpan.className = 'final-points';
+                pointsSpan.textContent = player.finalScore;
+
+                item.appendChild(rankSpan);
+                item.appendChild(nameSpan);
+                item.appendChild(pointsSpan);
                 elements.finalScores.appendChild(item);
             });
 
-            elements.winnerAnnouncement.textContent = `${finalScores[0].name} wins!`;
+            elements.winnerAnnouncement.textContent = finalScores[0].name + ' wins!';
 
             // Save to gallery (only once per game, check if already saved)
             const galleryGames = getGalleryGames();
@@ -2437,13 +2461,25 @@
                 const wordDiv = document.createElement('div');
                 wordDiv.className = 'word-definition';
 
+                const wordHeader = document.createElement('h4');
+                wordHeader.textContent = word.toUpperCase();
+                wordDiv.appendChild(wordHeader);
+
                 if (def && def.meanings?.length > 0) {
-                    wordDiv.innerHTML = `<h4>${word.toUpperCase()}</h4>` +
-                        def.meanings.map(m =>
-                            `<p><span class="part-of-speech">${m.partOfSpeech}</span>: ${m.definition}</p>`
-                        ).join('');
+                    def.meanings.forEach(m => {
+                        const p = document.createElement('p');
+                        const posSpan = document.createElement('span');
+                        posSpan.className = 'part-of-speech';
+                        posSpan.textContent = m.partOfSpeech;
+                        p.appendChild(posSpan);
+                        p.appendChild(document.createTextNode(': ' + m.definition));
+                        wordDiv.appendChild(p);
+                    });
                 } else {
-                    wordDiv.innerHTML = `<h4>${word.toUpperCase()}</h4><p style="color:#888;">No definition available</p>`;
+                    const noDefP = document.createElement('p');
+                    noDefP.style.color = '#888';
+                    noDefP.textContent = 'No definition available';
+                    wordDiv.appendChild(noDefP);
                 }
                 defsContainer.appendChild(wordDiv);
             }
@@ -2463,10 +2499,16 @@
                 const hasAcked = acks[playerId];
                 const ackDiv = document.createElement('div');
                 ackDiv.className = 'ack-player' + (hasAcked ? ' acknowledged' : '');
-                ackDiv.innerHTML = `
-                    <span>${player?.name || 'Player'}${playerId === localState.playerId ? ' (you)' : ''}</span>
-                    <span class="ack-icon">${hasAcked ? '✓' : '...'}</span>
-                `;
+
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = (player?.name || 'Player') + (playerId === localState.playerId ? ' (you)' : '');
+
+                const iconSpan = document.createElement('span');
+                iconSpan.className = 'ack-icon';
+                iconSpan.textContent = hasAcked ? '✓' : '...';
+
+                ackDiv.appendChild(nameSpan);
+                ackDiv.appendChild(iconSpan);
                 ackListEl.appendChild(ackDiv);
             }
 
@@ -2489,10 +2531,25 @@
         // EVENT HANDLERS
         // ============================================
 
+        // Validate player name: 1-20 chars, alphanumeric + spaces/hyphens/underscores
+        function validatePlayerName(name) {
+            if (!name) {
+                return 'Please enter your name';
+            }
+            if (name.length > 20) {
+                return 'Name must be 20 characters or less';
+            }
+            if (!/^[a-zA-Z0-9 _-]+$/.test(name)) {
+                return 'Name can only contain letters, numbers, spaces, hyphens, and underscores';
+            }
+            return null; // valid
+        }
+
         document.getElementById('create-game-btn').onclick = async () => {
             const name = elements.playerNameInput.value.trim();
-            if (!name) {
-                elements.menuError.textContent = 'Please enter your name';
+            const validationError = validatePlayerName(name);
+            if (validationError) {
+                elements.menuError.textContent = validationError;
                 return;
             }
             elements.menuError.textContent = '';
@@ -2508,8 +2565,9 @@
         document.getElementById('join-game-btn').onclick = async () => {
             const name = elements.playerNameInput.value.trim();
             const code = elements.roomCodeInput.value.trim().toUpperCase();
-            if (!name) {
-                elements.menuError.textContent = 'Please enter your name';
+            const validationError = validatePlayerName(name);
+            if (validationError) {
+                elements.menuError.textContent = validationError;
                 return;
             }
             if (!code || code.length !== 4) {

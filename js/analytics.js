@@ -1,5 +1,6 @@
 // Firebase Analytics for nino.buzz
-// Logs visitor info to Firebase Realtime Database
+// Logs anonymized visitor info to Firebase Realtime Database
+// Note: No IP addresses or personally identifiable information collected
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -17,33 +18,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-// Get visitor IP from external API
-async function getVisitorIP() {
-    try {
-        const response = await fetch('https://api.ipify.org?format=json');
-        const data = await response.json();
-        return data.ip;
-    } catch (error) {
-        return 'unknown';
-    }
-}
-
-// Log page visit
+// Log page visit (anonymized - no IP tracking)
 async function logVisit() {
-    const ip = await getVisitorIP();
-
     const visitData = {
         timestamp: new Date().toISOString(),
         page: window.location.pathname || '/',
-        fullUrl: window.location.href,
         referrer: document.referrer || 'direct',
-        userAgent: navigator.userAgent,
         language: navigator.language,
         screenWidth: screen.width,
-        screenHeight: screen.height,
-        windowWidth: window.innerWidth,
-        windowHeight: window.innerHeight,
-        ip: ip
+        screenHeight: screen.height
     };
 
     try {

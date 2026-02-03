@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <title>Nino's webhome</title>
     <link rel="stylesheet" href="style/default-style.css">
 </head>
@@ -161,9 +163,24 @@
                 return;
             }
 
-            newsList.innerHTML = finalHeadlines.map(item => {
-                return `<li><a href="${item.link}" target="_blank" rel="noopener">${item.title}</a> <span class="news-source">[${item.source}]</span></li>`;
-            }).join('');
+            newsList.innerHTML = '';
+            finalHeadlines.forEach(item => {
+                const li = document.createElement('li');
+                const link = document.createElement('a');
+                link.href = item.link;
+                link.target = '_blank';
+                link.rel = 'noopener';
+                link.textContent = item.title;
+
+                const sourceSpan = document.createElement('span');
+                sourceSpan.className = 'news-source';
+                sourceSpan.textContent = '[' + item.source + ']';
+
+                li.appendChild(link);
+                li.appendChild(document.createTextNode(' '));
+                li.appendChild(sourceSpan);
+                newsList.appendChild(li);
+            });
         }
 
         // Load news when page loads

@@ -1,5 +1,36 @@
 # nino.buzz - Project Notes
 
+## ✅ SECURITY VULNERABILITIES - FIXED (2026-02-03)
+
+The following security issues were identified in a security audit (2026-02-02) and have been addressed:
+
+### Critical - FIXED
+1. **~~Exposed Firebase API Key~~** - API key rotated, Firebase Security Rules configured
+   - Rules restrict access to `/scrabble/{roomCode}` only
+   - Validates room code format, player names, data structure
+
+2. **~~XSS via Player Names~~** - Fixed in `scrabble.html`
+   - Changed `innerHTML` to `createElement` + `textContent` for all player name rendering
+
+3. **~~XSS via External APIs~~** - Fixed in `scrabble.html` and `index.html`
+   - Dictionary definitions and RSS feed content now use safe DOM methods
+
+### High - FIXED
+4. **~~IP Tracking Without Consent~~** - Fixed in `js/analytics.js`
+   - Removed IP tracking entirely; analytics now only logs anonymized data (page, referrer, language, screen size)
+
+5. **~~No SRI on CDN Scripts~~** - Fixed in `chess.html` and `startrek.html`
+   - Added `integrity` and `crossorigin` attributes to external script tags
+
+### Medium - FIXED
+6. **~~Insufficient Input Validation~~** - Fixed in `scrabble.html`
+   - Added `validatePlayerName()` function: max 20 chars, alphanumeric + spaces/hyphens/underscores only
+
+7. **~~Missing Security Headers~~** - Fixed in all HTML files
+   - Added `X-Frame-Options: DENY` and `X-Content-Type-Options: nosniff` meta tags
+
+---
+
 ## Overview
 nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans on desktop, Arial on mobile, neon colors, blinking text, custom cursor). Hosted on GitHub Pages.
 
