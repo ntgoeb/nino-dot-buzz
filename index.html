@@ -29,7 +29,27 @@
             <h1>Nino's Webhome</h1>
             
             <div id="birthday-banner" class="birthday-banner" style="display: none;">
-                🎂 HAPPY BIRTHDAY NINO! 🎉🎈🎁
+                <span class="running-man-container">
+                    <span class="running-man">
+                        <span class="head"></span>
+                        <span class="body"></span>
+                        <span class="arm arm-left"></span>
+                        <span class="arm arm-right"></span>
+                        <span class="leg leg-left"></span>
+                        <span class="leg leg-right"></span>
+                    </span>
+                </span>
+                🎂 HAPPY BIRTHDAY NINO! 🎉
+                <span class="running-man-container">
+                    <span class="running-man">
+                        <span class="head"></span>
+                        <span class="body"></span>
+                        <span class="arm arm-left"></span>
+                        <span class="arm arm-right"></span>
+                        <span class="leg leg-left"></span>
+                        <span class="leg leg-right"></span>
+                    </span>
+                </span>
             </div>
 
             <!-- Notes Section -->
@@ -238,7 +258,8 @@
             horoscopeContent.innerHTML = '<p class="horoscope-loading">Consulting the stars...</p>';
 
             try {
-                const response = await fetch(`https://horoscope-app-api.vercel.app/api/v1/get-horoscope/daily?sign=${sign}&day=TODAY`);
+                const apiUrl = `https://horoscope-app-api.vercel.app/api/v1/get-horoscope/daily?sign=${sign}&day=TODAY`;
+                const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`);
                 const data = await response.json();
 
                 if (data.success && data.data) {

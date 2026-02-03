@@ -2,7 +2,7 @@
 body {
     background-color: #000000;
     color: #00ff00;
-    font-family: "Comic Sans MS", cursive;
+    font-family: "Comic Sans MS", "Comic Sans", sans-serif;
     margin: 0;
     padding: 20px;
 }
@@ -18,7 +18,7 @@ h1 {
     color: #ff00ff;
     text-align: center;
     font-size: 36px;
-    text-shadow: 2px 2px #ff0000;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 h2 {
@@ -174,6 +174,104 @@ a:hover {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
+}
+
+/* Running man animation */
+.running-man-container {
+    display: inline-block;
+    width: 60px;
+    height: 32px;
+    position: relative;
+    vertical-align: middle;
+    margin: 0 5px;
+}
+
+.running-man {
+    position: absolute;
+    width: 20px;
+    height: 32px;
+    animation: run-back-forth 2s ease-in-out infinite;
+}
+
+.running-man .head {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #ffcc99;
+    border-radius: 50%;
+    top: 0;
+    left: 5px;
+    border: 1px solid #000;
+}
+
+.running-man .body {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #3399ff;
+    top: 10px;
+    left: 5px;
+    border-radius: 2px;
+    border: 1px solid #000;
+}
+
+.running-man .arm {
+    position: absolute;
+    width: 3px;
+    height: 10px;
+    background: #ffcc99;
+    top: 10px;
+    border-radius: 2px;
+    transform-origin: top center;
+    border: 1px solid #000;
+}
+
+.running-man .arm-left {
+    left: 2px;
+    animation: arm-swing 0.3s ease-in-out infinite;
+}
+
+.running-man .arm-right {
+    left: 15px;
+    animation: arm-swing 0.3s ease-in-out infinite reverse;
+}
+
+.running-man .leg {
+    position: absolute;
+    width: 4px;
+    height: 12px;
+    background: #996633;
+    top: 20px;
+    border-radius: 2px;
+    transform-origin: top center;
+    border: 1px solid #000;
+}
+
+.running-man .leg-left {
+    left: 5px;
+    animation: leg-swing 0.3s ease-in-out infinite;
+}
+
+.running-man .leg-right {
+    left: 11px;
+    animation: leg-swing 0.3s ease-in-out infinite reverse;
+}
+
+@keyframes run-back-forth {
+    0%, 100% { left: 0; transform: scaleX(1); }
+    45% { left: 40px; transform: scaleX(1); }
+    50% { left: 40px; transform: scaleX(-1); }
+    95% { left: 0; transform: scaleX(-1); }
+}
+
+@keyframes arm-swing {
+    0%, 100% { transform: rotate(-45deg); }
+    50% { transform: rotate(45deg); }
+}
+
+@keyframes leg-swing {
+    0%, 100% { transform: rotate(-30deg); }
+    50% { transform: rotate(30deg); }
 }
 
 /* News container */
@@ -363,17 +461,11 @@ a:hover {
 /* Mobile-specific adjustments */
 @media screen and (max-width: 600px) {
     body {
-        padding: 10px;
-        font-family: Arial, Helvetica, sans-serif;
+        padding: 0;
     }
 
     h1 {
         font-size: 24px;
-        font-family: Arial, Helvetica, sans-serif;
-    }
-
-    h2 {
-        font-family: Arial, Helvetica, sans-serif;
     }
 
     nav {
@@ -400,19 +492,9 @@ a:hover {
 
     .container {
         padding: 10px;
-        width: 95%;
-    }
-
-    #user-notes {
-        font-family: Arial, Helvetica, sans-serif;
-    }
-
-    .notes-footer button {
-        font-family: Arial, Helvetica, sans-serif;
-    }
-
-    #zodiac-select {
-        font-family: Arial, Helvetica, sans-serif;
+        width: 100%;
+        border-left: none;
+        border-right: none;
     }
 
     .birthday-banner {

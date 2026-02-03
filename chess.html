@@ -471,19 +471,6 @@
             .setup-btn {
                 padding: 8px 12px;
                 font-size: 0.9em;
-                font-family: Arial, Helvetica, sans-serif;
-            }
-
-            .start-btn {
-                font-family: Arial, Helvetica, sans-serif;
-            }
-
-            #submit-move {
-                font-family: Arial, Helvetica, sans-serif;
-            }
-
-            .control-btn {
-                font-family: Arial, Helvetica, sans-serif;
             }
         }
 
@@ -646,10 +633,10 @@
             crossorigin="anonymous"></script>
 
     <script>
-        // Piece symbols
+        // Piece symbols (with text presentation selector \uFE0E to prevent emoji rendering on mobile)
         const PIECES = {
-            'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙',
-            'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟'
+            'K': '♔\uFE0E', 'Q': '♕\uFE0E', 'R': '♖\uFE0E', 'B': '♗\uFE0E', 'N': '♘\uFE0E', 'P': '♙\uFE0E',
+            'k': '♚\uFE0E', 'q': '♛\uFE0E', 'r': '♜\uFE0E', 'b': '♝\uFE0E', 'n': '♞\uFE0E', 'p': '♟\uFE0E'
         };
 
         // Game state

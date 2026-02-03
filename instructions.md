@@ -142,9 +142,8 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans on de
 ## Code Patterns
 
 ### Mobile Font Handling
-- Desktop uses Comic Sans MS; mobile (≤600px in default-style.css) uses Arial
-- Game pages with inline `<style>` blocks need their own `@media` queries for font overrides
-- Pattern: add `font-family: Arial, Helvetica, sans-serif;` to buttons/inputs in mobile media query
+- Comic Sans MS used everywhere (desktop and mobile)
+- Fallback font stack: "Comic Sans MS", "Comic Sans", sans-serif
 - Chess uses 700px breakpoint; Scrabble uses 500px breakpoint
 
 ### Touch vs Click on Mobile
