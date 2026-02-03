@@ -88,12 +88,31 @@
                 </div>
             </div>
 
+            <!-- Fun Widgets Section -->
+            <div class="widgets-container">
+                <div class="widget visitor-counter">
+                    <span class="widget-label">Visitors:</span>
+                    <span id="visitor-count">Loading...</span>
+                </div>
+                <div class="widget moon-phase">
+                    <span id="moon-icon">🌑</span>
+                    <span id="moon-phase-text">Loading...</span>
+                </div>
+                <div class="widget random-wiki">
+                    <a href="https://en.wikipedia.org/wiki/Special:Random" target="_blank" rel="noopener">🎲 Random Wikipedia</a>
+                </div>
+            </div>
+
             <!-- News Section -->
             <div class="news-container">
-                <h2>📰 Today's Headlines</h2>
-                <ul id="news-list">
-                    <li>Loading news...</li>
-                </ul>
+                <h2 class="news-toggle" onclick="toggleNews()">
+                    📰 Today's Headlines <span id="news-toggle-icon">▼</span>
+                </h2>
+                <div id="news-content">
+                    <ul id="news-list">
+                        <li>Loading news...</li>
+                    </ul>
+                </div>
             </div>
         </main>
 
@@ -387,6 +406,69 @@
 
         // Play next random track when current one ends
         audioPlayer.addEventListener('ended', playRandomTrack);
+
+        // News toggle functionality
+        let newsExpanded = true;
+        function toggleNews() {
+            const newsContent = document.getElementById('news-content');
+            const toggleIcon = document.getElementById('news-toggle-icon');
+            newsExpanded = !newsExpanded;
+            newsContent.style.display = newsExpanded ? 'block' : 'none';
+            toggleIcon.textContent = newsExpanded ? '▼' : '▶';
+        }
+
+        // Moon phase calculator
+        function getMoonPhase() {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+
+            // Calculate days since known new moon (Jan 6, 2000)
+            const lp = 2551443; // Lunar period in seconds
+            const now = new Date(year, month - 1, day, 20, 35, 0);
+            const newMoon = new Date(2000, 0, 6, 18, 14, 0);
+            const phase = ((now.getTime() - newMoon.getTime()) / 1000) % lp;
+            const phaseDay = Math.floor(phase / (24 * 3600));
+
+            // Moon phase names and icons
+            const phases = [
+                { name: 'New Moon', icon: '🌑' },
+                { name: 'Waxing Crescent', icon: '🌒' },
+                { name: 'First Quarter', icon: '🌓' },
+                { name: 'Waxing Gibbous', icon: '🌔' },
+                { name: 'Full Moon', icon: '🌕' },
+                { name: 'Waning Gibbous', icon: '🌖' },
+                { name: 'Last Quarter', icon: '🌗' },
+                { name: 'Waning Crescent', icon: '🌘' }
+            ];
+
+            const index = Math.floor((phaseDay / 29.53) * 8) % 8;
+            return phases[index];
+        }
+
+        // Update moon phase display
+        const moonPhase = getMoonPhase();
+        document.getElementById('moon-icon').textContent = moonPhase.icon;
+        document.getElementById('moon-phase-text').textContent = moonPhase.name;
+
+        // Visitor counter (uses localStorage + offset)
+        function updateVisitorCount() {
+            const OFFSET = 8653;
+            let count = parseInt(localStorage.getItem('nino-visit-count') || '0');
+
+            // Check if this is a new session
+            const lastVisit = sessionStorage.getItem('nino-visited');
+            if (!lastVisit) {
+                count++;
+                localStorage.setItem('nino-visit-count', count.toString());
+                sessionStorage.setItem('nino-visited', 'true');
+            }
+
+            const displayCount = count + OFFSET;
+            document.getElementById('visitor-count').textContent = displayCount.toLocaleString();
+        }
+        updateVisitorCount();
     </script>
     </div>
     <script type="module" src="js/analytics.js"></script>

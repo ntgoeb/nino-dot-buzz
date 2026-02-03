@@ -5,12 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-Frame-Options" content="DENY">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <title>Super Star Trek - Classic Games</title>
-    <link rel="stylesheet" href="retro-style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
-            integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
-            crossorigin="anonymous"></script>
+    <title>Super Star Trek - Nino's Webhome</title>
+    <link rel="stylesheet" href="style/default-style.css">
     <style>
+        .under-construction {
+            text-align: center;
+            padding: 15px;
+            border: 3px dashed #ffff00;
+            background: repeating-linear-gradient(
+                45deg,
+                #000000,
+                #000000 10px,
+                #ffcc00 10px,
+                #ffcc00 20px
+            );
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .under-construction-inner {
+            background: #000000;
+            padding: 10px 20px;
+            display: inline-block;
+            border: 2px solid #ffff00;
+        }
+
+        .under-construction-inner span {
+            color: #ffff00;
+            animation: blink 1s ease-in-out infinite;
+        }
+
         .game-window {
             font-family: monospace;
             background-color: #000033;
@@ -31,6 +56,7 @@
             padding: 10px;
             font-family: monospace;
             margin-top: 10px;
+            box-sizing: border-box;
         }
 
         .game-instructions {
@@ -40,16 +66,30 @@
             background-color: #000033;
         }
 
-        /* Make sure text is readable in the game window */
+        .game-instructions h2 {
+            margin-top: 0;
+        }
+
+        .game-instructions p {
+            margin: 5px 0;
+            color: #00ffff;
+        }
+
         #output {
             font-size: 14px;
             line-height: 1.4;
         }
 
-        /* Style for the command history */
         .command-history {
             color: #666666;
             font-style: italic;
+        }
+
+        @media (max-width: 600px) {
+            .game-window {
+                height: 350px;
+                font-size: 12px;
+            }
         }
     </style>
 </head>
@@ -62,7 +102,13 @@
         </nav>
 
         <h1>Super Star Trek</h1>
-        
+
+        <div class="under-construction">
+            <div class="under-construction-inner">
+                <span>🚧 UNDER CONSTRUCTION 🚧</span>
+            </div>
+        </div>
+
         <div class="game-instructions">
             <h2>Quick Commands:</h2>
             <p>NAV - Navigate (warp)</p>
@@ -80,6 +126,10 @@
             <input type="text" id="command" class="command-input" placeholder="Enter command..." autocomplete="off">
         </div>
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+            integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+            crossorigin="anonymous"></script>
 
     <!-- Game engine script will go here -->
     <script src="sst.js"></script>
@@ -105,11 +155,12 @@
         function startGame() {
             $('#output').append('Welcome to Super Star Trek!\n');
             $('#output').append('=======================\n\n');
-            // Game initialization will go here
+            $('#output').append('🚧 Game under construction - check back soon!\n');
         }
 
         function processCommand(command) {
             // Command processing will be implemented in sst.js
+            $('#output').append('Command not yet implemented.\n\n');
         }
     </script>
     <script type="module" src="js/analytics.js"></script>
