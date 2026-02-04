@@ -29,10 +29,10 @@
             <h1>Nino's Webhome</h1>
             
             <div id="birthday-banner" class="birthday-banner" style="display: none;">
-                <span class="running-man-container">
-                    <span class="running-man-sprite"></span>
-                </span>
-                🎂 HAPPY BIRTHDAY NINO! 🎉
+                <div class="running-man-container">
+                    <div class="running-man-sprite"></div>
+                </div>
+                <div class="birthday-text">🎂 HAPPY BIRTHDAY NINO! 🎉</div>
             </div>
 
             <!-- Notes Section -->
@@ -79,6 +79,16 @@
                 </p>
             </div>
 
+            <!-- Elder Scrolls VI Updates -->
+            <div class="tes6-container">
+                <h2>⚔️ Elder Scrolls VI Updates</h2>
+                <div class="tes6-scroll-wrapper">
+                    <div id="tes6-scroll" class="tes6-scroll">
+                        <p>Loading updates...</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Random Wikipedia Section -->
             <div class="wiki-container">
                 <a href="https://en.wikipedia.org/wiki/Special:Random" target="_blank" rel="noopener" class="wiki-button">
@@ -94,18 +104,6 @@
                 <div id="news-content" style="display: none;">
                     <ul id="news-list">
                         <li>Loading news...</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Elder Scrolls VI News Section -->
-            <div class="tes6-container">
-                <h2 class="tes6-toggle" onclick="toggleTES6()">
-                    <span id="tes6-toggle-icon">▶</span> Elder Scrolls VI News ⚔️
-                </h2>
-                <div id="tes6-content" style="display: none;">
-                    <ul id="tes6-list">
-                        <li>Loading Elder Scrolls VI news...</li>
                     </ul>
                 </div>
             </div>
@@ -406,40 +404,35 @@
             toggleIcon.textContent = newsExpanded ? '▼' : '▶';
         }
 
-        // Elder Scrolls VI News
-        let tes6Expanded = false;
-        function toggleTES6() {
-            const tes6Content = document.getElementById('tes6-content');
-            const toggleIcon = document.getElementById('tes6-toggle-icon');
-            tes6Expanded = !tes6Expanded;
-            tes6Content.style.display = tes6Expanded ? 'block' : 'none';
-            toggleIcon.textContent = tes6Expanded ? '▼' : '▶';
-        }
-
-        async function loadTES6News() {
+        // Elder Scrolls VI Updates (scrolling box)
+        async function loadTES6Updates() {
             const feedUrl = 'https://news.google.com/rss/search?q=elder+scrolls+vi';
             const items = await fetchRSS(feedUrl);
-            const tes6List = document.getElementById('tes6-list');
+            const scrollEl = document.getElementById('tes6-scroll');
 
             if (items.length === 0) {
-                tes6List.innerHTML = '<li>No Elder Scrolls VI news found. Check back later!</li>';
+                scrollEl.innerHTML = '<p>No updates found. Check back later!</p>';
                 return;
             }
 
-            tes6List.innerHTML = '';
-            items.slice(0, 5).forEach(item => {
-                const li = document.createElement('li');
+            scrollEl.innerHTML = '';
+            items.slice(0, 8).forEach(item => {
+                const p = document.createElement('p');
                 const link = document.createElement('a');
                 link.href = item.link;
                 link.target = '_blank';
                 link.rel = 'noopener';
                 link.textContent = item.title;
-                li.appendChild(link);
-                tes6List.appendChild(li);
+                p.appendChild(link);
+                scrollEl.appendChild(p);
             });
+
+            // Duplicate content for seamless loop
+            const clone = scrollEl.innerHTML;
+            scrollEl.innerHTML += clone;
         }
 
-        loadTES6News();
+        loadTES6Updates();
 
         // Moon phase calculator
         function getMoonPhase() {

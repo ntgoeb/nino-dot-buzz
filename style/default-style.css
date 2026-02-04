@@ -182,38 +182,43 @@ a:hover {
 
 /* Running man pixel sprite animation */
 .running-man-container {
-    display: inline-block;
-    width: 80px;
-    height: 32px;
+    display: block;
+    width: 100%;
+    height: 48px;
     position: relative;
-    vertical-align: middle;
-    margin: 0 5px;
-    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.birthday-text {
+    display: block;
 }
 
 .running-man-sprite {
     position: absolute;
-    width: 16px;
-    height: 24px;
-    /* 4-frame sprite sheet: each frame 16x24, total 64x24 */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 24' shape-rendering='crispEdges'%3E%3C!-- Frame 1: standing/right leg forward --%3E%3Crect x='6' y='0' width='4' height='4' fill='%23ffcc99'/%3E%3Crect x='5' y='4' width='6' height='6' fill='%233399ff'/%3E%3Crect x='4' y='5' width='2' height='4' fill='%23ffcc99'/%3E%3Crect x='10' y='5' width='2' height='4' fill='%23ffcc99'/%3E%3Crect x='5' y='10' width='2' height='6' fill='%23996633'/%3E%3Crect x='9' y='10' width='2' height='6' fill='%23996633'/%3E%3Crect x='5' y='16' width='2' height='2' fill='%23333'/%3E%3Crect x='9' y='16' width='2' height='2' fill='%23333'/%3E%3C!-- Frame 2: running mid-stride --%3E%3Crect x='22' y='0' width='4' height='4' fill='%23ffcc99'/%3E%3Crect x='21' y='4' width='6' height='6' fill='%233399ff'/%3E%3Crect x='18' y='6' width='3' height='3' fill='%23ffcc99'/%3E%3Crect x='27' y='5' width='3' height='3' fill='%23ffcc99'/%3E%3Crect x='20' y='10' width='2' height='5' fill='%23996633'/%3E%3Crect x='26' y='10' width='2' height='5' fill='%23996633'/%3E%3Crect x='19' y='15' width='2' height='2' fill='%23333'/%3E%3Crect x='27' y='15' width='2' height='2' fill='%23333'/%3E%3C!-- Frame 3: legs together --%3E%3Crect x='38' y='0' width='4' height='4' fill='%23ffcc99'/%3E%3Crect x='37' y='4' width='6' height='6' fill='%233399ff'/%3E%3Crect x='35' y='5' width='2' height='4' fill='%23ffcc99'/%3E%3Crect x='43' y='5' width='2' height='4' fill='%23ffcc99'/%3E%3Crect x='38' y='10' width='4' height='6' fill='%23996633'/%3E%3Crect x='37' y='16' width='2' height='2' fill='%23333'/%3E%3Crect x='41' y='16' width='2' height='2' fill='%23333'/%3E%3C!-- Frame 4: running other stride --%3E%3Crect x='54' y='0' width='4' height='4' fill='%23ffcc99'/%3E%3Crect x='53' y='4' width='6' height='6' fill='%233399ff'/%3E%3Crect x='51' y='5' width='3' height='3' fill='%23ffcc99'/%3E%3Crect x='59' y='6' width='3' height='3' fill='%23ffcc99'/%3E%3Crect x='52' y='10' width='2' height='5' fill='%23996633'/%3E%3Crect x='58' y='10' width='2' height='5' fill='%23996633'/%3E%3Crect x='51' y='15' width='2' height='2' fill='%23333'/%3E%3Crect x='59' y='15' width='2' height='2' fill='%23333'/%3E%3C/svg%3E");
-    background-size: 64px 24px;
+    width: 32px;
+    height: 32px;
+    /* 4-frame sprite sheet: Walter Matthau style - newsboy cap, suit, short pants
+       Each frame 16x16 pixels, scaled 2x to 32x32, all facing right */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 16' shape-rendering='crispEdges'%3E%3C!-- Frame 1: standing --%3E%3Crect x='4' y='0' width='6' height='2' fill='%23886655'/%3E%3Crect x='3' y='1' width='2' height='1' fill='%23886655'/%3E%3Crect x='4' y='2' width='5' height='4' fill='%23e8c4a0'/%3E%3Crect x='5' y='3' width='1' height='1' fill='%23333'/%3E%3Crect x='7' y='3' width='1' height='1' fill='%23333'/%3E%3Crect x='4' y='6' width='6' height='4' fill='%23334455'/%3E%3Crect x='3' y='7' width='1' height='2' fill='%23e8c4a0'/%3E%3Crect x='10' y='7' width='1' height='2' fill='%23e8c4a0'/%3E%3Crect x='5' y='10' width='2' height='2' fill='%23334455'/%3E%3Crect x='8' y='10' width='2' height='2' fill='%23334455'/%3E%3Crect x='5' y='12' width='2' height='1' fill='%23e8c4a0'/%3E%3Crect x='8' y='12' width='2' height='1' fill='%23e8c4a0'/%3E%3Crect x='5' y='13' width='2' height='2' fill='%23222'/%3E%3Crect x='8' y='13' width='2' height='2' fill='%23222'/%3E%3Crect x='4' y='15' width='3' height='1' fill='%23111'/%3E%3Crect x='8' y='15' width='3' height='1' fill='%23111'/%3E%3C!-- Frame 2: right leg forward --%3E%3Crect x='20' y='0' width='6' height='2' fill='%23886655'/%3E%3Crect x='19' y='1' width='2' height='1' fill='%23886655'/%3E%3Crect x='20' y='2' width='5' height='4' fill='%23e8c4a0'/%3E%3Crect x='21' y='3' width='1' height='1' fill='%23333'/%3E%3Crect x='23' y='3' width='1' height='1' fill='%23333'/%3E%3Crect x='20' y='6' width='6' height='4' fill='%23334455'/%3E%3Crect x='18' y='7' width='2' height='3' fill='%23e8c4a0'/%3E%3Crect x='26' y='8' width='2' height='2' fill='%23e8c4a0'/%3E%3Crect x='20' y='10' width='2' height='2' fill='%23334455'/%3E%3Crect x='25' y='10' width='2' height='2' fill='%23334455'/%3E%3Crect x='19' y='12' width='2' height='1' fill='%23e8c4a0'/%3E%3Crect x='26' y='12' width='2' height='1' fill='%23e8c4a0'/%3E%3Crect x='18' y='13' width='3' height='2' fill='%23222'/%3E%3Crect x='26' y='13' width='2' height='2' fill='%23222'/%3E%3Crect x='17' y='15' width='4' height='1' fill='%23111'/%3E%3Crect x='26' y='15' width='3' height='1' fill='%23111'/%3E%3C!-- Frame 3: legs passing --%3E%3Crect x='36' y='0' width='6' height='2' fill='%23886655'/%3E%3Crect x='35' y='1' width='2' height='1' fill='%23886655'/%3E%3Crect x='36' y='2' width='5' height='4' fill='%23e8c4a0'/%3E%3Crect x='37' y='3' width='1' height='1' fill='%23333'/%3E%3Crect x='39' y='3' width='1' height='1' fill='%23333'/%3E%3Crect x='36' y='6' width='6' height='4' fill='%23334455'/%3E%3Crect x='34' y='7' width='2' height='3' fill='%23e8c4a0'/%3E%3Crect x='42' y='8' width='2' height='2' fill='%23e8c4a0'/%3E%3Crect x='37' y='10' width='4' height='2' fill='%23334455'/%3E%3Crect x='37' y='12' width='4' height='1' fill='%23e8c4a0'/%3E%3Crect x='37' y='13' width='4' height='2' fill='%23222'/%3E%3Crect x='36' y='15' width='3' height='1' fill='%23111'/%3E%3Crect x='39' y='15' width='3' height='1' fill='%23111'/%3E%3C!-- Frame 4: left leg forward --%3E%3Crect x='52' y='0' width='6' height='2' fill='%23886655'/%3E%3Crect x='51' y='1' width='2' height='1' fill='%23886655'/%3E%3Crect x='52' y='2' width='5' height='4' fill='%23e8c4a0'/%3E%3Crect x='53' y='3' width='1' height='1' fill='%23333'/%3E%3Crect x='55' y='3' width='1' height='1' fill='%23333'/%3E%3Crect x='52' y='6' width='6' height='4' fill='%23334455'/%3E%3Crect x='58' y='8' width='2' height='2' fill='%23e8c4a0'/%3E%3Crect x='50' y='7' width='2' height='3' fill='%23e8c4a0'/%3E%3Crect x='56' y='10' width='2' height='2' fill='%23334455'/%3E%3Crect x='49' y='10' width='2' height='2' fill='%23334455'/%3E%3Crect x='57' y='12' width='2' height='1' fill='%23e8c4a0'/%3E%3Crect x='49' y='12' width='2' height='1' fill='%23e8c4a0'/%3E%3Crect x='56' y='13' width='3' height='2' fill='%23222'/%3E%3Crect x='49' y='13' width='2' height='2' fill='%23222'/%3E%3Crect x='56' y='15' width='4' height='1' fill='%23111'/%3E%3Crect x='48' y='15' width='3' height='1' fill='%23111'/%3E%3C/svg%3E");
+    background-size: 128px 32px;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-    animation: sprite-run 0.4s steps(4) infinite, run-back-forth 2.5s ease-in-out infinite;
-    top: 4px;
+    -webkit-image-rendering: pixelated;
+    animation: sprite-run 0.35s steps(4) infinite, run-back-forth 3s linear infinite;
+    top: 8px;
 }
 
 @keyframes sprite-run {
     from { background-position: 0 0; }
-    to { background-position: -64px 0; }
+    to { background-position: -128px 0; }
 }
 
 @keyframes run-back-forth {
-    0%, 100% { left: 0; transform: scaleX(1); }
-    45% { left: 64px; transform: scaleX(1); }
-    50% { left: 64px; transform: scaleX(-1); }
-    95% { left: 0; transform: scaleX(-1); }
+    0% { left: 5%; transform: scaleX(1); }
+    49% { left: calc(95% - 32px); transform: scaleX(1); }
+    50% { left: calc(95% - 32px); transform: scaleX(-1); }
+    99% { left: 5%; transform: scaleX(-1); }
+    100% { left: 5%; transform: scaleX(1); }
 }
 
 /* Moon Phase container */
@@ -360,7 +365,7 @@ a:hover {
     margin-bottom: 0;
 }
 
-/* Elder Scrolls VI News container */
+/* Elder Scrolls VI Updates container */
 .tes6-container {
     border: 3px solid #c9a227;
     padding: 20px;
@@ -368,49 +373,48 @@ a:hover {
     background-color: #1a1500;
 }
 
-.tes6-toggle {
-    cursor: pointer;
-    user-select: none;
-}
-
-.tes6-toggle:hover {
-    color: #ffcc00;
-}
-
-#tes6-toggle-icon {
-    font-size: 0.8em;
-    margin-left: 10px;
-}
-
 .tes6-container h2 {
     color: #c9a227;
     text-shadow: 2px 2px #4a3c00;
     margin-top: 0;
+    margin-bottom: 15px;
 }
 
-#tes6-list {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
+.tes6-scroll-wrapper {
+    height: 120px;
+    overflow: hidden;
+    position: relative;
+    border: 2px inset #c9a227;
+    background: #0d0a00;
 }
 
-#tes6-list li {
-    padding: 8px 0;
-    border-bottom: 1px dashed #c9a227;
+.tes6-scroll {
+    animation: tes6-scroll-up 30s linear infinite;
+    padding: 10px;
 }
 
-#tes6-list li:last-child {
-    border-bottom: none;
+.tes6-scroll p {
+    margin: 0 0 12px 0;
+    line-height: 1.4;
 }
 
-#tes6-list a {
+.tes6-scroll a {
     color: #e6c84b;
     text-decoration: none;
 }
 
-#tes6-list a:hover {
+.tes6-scroll a:hover {
     color: #ffdd44;
     text-decoration: underline wavy #c9a227;
+}
+
+@keyframes tes6-scroll-up {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-50%); }
+}
+
+.tes6-scroll-wrapper:hover .tes6-scroll {
+    animation-play-state: paused;
 }
 
 /* Horoscope container */
@@ -587,6 +591,10 @@ a:hover {
     .birthday-banner {
         font-size: 18px;
         padding: 15px;
+    }
+
+    .running-man-container {
+        height: 40px;
     }
 
     .wiki-button {

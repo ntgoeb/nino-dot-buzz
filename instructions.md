@@ -44,7 +44,7 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans, neon
 - [x] Moon phase widget (calculated locally, displays current lunar phase)
 - [x] Random Wikipedia button (links to Special:Random)
 - [x] News feed (BBC, NPR, The Onion via RSS) - collapsed by default
-- [x] Elder Scrolls VI news (Google News RSS) - collapsed by default
+- [x] Elder Scrolls VI Updates (Google News RSS) - scrolling text box
 - [x] Visitor counter (localStorage-based with 8653 offset)
 - [x] Birthday banner (Feb 3-4 Eastern Time) with pixel art sprite running man
 - [x] Music player (26 retro tracks, random play)
