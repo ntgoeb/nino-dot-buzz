@@ -519,11 +519,11 @@
                 <div class="setup-section" id="difficulty-section">
                     <label>Difficulty:</label>
                     <div class="difficulty-buttons">
-                        <button class="setup-btn" data-level="0" data-time="50">Beginner</button>
-                        <button class="setup-btn" data-level="0" data-time="100">Easy</button>
-                        <button class="setup-btn active" data-level="1" data-time="200">Medium</button>
-                        <button class="setup-btn" data-level="3" data-time="400">Hard</button>
-                        <button class="setup-btn" data-level="8" data-time="800">Expert</button>
+                        <button class="setup-btn" data-level="0" data-depth="1">Beginner</button>
+                        <button class="setup-btn" data-level="0" data-depth="2">Easy</button>
+                        <button class="setup-btn active" data-level="3" data-depth="3">Medium</button>
+                        <button class="setup-btn" data-level="5" data-depth="5">Hard</button>
+                        <button class="setup-btn" data-level="10" data-depth="8">Expert</button>
                     </div>
                 </div>
 
@@ -645,7 +645,7 @@
 
         // Game mode: 'ai', 'puzzles'
         let gameMode = 'ai';
-        let thinkTime = 200;
+        let searchDepth = 3;
 
         // Puzzle state
         let currentPuzzle = null;
@@ -862,7 +862,7 @@
                 document.querySelectorAll('.difficulty-buttons .setup-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 skillLevel = parseInt(btn.dataset.level);
-                thinkTime = parseInt(btn.dataset.time);
+                searchDepth = parseInt(btn.dataset.depth);
             };
         });
 
@@ -1567,14 +1567,8 @@
             const fen = game.fen();
             stockfish.postMessage('position fen ' + fen);
 
-            // Think time based on difficulty
-            const thinkTime = getThinkTime(skillLevel);
-            stockfish.postMessage(`go movetime ${thinkTime}`);
-        }
-
-        function getThinkTime(level) {
-            // Use the stored thinkTime from difficulty selection
-            return thinkTime;
+            // Use depth limit for more predictable difficulty scaling
+            stockfish.postMessage(`go depth ${searchDepth}`);
         }
 
         function handleStockfishMove(line) {

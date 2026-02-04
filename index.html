@@ -30,14 +30,7 @@
             
             <div id="birthday-banner" class="birthday-banner" style="display: none;">
                 <span class="running-man-container">
-                    <span class="running-man">
-                        <span class="head"></span>
-                        <span class="body"></span>
-                        <span class="arm arm-left"></span>
-                        <span class="arm arm-right"></span>
-                        <span class="leg leg-left"></span>
-                        <span class="leg leg-right"></span>
-                    </span>
+                    <span class="running-man-sprite"></span>
                 </span>
                 🎂 HAPPY BIRTHDAY NINO! 🎉
             </div>
@@ -101,6 +94,18 @@
                 <div id="news-content" style="display: none;">
                     <ul id="news-list">
                         <li>Loading news...</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Elder Scrolls VI News Section -->
+            <div class="tes6-container">
+                <h2 class="tes6-toggle" onclick="toggleTES6()">
+                    <span id="tes6-toggle-icon">▶</span> Elder Scrolls VI News ⚔️
+                </h2>
+                <div id="tes6-content" style="display: none;">
+                    <ul id="tes6-list">
+                        <li>Loading Elder Scrolls VI news...</li>
                     </ul>
                 </div>
             </div>
@@ -400,6 +405,41 @@
             newsContent.style.display = newsExpanded ? 'block' : 'none';
             toggleIcon.textContent = newsExpanded ? '▼' : '▶';
         }
+
+        // Elder Scrolls VI News
+        let tes6Expanded = false;
+        function toggleTES6() {
+            const tes6Content = document.getElementById('tes6-content');
+            const toggleIcon = document.getElementById('tes6-toggle-icon');
+            tes6Expanded = !tes6Expanded;
+            tes6Content.style.display = tes6Expanded ? 'block' : 'none';
+            toggleIcon.textContent = tes6Expanded ? '▼' : '▶';
+        }
+
+        async function loadTES6News() {
+            const feedUrl = 'https://news.google.com/rss/search?q=elder+scrolls+vi';
+            const items = await fetchRSS(feedUrl);
+            const tes6List = document.getElementById('tes6-list');
+
+            if (items.length === 0) {
+                tes6List.innerHTML = '<li>No Elder Scrolls VI news found. Check back later!</li>';
+                return;
+            }
+
+            tes6List.innerHTML = '';
+            items.slice(0, 5).forEach(item => {
+                const li = document.createElement('li');
+                const link = document.createElement('a');
+                link.href = item.link;
+                link.target = '_blank';
+                link.rel = 'noopener';
+                link.textContent = item.title;
+                li.appendChild(link);
+                tes6List.appendChild(li);
+            });
+        }
+
+        loadTES6News();
 
         // Moon phase calculator
         function getMoonPhase() {

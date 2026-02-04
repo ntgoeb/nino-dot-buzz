@@ -5,7 +5,10 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans, neon
 
 ## Current Status
 - **Site is live** at https://nino.buzz
-- **Next task:** Implement Super Star Trek game (see `startrek-implementation-plan.md`)
+
+### Next Tasks
+1. **Chess puzzles** - Complete replacement with verified historical puzzles (~168 remaining), add puzzle info display
+2. **Super Star Trek** - Implement game (see `startrek-implementation-plan.md`)
 
 ## Repository Structure
 ```
@@ -41,8 +44,9 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans, neon
 - [x] Moon phase widget (calculated locally, displays current lunar phase)
 - [x] Random Wikipedia button (links to Special:Random)
 - [x] News feed (BBC, NPR, The Onion via RSS) - collapsed by default
+- [x] Elder Scrolls VI news (Google News RSS) - collapsed by default
 - [x] Visitor counter (localStorage-based with 8653 offset)
-- [x] Birthday banner (Feb 3-4 Eastern Time) with animated running man
+- [x] Birthday banner (Feb 3-4 Eastern Time) with pixel art sprite running man
 - [x] Music player (26 retro tracks, random play)
 
 ### Games
@@ -80,7 +84,7 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans, neon
 
 ### Birthday Banner
 - Shows Feb 3-4 in Eastern Time (uses `toLocaleDateString` with `America/New_York` timezone)
-- Animated CSS running man character (head, body, arms, legs with swing animations)
+- Pixel art sprite running man (4-frame SVG sprite sheet with CSS steps() animation, runs back and forth)
 
 ### Chess Pieces on Mobile
 - Unicode chess symbols use text presentation selector (`\uFE0E`) to prevent emoji rendering
@@ -96,6 +100,7 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans, neon
 - **Horoscope:** horoscope-app-api.vercel.app (free, no key)
 - **RSS Proxy:** api.rss2json.com
 - **CORS Proxy:** api.allorigins.win
+- **Google News RSS:** news.google.com/rss/search (for Elder Scrolls VI news)
 - **Firebase:** For Scrabble multiplayer and analytics
 
 ---

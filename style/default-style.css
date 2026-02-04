@@ -180,102 +180,40 @@ a:hover {
     100% { background-position: 0% 50%; }
 }
 
-/* Running man animation */
+/* Running man pixel sprite animation */
 .running-man-container {
     display: inline-block;
-    width: 60px;
+    width: 80px;
     height: 32px;
     position: relative;
     vertical-align: middle;
     margin: 0 5px;
+    overflow: hidden;
 }
 
-.running-man {
+.running-man-sprite {
     position: absolute;
-    width: 20px;
-    height: 32px;
-    animation: run-back-forth 2s ease-in-out infinite;
+    width: 16px;
+    height: 24px;
+    /* 4-frame sprite sheet: each frame 16x24, total 64x24 */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 24' shape-rendering='crispEdges'%3E%3C!-- Frame 1: standing/right leg forward --%3E%3Crect x='6' y='0' width='4' height='4' fill='%23ffcc99'/%3E%3Crect x='5' y='4' width='6' height='6' fill='%233399ff'/%3E%3Crect x='4' y='5' width='2' height='4' fill='%23ffcc99'/%3E%3Crect x='10' y='5' width='2' height='4' fill='%23ffcc99'/%3E%3Crect x='5' y='10' width='2' height='6' fill='%23996633'/%3E%3Crect x='9' y='10' width='2' height='6' fill='%23996633'/%3E%3Crect x='5' y='16' width='2' height='2' fill='%23333'/%3E%3Crect x='9' y='16' width='2' height='2' fill='%23333'/%3E%3C!-- Frame 2: running mid-stride --%3E%3Crect x='22' y='0' width='4' height='4' fill='%23ffcc99'/%3E%3Crect x='21' y='4' width='6' height='6' fill='%233399ff'/%3E%3Crect x='18' y='6' width='3' height='3' fill='%23ffcc99'/%3E%3Crect x='27' y='5' width='3' height='3' fill='%23ffcc99'/%3E%3Crect x='20' y='10' width='2' height='5' fill='%23996633'/%3E%3Crect x='26' y='10' width='2' height='5' fill='%23996633'/%3E%3Crect x='19' y='15' width='2' height='2' fill='%23333'/%3E%3Crect x='27' y='15' width='2' height='2' fill='%23333'/%3E%3C!-- Frame 3: legs together --%3E%3Crect x='38' y='0' width='4' height='4' fill='%23ffcc99'/%3E%3Crect x='37' y='4' width='6' height='6' fill='%233399ff'/%3E%3Crect x='35' y='5' width='2' height='4' fill='%23ffcc99'/%3E%3Crect x='43' y='5' width='2' height='4' fill='%23ffcc99'/%3E%3Crect x='38' y='10' width='4' height='6' fill='%23996633'/%3E%3Crect x='37' y='16' width='2' height='2' fill='%23333'/%3E%3Crect x='41' y='16' width='2' height='2' fill='%23333'/%3E%3C!-- Frame 4: running other stride --%3E%3Crect x='54' y='0' width='4' height='4' fill='%23ffcc99'/%3E%3Crect x='53' y='4' width='6' height='6' fill='%233399ff'/%3E%3Crect x='51' y='5' width='3' height='3' fill='%23ffcc99'/%3E%3Crect x='59' y='6' width='3' height='3' fill='%23ffcc99'/%3E%3Crect x='52' y='10' width='2' height='5' fill='%23996633'/%3E%3Crect x='58' y='10' width='2' height='5' fill='%23996633'/%3E%3Crect x='51' y='15' width='2' height='2' fill='%23333'/%3E%3Crect x='59' y='15' width='2' height='2' fill='%23333'/%3E%3C/svg%3E");
+    background-size: 64px 24px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    animation: sprite-run 0.4s steps(4) infinite, run-back-forth 2.5s ease-in-out infinite;
+    top: 4px;
 }
 
-.running-man .head {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background: #ffcc99;
-    border-radius: 50%;
-    top: 0;
-    left: 5px;
-    border: 1px solid #000;
-}
-
-.running-man .body {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background: #3399ff;
-    top: 10px;
-    left: 5px;
-    border-radius: 2px;
-    border: 1px solid #000;
-}
-
-.running-man .arm {
-    position: absolute;
-    width: 3px;
-    height: 10px;
-    background: #ffcc99;
-    top: 10px;
-    border-radius: 2px;
-    transform-origin: top center;
-    border: 1px solid #000;
-}
-
-.running-man .arm-left {
-    left: 2px;
-    animation: arm-swing 0.3s ease-in-out infinite;
-}
-
-.running-man .arm-right {
-    left: 15px;
-    animation: arm-swing 0.3s ease-in-out infinite reverse;
-}
-
-.running-man .leg {
-    position: absolute;
-    width: 4px;
-    height: 12px;
-    background: #996633;
-    top: 20px;
-    border-radius: 2px;
-    transform-origin: top center;
-    border: 1px solid #000;
-}
-
-.running-man .leg-left {
-    left: 5px;
-    animation: leg-swing 0.3s ease-in-out infinite;
-}
-
-.running-man .leg-right {
-    left: 11px;
-    animation: leg-swing 0.3s ease-in-out infinite reverse;
+@keyframes sprite-run {
+    from { background-position: 0 0; }
+    to { background-position: -64px 0; }
 }
 
 @keyframes run-back-forth {
     0%, 100% { left: 0; transform: scaleX(1); }
-    45% { left: 40px; transform: scaleX(1); }
-    50% { left: 40px; transform: scaleX(-1); }
+    45% { left: 64px; transform: scaleX(1); }
+    50% { left: 64px; transform: scaleX(-1); }
     95% { left: 0; transform: scaleX(-1); }
-}
-
-@keyframes arm-swing {
-    0%, 100% { transform: rotate(-45deg); }
-    50% { transform: rotate(45deg); }
-}
-
-@keyframes leg-swing {
-    0%, 100% { transform: rotate(-30deg); }
-    50% { transform: rotate(30deg); }
 }
 
 /* Moon Phase container */
@@ -420,6 +358,59 @@ a:hover {
     text-align: right;
     margin-top: 10px;
     margin-bottom: 0;
+}
+
+/* Elder Scrolls VI News container */
+.tes6-container {
+    border: 3px solid #c9a227;
+    padding: 20px;
+    margin: 20px 0;
+    background-color: #1a1500;
+}
+
+.tes6-toggle {
+    cursor: pointer;
+    user-select: none;
+}
+
+.tes6-toggle:hover {
+    color: #ffcc00;
+}
+
+#tes6-toggle-icon {
+    font-size: 0.8em;
+    margin-left: 10px;
+}
+
+.tes6-container h2 {
+    color: #c9a227;
+    text-shadow: 2px 2px #4a3c00;
+    margin-top: 0;
+}
+
+#tes6-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#tes6-list li {
+    padding: 8px 0;
+    border-bottom: 1px dashed #c9a227;
+}
+
+#tes6-list li:last-child {
+    border-bottom: none;
+}
+
+#tes6-list a {
+    color: #e6c84b;
+    text-decoration: none;
+}
+
+#tes6-list a:hover {
+    color: #ffdd44;
+    text-decoration: underline wavy #c9a227;
 }
 
 /* Horoscope container */
