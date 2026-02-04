@@ -186,11 +186,11 @@ a:hover {
     width: 100%;
     height: 48px;
     position: relative;
-    margin-bottom: 10px;
 }
 
 .birthday-text {
     display: block;
+    margin-bottom: 10px;
 }
 
 .running-man-sprite {
@@ -204,7 +204,7 @@ a:hover {
     image-rendering: pixelated;
     image-rendering: crisp-edges;
     -webkit-image-rendering: pixelated;
-    animation: sprite-run 0.35s steps(4) infinite, run-back-forth 3s linear infinite;
+    animation: sprite-run 0.5s steps(4) infinite, run-back-forth 5s linear infinite;
     top: 8px;
 }
 
@@ -214,11 +214,11 @@ a:hover {
 }
 
 @keyframes run-back-forth {
-    0% { left: 5%; transform: scaleX(1); }
-    49% { left: calc(95% - 32px); transform: scaleX(1); }
-    50% { left: calc(95% - 32px); transform: scaleX(-1); }
-    99% { left: 5%; transform: scaleX(-1); }
-    100% { left: 5%; transform: scaleX(1); }
+    0% { left: 15%; transform: scaleX(1); }
+    49% { left: calc(85% - 32px); transform: scaleX(1); }
+    50% { left: calc(85% - 32px); transform: scaleX(-1); }
+    99% { left: 15%; transform: scaleX(-1); }
+    100% { left: 15%; transform: scaleX(1); }
 }
 
 /* Moon Phase container */
@@ -595,6 +595,15 @@ a:hover {
 
     .running-man-container {
         height: 40px;
+    }
+
+    .tes6-scroll-wrapper {
+        height: 100px;
+        overflow: hidden;
+    }
+
+    .tes6-scroll {
+        animation: tes6-scroll-up 25s linear infinite;
     }
 
     .wiki-button {
