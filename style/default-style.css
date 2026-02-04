@@ -180,50 +180,9 @@ a:hover {
     100% { background-position: 0% 50%; }
 }
 
-/* Running man pixel sprite animation */
-.running-man-container {
-    display: block;
-    width: 100%;
-    height: 48px;
-    position: relative;
-}
-
 .birthday-text {
     display: block;
-    margin-bottom: 10px;
     font-size: 32px;
-}
-
-.running-man-sprite {
-    position: absolute;
-    width: 32px;
-    height: 24px;
-    /* 4-frame sprite: squat black & white running man
-       All frames have identical upper body, only legs change */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 10' shape-rendering='crispEdges'%3E%3C!-- Frame 1: feet together --%3E%3Crect x='4' y='0' width='6' height='2' fill='%23000'/%3E%3Crect x='4' y='2' width='6' height='2' fill='%23fff'/%3E%3Crect x='5' y='2' width='1' height='1' fill='%23000'/%3E%3Crect x='8' y='2' width='1' height='1' fill='%23000'/%3E%3Crect x='4' y='4' width='6' height='2' fill='%23000'/%3E%3Crect x='5' y='6' width='2' height='2' fill='%23000'/%3E%3Crect x='7' y='6' width='2' height='2' fill='%23000'/%3E%3Crect x='5' y='8' width='2' height='2' fill='%23000'/%3E%3Crect x='7' y='8' width='2' height='2' fill='%23000'/%3E%3C!-- Frame 2: legs apart --%3E%3Crect x='20' y='0' width='6' height='2' fill='%23000'/%3E%3Crect x='20' y='2' width='6' height='2' fill='%23fff'/%3E%3Crect x='21' y='2' width='1' height='1' fill='%23000'/%3E%3Crect x='24' y='2' width='1' height='1' fill='%23000'/%3E%3Crect x='20' y='4' width='6' height='2' fill='%23000'/%3E%3Crect x='18' y='6' width='2' height='2' fill='%23000'/%3E%3Crect x='26' y='6' width='2' height='2' fill='%23000'/%3E%3Crect x='17' y='8' width='2' height='2' fill='%23000'/%3E%3Crect x='27' y='8' width='2' height='2' fill='%23000'/%3E%3C!-- Frame 3: feet together --%3E%3Crect x='36' y='0' width='6' height='2' fill='%23000'/%3E%3Crect x='36' y='2' width='6' height='2' fill='%23fff'/%3E%3Crect x='37' y='2' width='1' height='1' fill='%23000'/%3E%3Crect x='40' y='2' width='1' height='1' fill='%23000'/%3E%3Crect x='36' y='4' width='6' height='2' fill='%23000'/%3E%3Crect x='37' y='6' width='2' height='2' fill='%23000'/%3E%3Crect x='39' y='6' width='2' height='2' fill='%23000'/%3E%3Crect x='37' y='8' width='2' height='2' fill='%23000'/%3E%3Crect x='39' y='8' width='2' height='2' fill='%23000'/%3E%3C!-- Frame 4: legs apart other way --%3E%3Crect x='52' y='0' width='6' height='2' fill='%23000'/%3E%3Crect x='52' y='2' width='6' height='2' fill='%23fff'/%3E%3Crect x='53' y='2' width='1' height='1' fill='%23000'/%3E%3Crect x='56' y='2' width='1' height='1' fill='%23000'/%3E%3Crect x='52' y='4' width='6' height='2' fill='%23000'/%3E%3Crect x='50' y='6' width='2' height='2' fill='%23000'/%3E%3Crect x='58' y='6' width='2' height='2' fill='%23000'/%3E%3Crect x='49' y='8' width='2' height='2' fill='%23000'/%3E%3Crect x='59' y='8' width='2' height='2' fill='%23000'/%3E%3C/svg%3E");
-    background-size: 128px 20px;
-    image-rendering: pixelated;
-    image-rendering: crisp-edges;
-    -webkit-image-rendering: pixelated;
-    animation: sprite-run 0.4s steps(4) infinite, run-back-forth 4.25s linear infinite, bounce 0.2s ease-in-out infinite;
-}
-
-@keyframes sprite-run {
-    from { background-position: 0 0; }
-    to { background-position: -128px 0; }
-}
-
-@keyframes run-back-forth {
-    0% { left: 15%; transform: scaleX(1); }
-    49% { left: calc(85% - 32px); transform: scaleX(1); }
-    50% { left: calc(85% - 32px); transform: scaleX(-1); }
-    99% { left: 15%; transform: scaleX(-1); }
-    100% { left: 15%; transform: scaleX(1); }
-}
-
-@keyframes bounce {
-    0%, 100% { top: 10px; }
-    50% { top: 2px; }
 }
 
 /* Moon Phase container */
@@ -632,15 +591,6 @@ a:hover {
         font-size: 24px;
     }
 
-    .running-man-container {
-        height: 40px;
-        display: block;
-    }
-
-    .running-man-sprite {
-        display: block;
-    }
-
     .widgets-row {
         flex-direction: column;
     }
@@ -656,7 +606,7 @@ a:hover {
     }
 
     .tes6-scroll {
-        animation: tes6-scroll-up 30s linear infinite;
+        animation: tes6-scroll-up 20s linear infinite;
     }
 
     .wiki-button {
