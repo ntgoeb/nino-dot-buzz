@@ -38,6 +38,8 @@
             padding: 30px 40px;
             cursor: pointer;
             transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
         .menu-choice:hover {
             background: #330033;
@@ -116,6 +118,16 @@
             .menu-choice {
                 padding: 20px 30px;
                 width: 80%;
+            }
+            .menu-form {
+                max-width: 90%;
+            }
+            .menu-input input {
+                width: 100%;
+                box-sizing: border-box;
+            }
+            .recent-game-item {
+                max-width: 100%;
             }
         }
 
