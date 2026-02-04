@@ -655,6 +655,9 @@ a:hover {
         overflow: hidden;
     }
 
+    .tes6-scroll {
+        animation: tes6-scroll-up 13s linear infinite;
+    }
 
     .wiki-button {
         font-size: 1em;

@@ -432,12 +432,6 @@
             // Duplicate content for seamless loop
             const clone = scrollEl.innerHTML;
             scrollEl.innerHTML += clone;
-
-            // Set animation duration based on content height (slower = more readable)
-            const contentHeight = scrollEl.scrollHeight / 2; // Original content height
-            const pixelsPerSecond = 20; // Scroll speed
-            const duration = contentHeight / pixelsPerSecond;
-            scrollEl.style.animationDuration = duration + 's';
         }
 
         loadTES6Updates();
