@@ -44,10 +44,15 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans, neon
 - [x] Moon phase widget (calculated locally, displays current lunar phase)
 - [x] Random Wikipedia button (links to Special:Random)
 - [x] News feed (BBC, NPR, The Onion via RSS) - collapsed by default
-- [x] Elder Scrolls VI Updates (Google News RSS) - scrolling text box
+- [x] Elder Scrolls VI Updates (Google News RSS) - auto-scrolling text box
 - [x] Visitor counter (localStorage-based with 8653 offset)
 - [x] Birthday banner (Feb 3-4 Eastern Time) with pixel art sprite running man
 - [x] Music player (26 retro tracks, random play)
+
+### Desktop Layout
+- Horoscope and Moon Phase widgets appear side-by-side (`.widgets-row` flex container)
+- Horoscope takes 2/3 width, Moon Phase takes 1/3 width
+- On mobile (≤600px), they stack vertically
 
 ### Games
 - [x] Chess - vs computer using Stockfish.js + mating puzzles
@@ -84,7 +89,18 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans, neon
 
 ### Birthday Banner
 - Shows Feb 3-4 in Eastern Time (uses `toLocaleDateString` with `America/New_York` timezone)
-- Pixel art sprite running man (4-frame SVG sprite sheet with CSS steps() animation, runs back and forth)
+- Pixel art sprite running man (4-frame SVG sprite sheet embedded as data URI)
+- Sprite uses CSS `steps(4)` animation for frame cycling
+- Runs back and forth using `scaleX(-1)` to mirror when changing direction
+- Has bounce animation (moves up/down while running)
+- Text is 32px on desktop, 24px on mobile
+
+### Elder Scrolls VI Updates Widget
+- Uses Google News RSS: `news.google.com/rss/search?q=elder+scrolls+vi`
+- Auto-scrolling text box with CSS animation (`tes6-scroll-up`)
+- Content is duplicated in JS for seamless loop (scrolls to -50%)
+- Desktop: 30s scroll duration; Mobile: 15s scroll duration
+- Pauses on hover
 
 ### Chess Pieces on Mobile
 - Unicode chess symbols use text presentation selector (`\uFE0E`) to prevent emoji rendering
@@ -108,10 +124,15 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans, neon
 ## Chess (Implemented)
 - **chess.js v0.12.0** (CDN) for move validation and game state
 - **Stockfish.js v10** (~1.5MB, local) for AI via Web Worker
-- 5 difficulty levels (Beginner to Expert)
+- 5 difficulty levels using **depth limits** (not time-based):
+  - Beginner: depth 1, skill 0
+  - Easy: depth 2, skill 0
+  - Medium: depth 3, skill 3
+  - Hard: depth 5, skill 5
+  - Expert: depth 8, skill 10
 - Click-to-move and algebraic notation text input
 - **Mating Puzzles mode:** Mix of verified historical puzzles and generated puzzles
-- **Mobile:** Full-width board, larger pieces, game over shows "Back to Chess" and "Home" buttons
+- **Mobile:** Full-width board, pieces at 72% of square size, game over shows "Back to Chess" and "Home" buttons
 
 ### Chess Puzzle Format
 Two formats supported in `MATING_PUZZLES` array:

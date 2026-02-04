@@ -26,6 +26,45 @@
             font-size: 2em;
             margin-bottom: 30px;
         }
+        .menu-choices {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        .menu-choice {
+            background: #000033;
+            border: 3px outset #ff00ff;
+            padding: 30px 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .menu-choice:hover {
+            background: #330033;
+            transform: scale(1.05);
+        }
+        .menu-choice.selected {
+            border-style: inset;
+            background: #1a001a;
+        }
+        .menu-choice h3 {
+            color: #ff00ff;
+            font-size: 1.5em;
+            margin: 0 0 10px 0;
+        }
+        .menu-choice p {
+            color: #888;
+            margin: 0;
+            font-size: 0.9em;
+        }
+        .menu-form {
+            display: none;
+            margin: 20px auto;
+            max-width: 300px;
+        }
+        .menu-form.visible {
+            display: block;
+        }
         .menu-input {
             margin: 15px 0;
         }
@@ -67,6 +106,17 @@
         .menu-divider {
             color: #666;
             margin: 25px 0;
+        }
+        @media (max-width: 500px) {
+            .menu-choices {
+                flex-direction: column;
+                gap: 15px;
+                align-items: center;
+            }
+            .menu-choice {
+                padding: 20px 30px;
+                width: 80%;
+            }
         }
 
         /* Recent Games */
@@ -892,21 +942,38 @@
             <h2>Online Scrabble</h2>
             <p style="color: #888;">2-4 players</p>
 
-            <div class="menu-input">
-                <label>Your Name:</label>
-                <input type="text" id="player-name" placeholder="Enter name" maxlength="20">
+            <div class="menu-choices">
+                <div class="menu-choice" id="choice-create">
+                    <h3>Create Game</h3>
+                    <p>Start a new room</p>
+                </div>
+                <div class="menu-choice" id="choice-join">
+                    <h3>Join Game</h3>
+                    <p>Enter a room code</p>
+                </div>
             </div>
 
-            <button class="menu-btn" id="create-game-btn">Create Game</button>
-
-            <div class="menu-divider">- or -</div>
-
-            <div class="menu-input">
-                <label>Room Code:</label>
-                <input type="text" id="room-code-input" placeholder="ABCD" maxlength="4" style="text-transform: uppercase;">
+            <!-- Create Game Form -->
+            <div id="create-form" class="menu-form">
+                <div class="menu-input">
+                    <label>Your Name:</label>
+                    <input type="text" id="create-player-name" placeholder="Enter name" maxlength="20">
+                </div>
+                <button class="menu-btn" id="create-game-btn">Create Game</button>
             </div>
 
-            <button class="menu-btn" id="join-game-btn">Join Game</button>
+            <!-- Join Game Form -->
+            <div id="join-form" class="menu-form">
+                <div class="menu-input">
+                    <label>Room Code:</label>
+                    <input type="text" id="room-code-input" placeholder="ABCD" maxlength="4" style="text-transform: uppercase;">
+                </div>
+                <div class="menu-input">
+                    <label>Your Name:</label>
+                    <input type="text" id="join-player-name" placeholder="Enter name" maxlength="20">
+                </div>
+                <button class="menu-btn" id="join-game-btn">Join Game</button>
+            </div>
 
             <p id="menu-error" style="color: #ff6666; margin-top: 15px;"></p>
 
@@ -1188,8 +1255,13 @@
         };
 
         const elements = {
-            playerNameInput: document.getElementById('player-name'),
+            createPlayerNameInput: document.getElementById('create-player-name'),
+            joinPlayerNameInput: document.getElementById('join-player-name'),
             roomCodeInput: document.getElementById('room-code-input'),
+            createForm: document.getElementById('create-form'),
+            joinForm: document.getElementById('join-form'),
+            choiceCreate: document.getElementById('choice-create'),
+            choiceJoin: document.getElementById('choice-join'),
             menuError: document.getElementById('menu-error'),
             lobbyRoomCode: document.getElementById('lobby-room-code'),
             playerList: document.getElementById('player-list'),
@@ -1216,8 +1288,13 @@
             Object.values(screens).forEach(s => s.classList.remove('active'));
             screens[screenName].classList.add('active');
 
-            // Refresh recent games when returning to menu
+            // Reset menu state when returning to menu
             if (screenName === 'menu') {
+                elements.choiceCreate.classList.remove('selected');
+                elements.choiceJoin.classList.remove('selected');
+                elements.createForm.classList.remove('visible');
+                elements.joinForm.classList.remove('visible');
+                elements.menuError.textContent = '';
                 renderRecentGames();
             }
         }
@@ -2545,8 +2622,30 @@
             return null; // valid
         }
 
+        // Menu choice handlers
+        function selectMenuChoice(choice) {
+            elements.choiceCreate.classList.remove('selected');
+            elements.choiceJoin.classList.remove('selected');
+            elements.createForm.classList.remove('visible');
+            elements.joinForm.classList.remove('visible');
+            elements.menuError.textContent = '';
+
+            if (choice === 'create') {
+                elements.choiceCreate.classList.add('selected');
+                elements.createForm.classList.add('visible');
+                elements.createPlayerNameInput.focus();
+            } else if (choice === 'join') {
+                elements.choiceJoin.classList.add('selected');
+                elements.joinForm.classList.add('visible');
+                elements.roomCodeInput.focus();
+            }
+        }
+
+        elements.choiceCreate.onclick = () => selectMenuChoice('create');
+        elements.choiceJoin.onclick = () => selectMenuChoice('join');
+
         document.getElementById('create-game-btn').onclick = async () => {
-            const name = elements.playerNameInput.value.trim();
+            const name = elements.createPlayerNameInput.value.trim();
             const validationError = validatePlayerName(name);
             if (validationError) {
                 elements.menuError.textContent = validationError;
@@ -2563,7 +2662,7 @@
         };
 
         document.getElementById('join-game-btn').onclick = async () => {
-            const name = elements.playerNameInput.value.trim();
+            const name = elements.joinPlayerNameInput.value.trim();
             const code = elements.roomCodeInput.value.trim().toUpperCase();
             const validationError = validatePlayerName(name);
             if (validationError) {
@@ -2815,8 +2914,9 @@
 
                 // Click on item to rejoin
                 item.querySelector('.recent-game-info').addEventListener('click', () => {
-                    document.getElementById('room-code-input').value = roomCode;
-                    document.getElementById('player-name').value = session.playerName;
+                    selectMenuChoice('join');
+                    elements.roomCodeInput.value = roomCode;
+                    elements.joinPlayerNameInput.value = session.playerName;
                     document.getElementById('join-game-btn').click();
                 });
 
