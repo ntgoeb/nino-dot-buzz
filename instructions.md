@@ -71,7 +71,7 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans, neon
 ### Horoscope API
 - Endpoint: `https://horoscope-app-api.vercel.app/api/v1/get-horoscope/daily?sign={sign}&day=TODAY`
 - Proxied through `https://api.allorigins.win/raw?url=` to avoid CORS issues
-- User's sign saved to localStorage (`nino-zodiac-sign`)
+- User must select their sign each visit (not persisted)
 
 ### Moon Phase Calculation
 - Calculated client-side based on days since known new moon (Jan 6, 2000)
@@ -105,12 +105,17 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans, neon
 - **Stockfish.js v10** (~1.5MB, local) for AI via Web Worker
 - 5 difficulty levels (Beginner to Expert)
 - Click-to-move and algebraic notation text input
-- **Mating Puzzles mode:** 121 verified puzzles (mate-in-2 and mate-in-3)
+- **Mating Puzzles mode:** Mix of verified historical puzzles and generated puzzles
+- **Mobile:** Full-width board, larger pieces, game over shows "Back to Chess" and "Home" buttons
 
 ### Chess Puzzle Format
 Two formats supported in `MATING_PUZZLES` array:
-1. **With setup move** (original): `{ fen, moves: [setupMove, ...solution], mateIn }`
-2. **Direct solution** (newer): `{ fen, solution: [...moves], mateIn }`
+1. **Historical (new):** `{ players, location, year, fen, solution: [...sanMoves], mateIn }`
+2. **Generated (legacy):** `{ id, fen, moves: [setupUciMove, ...uciMoves], mateIn }`
+
+### Chess Puzzle TODO
+- [ ] Complete replacement of generated puzzles with verified historical puzzles (partially done - ~32 of 200 replaced)
+- [ ] Add display of puzzle info (players, location, year) to the UI
 
 ---
 

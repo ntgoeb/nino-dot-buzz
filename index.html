@@ -250,23 +250,12 @@
         const zodiacSelect = document.getElementById('zodiac-select');
         const horoscopeContent = document.getElementById('horoscope-content');
 
-        // Load saved zodiac sign
-        const savedSign = localStorage.getItem('nino-zodiac-sign');
-        if (savedSign) {
-            zodiacSelect.value = savedSign;
-            fetchHoroscope();
-        }
-
         async function fetchHoroscope() {
             const sign = zodiacSelect.value;
             if (!sign) {
                 horoscopeContent.innerHTML = '<p class="horoscope-prompt">Select your zodiac sign to reveal today\'s horoscope...</p>';
-                localStorage.removeItem('nino-zodiac-sign');
                 return;
             }
-
-            // Save the selection
-            localStorage.setItem('nino-zodiac-sign', sign);
 
             // Show loading state
             horoscopeContent.innerHTML = '<p class="horoscope-loading">Consulting the stars...</p>';

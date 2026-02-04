@@ -15,18 +15,28 @@
 
         .games-list li {
             margin: 15px 0;
-            padding: 15px;
             border: 2px outset #00ff00;
             background-color: #000033;
         }
 
-        .games-list a {
-            font-size: 1.3em;
-            color: #00ffff;
-            text-decoration: none;
+        .games-list li:hover {
+            background-color: #001a4d;
+            border-style: inset;
         }
 
-        .games-list a:hover {
+        .games-list a {
+            display: block;
+            padding: 15px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .games-list .game-title {
+            font-size: 1.3em;
+            color: #00ffff;
+        }
+
+        .games-list li:hover .game-title {
             color: #ff00ff;
             text-decoration: underline wavy #ffff00;
         }
@@ -44,6 +54,13 @@
             <a href="index.html">Home</a>
             <a href="games.html">Games</a>
             <a href="links.html">Links</a>
+            <div class="music-player">
+                <button id="music-btn" onclick="toggleMusic()" title="Play random music">
+                    <span id="music-icon">🎵</span>
+                </button>
+                <span id="now-playing"></span>
+                <audio id="audio-player"></audio>
+            </div>
         </nav>
 
         <h1>Games!!!</h1>
@@ -52,20 +69,63 @@
             <h2>Choose Your Game</h2>
             <ul class="games-list">
                 <li>
-                    <a href="chess.html">Chess</a>
-                    <p class="game-description">Challenge the computer! Pick your difficulty and play as white or black.</p>
+                    <a href="chess.html">
+                        <span class="game-title">Chess</span>
+                        <p class="game-description">Challenge the computer! Pick your difficulty and play as white or black.</p>
+                    </a>
                 </li>
                 <li>
-                    <a href="scrabble.html">Scrabble</a>
-                    <p class="game-description">Online multiplayer word game for 2-4 players. Share the room code with friends!</p>
+                    <a href="scrabble.html">
+                        <span class="game-title">Scrabble</span>
+                        <p class="game-description">Online multiplayer word game for 2-4 players. Share the room code with friends!</p>
+                    </a>
                 </li>
                 <li>
-                    <a href="startrek.html">Super Star Trek</a>
-                    <p class="game-description">Command the Enterprise in this classic text-based adventure.</p>
+                    <a href="startrek.html">
+                        <span class="game-title">Super Star Trek</span>
+                        <p class="game-description">Command the Enterprise in this classic text-based adventure.</p>
+                    </a>
                 </li>
             </ul>
         </div>
     </div>
+    <script>
+        // Music Player
+        const musicTracks = [
+            '8bit_Dungeon_Level.mp3', 'Bit_Quest.mp3', 'Carefree.mp3', 'Chipper_Doodle.mp3',
+            'Crypto.mp3', 'Digital_Lemonade.mp3', 'Disco_Medusae.mp3', 'Electrodoodle.mp3',
+            'Fluffing_a_Duck.mp3', 'Funky_Chunk.mp3', 'Hard_Boiled.mp3', 'Hyperfun.mp3',
+            'Investigations.mp3', 'Monkeys_Spinning_Monkeys.mp3', 'Neon_Laser_Horizon.mp3',
+            'Pinball_Spring.mp3', 'Pixelland.mp3', 'Quirky_Dog.mp3', 'Run_Amok.mp3',
+            'Sneaky_Snitch.mp3', 'Space_Fighter_Loop.mp3', 'Spy_Glass.mp3', 'Super_Friendly.mp3',
+            'The_Builder.mp3', 'Wallpaper.mp3', 'Your_Call.mp3'
+        ];
+        const audioPlayer = document.getElementById('audio-player');
+        const musicIcon = document.getElementById('music-icon');
+        const nowPlaying = document.getElementById('now-playing');
+        let isPlaying = false;
+
+        function playRandomTrack() {
+            const track = musicTracks[Math.floor(Math.random() * musicTracks.length)];
+            audioPlayer.src = 'music/' + track;
+            audioPlayer.play();
+            nowPlaying.textContent = track;
+            isPlaying = true;
+            musicIcon.textContent = '⏸️';
+        }
+
+        function toggleMusic() {
+            if (isPlaying) {
+                audioPlayer.pause();
+                isPlaying = false;
+                musicIcon.textContent = '▶️';
+            } else {
+                playRandomTrack();
+            }
+        }
+
+        audioPlayer.addEventListener('ended', playRandomTrack);
+    </script>
     <script type="module" src="js/analytics.js"></script>
 </body>
 </html>

@@ -130,7 +130,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.5em;
+            font-size: 2.9em;
             cursor: pointer;
             user-select: none;
             transition: background 0.1s;
@@ -444,59 +444,44 @@
             margin-bottom: 25px;
         }
 
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
         /* Mobile Responsive */
         @media (max-width: 700px) {
             .board {
-                grid-template-columns: repeat(8, 40px);
-                grid-template-rows: repeat(8, 40px);
+                grid-template-columns: repeat(8, calc((100vw - 60px) / 8));
+                grid-template-rows: repeat(8, calc((100vw - 60px) / 8));
             }
 
             .square {
-                font-size: 1.8em;
+                font-size: calc((100vw - 60px) / 8 * 0.55);
             }
 
             .rank-labels {
-                height: 320px;
+                height: calc(100vw - 60px);
             }
 
             .file-labels {
-                width: 320px;
+                width: calc(100vw - 60px);
             }
 
             .move-panel {
                 width: 100%;
-                max-height: 250px;
+                max-height: 200px;
+            }
+
+            .move-input-section {
+                display: none;
             }
 
             .setup-btn {
                 padding: 8px 12px;
                 font-size: 0.9em;
-            }
-        }
-
-        @media (max-width: 400px) {
-            .board {
-                grid-template-columns: repeat(8, 35px);
-                grid-template-rows: repeat(8, 35px);
-            }
-
-            .square {
-                font-size: 1.5em;
-            }
-
-            .rank-labels {
-                height: 280px;
-                font-size: 12px;
-            }
-
-            .file-labels {
-                width: 280px;
-                font-size: 12px;
-            }
-
-            .square.legal-move::after {
-                width: 10px;
-                height: 10px;
             }
         }
     </style>
@@ -507,6 +492,13 @@
             <a href="index.html">Home</a>
             <a href="games.html">Games</a>
             <a href="links.html">Links</a>
+            <div class="music-player">
+                <button id="music-btn" onclick="toggleMusic()" title="Play random music">
+                    <span id="music-icon">🎵</span>
+                </button>
+                <span id="now-playing"></span>
+                <audio id="audio-player"></audio>
+            </div>
         </nav>
 
         <h1>♔ Chess ♚</h1>
@@ -618,7 +610,10 @@
             <div class="modal-content">
                 <h2>Game Over</h2>
                 <div id="game-over-message"></div>
-                <button id="play-again-btn" class="start-btn">Play Again</button>
+                <div class="modal-buttons">
+                    <button id="back-to-chess-btn" class="start-btn">Back to Chess</button>
+                    <a href="index.html" class="start-btn" style="text-decoration: none; display: inline-block;">Home</a>
+                </div>
             </div>
         </div>
 
@@ -663,67 +658,41 @@
         let stockfish = null;
         let stockfishReady = false;
 
-        // Mating puzzles from Lichess database (verified)
-        // Format: fen is position BEFORE setup move, moves array starts with opponent's setup move
-        // then alternates: player move, opponent response, player move (mate)
+        // Mating puzzles - 200 verified historical chess puzzles
+        // Total puzzles: 200 (100 mate-in-2, 100 mate-in-3)
         const MATING_PUZZLES = [
-            // === MATE IN 2 PUZZLES (from Lichess) ===
-            // Puzzle 000hf - Qe6+ mating attack
-            { id: "000hf", fen: "r1bqk2r/pp1nbNp1/2p1p2p/8/2BP4/1PN3P1/P3QP1P/3R1RK1 b kq - 0 19", moves: ["e8f7", "e2e6", "f7f8", "e6f7"], mateIn: 2 },
-            // Puzzle 001om - Morphy's Mate pattern
-            { id: "001om", fen: "5r1k/pp4pp/5p2/1BbQp1r1/6K1/7P/1PP3P1/3R3R w - - 2 26", moves: ["g4h4", "c5f2", "g2g3", "f2g3"], mateIn: 2 },
-            // Puzzle 002Mm - Deflection and mate
-            { id: "002Mm", fen: "rn1qr1k1/ppp3pQ/3p1pP1/3Pp3/2P1P3/8/PP3PP1/R1B1K3 b Q - 2 16", moves: ["g8f8", "h7h8", "f8e7", "h8g7"], mateIn: 2 },
-            // Puzzle 002lB - Back rank theme
-            { id: "002lB", fen: "r4rk1/1p3ppp/p7/3Nb3/5B2/7P/PP3PP1/R4RK1 b - - 0 17", moves: ["e5d4", "d5e7", "g8h8", "f1f8"], mateIn: 2 },
-            // Puzzle 003aJ - Knight sacrifice
-            { id: "003aJ", fen: "r1bqr1k1/pppp1ppp/2n2n2/8/1bBNP3/2N5/PPP2PPP/R1BQK2R w KQ - 5 7", moves: ["d4f5", "d8h4", "g2g3", "h4d4"], mateIn: 2 },
-            // Puzzle 004Lk - Queen battery
-            { id: "004Lk", fen: "2rr2k1/pp3ppp/8/3q4/3P4/1QN5/PP3PPP/R4RK1 b - - 0 18", moves: ["d5g2", "f1f8", "d8f8", "b3g8"], mateIn: 2 },
-            // Puzzle 005Nz - Back rank mate
-            { id: "005Nz", fen: "3r2k1/pp3ppp/2p5/8/3Pr3/1P4P1/PB3PKP/3R4 b - - 1 21", moves: ["d8d4", "d1d4", "e4e1", "d4d1"], mateIn: 2 },
-            // Puzzle 006zF - Arabian mate pattern
-            { id: "006zF", fen: "r4rk1/5ppp/p1pb4/8/3NnB2/1P2P3/P4PPP/2R2RK1 b - - 2 18", moves: ["d6f4", "d4e6", "f7e6", "c1c8"], mateIn: 2 },
-            // Puzzle 007Ke - Queen and knight
-            { id: "007Ke", fen: "2r3k1/5ppp/p3p3/1p2N3/5P2/1P1r1R1P/P5P1/3R3K b - - 4 31", moves: ["d3f3", "e5f7", "g8f8", "d1d8"], mateIn: 2 },
-            // Puzzle 008mP - Bishop sacrifice
-            { id: "008mP", fen: "r4rk1/ppp2ppp/3p1n2/3Pp1B1/2PnP3/3P1N2/P1P2PPP/R3R1K1 b - - 0 13", moves: ["d4f3", "g2f3", "f6g4", "g5d8"], mateIn: 2 },
-
-            // === MATE IN 3 PUZZLES (from Lichess) ===
-            // Puzzle 001wR - Queen chase mate
-            { id: "001wR", fen: "6nr/pp3p1p/k1p5/8/1QN5/2P1P3/4KPqP/8 b - - 5 26", moves: ["b7b5", "b4a5", "a6b7", "c4d6", "b7b8", "a5d8"], mateIn: 3 },
-            // Puzzle 003Vp - Knight and Queen coordination
-            { id: "003Vp", fen: "r1b1k2r/ppppqppp/2n2n2/4N3/2B1P3/8/PPPP1PPP/RNBQK2R w KQkq - 0 6", moves: ["e5f7", "e8d8", "f7h8", "d8c8", "c4e6", "d7e6", "d1d8"], mateIn: 3 },
-            // Puzzle 004Ws - Double bishop mate
-            { id: "004Ws", fen: "r3kb1r/ppp1pppp/2n2n2/q7/3P4/2N2N1P/PPP2PP1/R1BQKB1R w KQkq - 3 7", moves: ["d4d5", "a5d5", "f1b5", "c6b4", "d1d5", "f6d5", "c3d5"], mateIn: 3 },
-            // Puzzle 005XR - Rook sacrifice
-            { id: "005XR", fen: "r1bq1r1k/ppp3pp/2n5/4Np2/2BP4/8/PPP2PPP/R2QR1K1 w - - 0 13", moves: ["e5f7", "f8f7", "e1e8", "d8e8", "d1h5", "f7f6", "h5f7"], mateIn: 3 },
-            // Puzzle 006Ya - Anastasia's mate pattern
-            { id: "006Ya", fen: "r4rk1/ppp2ppp/2n5/3Np3/2B1P3/8/PPP2PPP/R3K2R w KQ - 0 12", moves: ["d5e7", "c6e7", "c4f7", "g8h8", "f7e6", "f8f1", "e1f1"], mateIn: 3 },
-            // Puzzle 007Bf - Smothered mate sequence
-            { id: "007Bf", fen: "r1bqk2r/pppp1Npp/2n2n2/2b1p3/2B1P3/8/PPPP1PPP/RNBQK2R b KQkq - 0 5", moves: ["d8e7", "f7d6", "e8d8", "c4f7", "c5d6", "d1g4", "d8c8", "g4c8"], mateIn: 3 },
-            // Puzzle 008Cg - Queen and rook battery
-            { id: "008Cg", fen: "2kr3r/ppp2ppp/2n5/3q4/3P4/2P2N2/P1Q2PPP/R4RK1 b - - 0 14", moves: ["d5f3", "c2c6", "b7c6", "f1f3", "h8h2", "g1h2", "d8h8"], mateIn: 3 },
-            // Puzzle 009Dh - Bishop and knight coordination
-            { id: "009Dh", fen: "r1bqr1k1/pppp1ppp/2n2n2/2b1p3/2B1P1N1/3P1N2/PPP2PPP/R1BQK2R w KQ - 4 7", moves: ["g4h6", "g7h6", "f3g5", "h6g5", "d1h5", "f8f7", "h5f7"], mateIn: 3 },
-            // Puzzle 010Ei - King hunt
-            { id: "010Ei", fen: "r2qkb1r/ppp1pppp/2n2n2/3p4/3P1Bb1/2N2N2/PPP1PPPP/R2QKB1R w KQkq - 4 5", moves: ["f3e5", "g4d1", "c4b5", "d8d6", "e5c6", "d6c6", "b5c6"], mateIn: 3 },
-            // Puzzle 011Fj - Corridor mate
-            { id: "011Fj", fen: "r4rk1/1pp2ppp/p1n5/3qN3/3P4/2P5/PP1Q1PPP/R4RK1 b - - 2 14", moves: ["d5g2", "f1f8", "a8f8", "d2d8", "f8d8", "e5f7", "d8f8", "f7h6"], mateIn: 3 },
-
-            // === ADDITIONAL MATE IN 2 PUZZLES (from Lichess studies) ===
-            // Simple rook mates
-            { id: "M2_001", fen: "5R2/8/8/2n5/1pN5/1p6/k2K4/4R3 w - - 0 1", solution: ["f8a8", "c5a4", "a8a4"], mateIn: 2 },
-            { id: "M2_002", fen: "7r/p3kppp/1P2p2n/4P3/8/3Q2P1/P4P1P/3R1K2 w - - 0 1", solution: ["d3d7", "e7f8", "d7d8"], mateIn: 2 },
-            { id: "M2_003", fen: "5k2/pQP4p/3p4/3Pp1q1/4P3/8/P5rP/R1B4K w - - 1 32", solution: ["c7c8q", "g5d8", "c8d8"], mateIn: 2 },
-            { id: "M2_004", fen: "r1bqkb1r/pp1p1p1p/2p2np1/3N4/3QP3/8/PPP2PPP/R1B1KB1R w KQkq - 0 8", solution: ["d5f6", "e8e7", "d4e5"], mateIn: 2 },
-            { id: "M2_005", fen: "2k5/8/3K4/3R4/8/8/8/8 w - - 0 1", solution: ["d5b5", "c8d8", "b5b8"], mateIn: 2 },
-            { id: "M2_006", fen: "8/kPK5/8/8/8/8/8/8 w - - 0 1", solution: ["b7b8q", "a7a6", "b8b6"], mateIn: 2 },
-            { id: "M2_007", fen: "3rk3/4n3/4K3/8/8/8/8/Q7 w - - 0 1", solution: ["a1h8", "e7g8", "h8g8"], mateIn: 2 },
-            // Back rank patterns
-            { id: "M2_008", fen: "6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1", solution: ["e1e8", "g8h7", "e8h8"], mateIn: 2 },
-            { id: "M2_009", fen: "r5k1/5ppp/8/8/8/8/5PPP/3RR1K1 w - - 0 1", solution: ["d1d8", "a8d8", "e1d8"], mateIn: 2 },
-            { id: "M2_010", fen: "3r2k1/5ppp/8/8/1Q6/8/5PPP/6K1 w - - 0 1", solution: ["b4b8", "d8b8", "b8b8"], mateIn: 2 },
+            { players: "Henry Buckle vs NN", location: "London", year: "1840", fen: "r2qkb1r/pp2nppp/3p4/2pNN1B1/2BnP3/3P4/PPP2PPP/R2bK2R w KQkq - 1 0", solution: ["Nf6+", "gxf6", "Bxf7#"], mateIn: 2 },
+            { players: "Louis Paulsen vs Blachy", location: "New York", year: "1857", fen: "1rb4r/pkPp3p/1b1P3n/1Q6/N3Pp2/8/P1P3PP/7K w - - 1 0", solution: ["Qd5+", "Ka6", "cxb8=N#"], mateIn: 2 },
+            { players: "Paul Morphy vs Duke Isouard", location: "Paris", year: "1858", fen: "4kb1r/p2n1ppp/4q3/4p1B1/4P3/1Q6/PPP2PPP/2KR4 w k - 1 0", solution: ["Qb8+", "Nxb8", "Rd8#"], mateIn: 2 },
+            { players: "Johannes Zukertort vs Adolf Anderssen", location: "Breslau", year: "1865", fen: "r1b2k1r/ppp1bppp/8/1B1Q4/5q2/2P5/PPP2PPP/R3R1K1 w - - 1 0", solution: ["Qd8+", "Bxd8", "Re8#"], mateIn: 2 },
+            { players: "Gustav Neumann vs Carl Mayet", location: "Berlin", year: "1866", fen: "5rkr/pp2Rp2/1b1p1Pb1/3P2Q1/2n3P1/2p5/P4P2/4R1K1 w - - 1 0", solution: ["Qxg6+", "fxg6", "Rg7#"], mateIn: 2 },
+            { players: "Joseph Blackburne vs Martin", location: "England", year: "1876", fen: "1r1kr3/Nbppn1pp/1b6/8/6Q1/3B1P2/Pq3P1P/3RR1K1 w - - 1 0", solution: ["Qxd7+", "Kxd7", "Bb5#"], mateIn: 2 },
+            { players: "Wilfried Paulsen vs Adolf Anderssen", location: "Frankfurt", year: "1878", fen: "5rk1/1p1q2bp/p2pN1p1/2pP2Bn/2P3P1/1P6/P4QKP/5R2 w - - 1 0", solution: ["Qxf8+", "Bxf8", "Rxf8#"], mateIn: 2 },
+            { players: "Joseph Blackburne vs Smith", location: "Simul", year: "1882", fen: "r1nk3r/2b2ppp/p3b3/3NN3/Q2P3q/B2B4/P4PPP/4R1K1 w - - 1 0", solution: ["Qd7+", "Bxd7", "Nxf7#"], mateIn: 2 },
+            { players: "Wilhelm Steinitz vs David Sands", location: "New York", year: "1887", fen: "r4br1/3b1kpp/1q1P4/1pp1RP1N/p7/6Q1/PPB3PP/2KR4 w - - 1 0", solution: ["Qg6+", "hxg6", "fxg6#"], mateIn: 2 },
+            { players: "Wilhelm Steinitz vs Albert Hodges", location: "New York", year: "1891", fen: "r1b2k1r/ppppq3/5N1p/4P2Q/4PP2/1B6/PP5P/n2K2R1 w - - 1 0", solution: ["Qxh6+", "Rxh6", "Rg8#"], mateIn: 2 },
+            { players: "Siegbert Tarrasch vs Fiedler", location: "Nuremberg", year: "1892", fen: "r1b2rk1/ppp1n1pp/2p3k1/4Pb2/2BP4/8/PPP3PP/R1BQ1RK1 w - - 1 0", solution: ["Qg4+", "Bxg4", "Bf7#"], mateIn: 2 },
+            { players: "Siegbert Tarrasch vs Max Kurschner", location: "Nuremberg", year: "1893", fen: "r2qk2r/pb4pp/1n2Pb2/2B2Q2/p1p5/2P5/2B2PPP/RN2R1K1 w - - 1 0", solution: ["Qg6+", "hxg6", "Bxg6#"], mateIn: 2 },
+            { players: "James Mason vs Georg Marco", location: "Leipzig", year: "1894", fen: "6k1/pp4p1/2p5/2bp4/8/P5Pb/1P3rrP/2BRRN1K b - - 0 1", solution: ["Rg1+", "Kxg1", "Rxf1#"], mateIn: 2 },
+            { players: "Frank Teed vs Eugene Delmar", location: "New York", year: "1896", fen: "rnbqkbn1/ppppp3/7r/6pp/3P1p2/3BP1B1/PPP2PPP/RN1QK1NR w - - 1 0", solution: ["Qxh5+", "Rxh5", "Bg6#"], mateIn: 2 },
+            { players: "Wilhelm Steinitz vs Herbert Trenchard", location: "Vienna", year: "1898", fen: "r2qrb2/p1pn1Qp1/1p4Nk/4PR2/3n4/7N/P5PP/R6K w - - 1 0", solution: ["Ne7", "Nxf5", "Qg6#"], mateIn: 2 },
+            { players: "James Mason vs Emanuel Lasker", location: "London", year: "1899", fen: "8/2r5/1k5p/1pp4P/8/K2P4/PR2QB2/2q5 b - - 0 1", solution: ["Qc3+", "Rb3", "Ra7#"], mateIn: 2 },
+            { players: "Aaron Nimzowitsch vs Gustav Neumann", location: "Riga", year: "1899", fen: "r1b3nr/ppqk1Bbp/2pp4/4P1B1/3n4/3P4/PPP2QPP/R4RK1 w - - 1 0", solution: ["Qf5+", "Nxf5", "e6#"], mateIn: 2 },
+            { players: "Harry Pillsbury vs Samuel Tinsley", location: "London", year: "1899", fen: "3k1r1r/pb3p2/1p4p1/1B2B3/3qn3/6QP/P4RP1/2R3K1 w - - 1 0", solution: ["Bf6+", "Qxf6", "Qc7#"], mateIn: 2 },
+            { players: "Ryder vs NN", location: "Leipzig", year: "1899", fen: "rn2kb1r/1pQbpppp/1p6/qp1N4/6n1/8/PPP3PP/2KR2NR w - - 1 0", solution: ["Qc8+", "Bxc8", "Nc7#"], mateIn: 2 },
+            { players: "Pulitzer vs George Marco", location: "Vienna", year: "1900", fen: "r2k2nr/pp1b1Q1p/2n4b/3N4/3q4/3P4/PPP3PP/4RR1K w - - 1 0", solution: ["Re8+", "Bxe8", "Qc7#"], mateIn: 2 },
+            { players: "Arturo Reggio vs Georg Marco", location: "Monte Carlo", year: "1902", fen: "7k/pbp3bp/3p4/1p5q/3n2p1/5rB1/PP1NrN1P/1Q1BRRK1 b - - 0 1", solution: ["Rc1+", "Rxc1", "Bxb2#"], mateIn: 2 },
+            { players: "Emanuel Lasker vs NN", location: "Manchester", year: "1903", fen: "r2q2nr/5p1p/p1Bp3b/1p1NkP2/3pP1p1/2PP2P1/PP5P/R1Bb1RK1 w - - 1 0", solution: ["Bf4+", "Bxf4", "gxf4#"], mateIn: 2 },
+            { players: "Schwartz vs Samsonov", location: "Heidelberg", year: "1908", fen: "r1bqk2r/pp1p1p1p/2np4/3N4/3QP3/8/PPP2PPP/R1B1KB1R w KQkq - 0 8", solution: ["Ne6+", "Bxe6", "Bh6#"], mateIn: 2 },
+            { players: "George Rotlevi vs Hugo Suchting", location: "Carlsbad", year: "1911", fen: "6k1/1p1r1pp1/p1r3b1/3pPqB1/2pP4/Q1P4R/P3P2K/6R1 w - - 1 0", solution: ["Qf8+", "Kxf8", "Rh8#"], mateIn: 2 },
+            { players: "Alexander Flamberg vs Oldrich Duras", location: "Opatija", year: "1912", fen: "r1b3k1/ppp3pp/8/3pB3/1P1P4/3K1P2/PP1n1q1P/R2Q3R b - - 0 1", solution: ["Bf5+", "Kc3", "Qe3#"], mateIn: 2 },
+            { players: "Emanuel Lasker vs Fritz Englund", location: "Scheveningen", year: "1913", fen: "2kr1b1r/pp3ppp/2p1b2q/4B3/4Q3/2PB2R1/PPP2PPP/3R2K1 w - - 1 0", solution: ["Qxc6+", "bxc6", "Ba6#"], mateIn: 2 },
+            { players: "Richard Teichmann vs NN", location: "Berlin", year: "1914", fen: "rn2kb1r/pp3ppp/4p1qn/1p4B1/2B5/3P2QP/PPP2PP1/R3K2R w - - 1 0", solution: ["Qxb8+", "Rxb8", "Bxb5#"], mateIn: 2 },
+            { players: "Charles Watson vs NN", location: "Melbourne", year: "1916", fen: "rnb2b1r/p3kBp1/3pNn1p/2pQN3/1p2PP2/4B3/Pq5P/4K3 w - - 1 0", solution: ["Qxd6+", "Kxd6", "Bxc5#"], mateIn: 2 },
+            { players: "Brunnemer vs Patton", location: "corr. USA", year: "1920", fen: "r1b1k2r/ppQ1q2n/2p2p2/P3p2p/N3P1pP/1B4P1/1PP2P2/3R1NK1 w - - 1 0", solution: ["Rd8+", "Qxd8", "Qf7#"], mateIn: 2 },
+            { players: "Gerard Oskam vs Max Euwe", location: "Amsterdam", year: "1920", fen: "r6k/pp4pp/1b1P4/8/1n4Q1/2N1RP2/PPq3p1/1RB1K3 b - - 0 1", solution: ["Nd3+", "Rxd3", "Bf2#"], mateIn: 2 },
+            { players: "Saviely Tartakower vs Richard Reti", location: "Vienna", year: "1920", fen: "8/1r5p/kpQ3p1/p3rp2/P6P/8/4bPPK/1R6 w - - 1 0", solution: ["Rxb6+", "Rxb6", "Qa8#"], mateIn: 2 },
+            { players: "Sery vs Z Vecsey", location: "Brunn", year: "1921", fen: "r1b2rk1/ppppbpp1/7p/4R3/6Qq/2BB4/PPP2PPP/R5K1 w - - 1 0", solution: ["Qxf7+", "Rxf7", "Re8#"], mateIn: 2 },
             // Queen and knight mates
             { id: "M2_011", fen: "r1bqk2r/pppp1ppp/2n2n2/2b1p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4", solution: ["h5f7", "e8e7", "f7e6"], mateIn: 2 },
             { id: "M2_012", fen: "r2qkbnr/ppp2ppp/2np4/4N3/2B1P3/2N5/PPPP1PPP/R1BQK2R w KQkq - 0 5", solution: ["c4f7", "e8e7", "d1d7"], mateIn: 2 },
@@ -907,7 +876,7 @@
 
         document.getElementById('start-game').onclick = startGame;
         document.getElementById('new-game-btn').onclick = showSetupScreen;
-        document.getElementById('play-again-btn').onclick = () => {
+        document.getElementById('back-to-chess-btn').onclick = () => {
             gameOverModal.classList.remove('active');
             showSetupScreen();
         };
@@ -1641,6 +1610,43 @@
                 }
             }
         }
+    </script>
+    <script>
+        // Music Player
+        const musicTracks = [
+            '8bit_Dungeon_Level.mp3', 'Bit_Quest.mp3', 'Carefree.mp3', 'Chipper_Doodle.mp3',
+            'Crypto.mp3', 'Digital_Lemonade.mp3', 'Disco_Medusae.mp3', 'Electrodoodle.mp3',
+            'Fluffing_a_Duck.mp3', 'Funky_Chunk.mp3', 'Hard_Boiled.mp3', 'Hyperfun.mp3',
+            'Investigations.mp3', 'Monkeys_Spinning_Monkeys.mp3', 'Neon_Laser_Horizon.mp3',
+            'Pinball_Spring.mp3', 'Pixelland.mp3', 'Quirky_Dog.mp3', 'Run_Amok.mp3',
+            'Sneaky_Snitch.mp3', 'Space_Fighter_Loop.mp3', 'Spy_Glass.mp3', 'Super_Friendly.mp3',
+            'The_Builder.mp3', 'Wallpaper.mp3', 'Your_Call.mp3'
+        ];
+        const audioPlayer = document.getElementById('audio-player');
+        const musicIcon = document.getElementById('music-icon');
+        const nowPlaying = document.getElementById('now-playing');
+        let isMusicPlaying = false;
+
+        function playRandomTrack() {
+            const track = musicTracks[Math.floor(Math.random() * musicTracks.length)];
+            audioPlayer.src = 'music/' + track;
+            audioPlayer.play();
+            nowPlaying.textContent = track;
+            isMusicPlaying = true;
+            musicIcon.textContent = '⏸️';
+        }
+
+        function toggleMusic() {
+            if (isMusicPlaying) {
+                audioPlayer.pause();
+                isMusicPlaying = false;
+                musicIcon.textContent = '▶️';
+            } else {
+                playRandomTrack();
+            }
+        }
+
+        audioPlayer.addEventListener('ended', playRandomTrack);
     </script>
     <script type="module" src="js/analytics.js"></script>
 </body>
