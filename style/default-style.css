@@ -243,12 +243,14 @@ a:hover {
 .moon-display {
     color: #ccccff;
     font-size: 1.1em;
-    margin: 0 0 5px 0;
+    margin: 0 0 8px 0;
+    display: block;
 }
 
 .moon-phase-result {
     margin: 0;
     font-size: 1.3em;
+    display: block;
 }
 
 #moon-icon {
@@ -400,7 +402,7 @@ a:hover {
 }
 
 .tes6-scroll {
-    animation: tes6-scroll-up 30s linear infinite;
+    animation: tes6-scroll-up 20s linear infinite;
     padding: 0 10px;
 }
 
@@ -653,9 +655,6 @@ a:hover {
         overflow: hidden;
     }
 
-    .tes6-scroll {
-        animation: tes6-scroll-up 12s linear infinite;
-    }
 
     .wiki-button {
         font-size: 1em;
