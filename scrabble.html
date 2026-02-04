@@ -2880,7 +2880,10 @@
 
         function renderRecentGames() {
             const sessions = getSavedSessions();
-            const entries = Object.entries(sessions).sort((a, b) => b[1].lastPlayed - a[1].lastPlayed);
+            // Filter out finished games and sort by most recent
+            const entries = Object.entries(sessions)
+                .filter(([_, session]) => session.status !== 'finished')
+                .sort((a, b) => b[1].lastPlayed - a[1].lastPlayed);
 
             const section = document.getElementById('recent-games-section');
             const list = document.getElementById('recent-games-list');
