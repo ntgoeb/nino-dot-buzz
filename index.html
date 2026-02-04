@@ -45,38 +45,41 @@
                 </div>
             </div>
 
-            <!-- Horoscope Section -->
-            <div class="horoscope-container">
-                <h2>🔮 Daily Horoscope</h2>
-                <div class="horoscope-controls">
-                    <label for="zodiac-select">Your Sign:</label>
-                    <select id="zodiac-select" onchange="fetchHoroscope()">
-                        <option value="">-- Select --</option>
-                        <option value="Aries">♈ Aries (Mar 21 - Apr 19)</option>
-                        <option value="Taurus">♉ Taurus (Apr 20 - May 20)</option>
-                        <option value="Gemini">♊ Gemini (May 21 - Jun 20)</option>
-                        <option value="Cancer">♋ Cancer (Jun 21 - Jul 22)</option>
-                        <option value="Leo">♌ Leo (Jul 23 - Aug 22)</option>
-                        <option value="Virgo">♍ Virgo (Aug 23 - Sep 22)</option>
-                        <option value="Libra">♎ Libra (Sep 23 - Oct 22)</option>
-                        <option value="Scorpio">♏ Scorpio (Oct 23 - Nov 21)</option>
-                        <option value="Sagittarius">♐ Sagittarius (Nov 22 - Dec 21)</option>
-                        <option value="Capricorn">♑ Capricorn (Dec 22 - Jan 19)</option>
-                        <option value="Aquarius">♒ Aquarius (Jan 20 - Feb 18)</option>
-                        <option value="Pisces">♓ Pisces (Feb 19 - Mar 20)</option>
-                    </select>
+            <!-- Horoscope and Moon Phase Row -->
+            <div class="widgets-row">
+                <!-- Horoscope Section -->
+                <div class="horoscope-container">
+                    <h2>🔮 Daily Horoscope</h2>
+                    <div class="horoscope-controls">
+                        <label for="zodiac-select">Your Sign:</label>
+                        <select id="zodiac-select" onchange="fetchHoroscope()">
+                            <option value="">-- Select --</option>
+                            <option value="Aries">♈ Aries (Mar 21 - Apr 19)</option>
+                            <option value="Taurus">♉ Taurus (Apr 20 - May 20)</option>
+                            <option value="Gemini">♊ Gemini (May 21 - Jun 20)</option>
+                            <option value="Cancer">♋ Cancer (Jun 21 - Jul 22)</option>
+                            <option value="Leo">♌ Leo (Jul 23 - Aug 22)</option>
+                            <option value="Virgo">♍ Virgo (Aug 23 - Sep 22)</option>
+                            <option value="Libra">♎ Libra (Sep 23 - Oct 22)</option>
+                            <option value="Scorpio">♏ Scorpio (Oct 23 - Nov 21)</option>
+                            <option value="Sagittarius">♐ Sagittarius (Nov 22 - Dec 21)</option>
+                            <option value="Capricorn">♑ Capricorn (Dec 22 - Jan 19)</option>
+                            <option value="Aquarius">♒ Aquarius (Jan 20 - Feb 18)</option>
+                            <option value="Pisces">♓ Pisces (Feb 19 - Mar 20)</option>
+                        </select>
+                    </div>
+                    <div id="horoscope-content">
+                        <p class="horoscope-prompt">Select your zodiac sign to reveal today's horoscope...</p>
+                    </div>
                 </div>
-                <div id="horoscope-content">
-                    <p class="horoscope-prompt">Select your zodiac sign to reveal today's horoscope...</p>
-                </div>
-            </div>
 
-            <!-- Moon Phase Section -->
-            <div class="moon-container">
-                <h2>🌙 Moon Phase</h2>
-                <p class="moon-display">
-                    The moon is currently... <span id="moon-icon">🌑</span> <span id="moon-phase-text">Loading...</span>
-                </p>
+                <!-- Moon Phase Section -->
+                <div class="moon-container">
+                    <h2>🌙 Moon Phase</h2>
+                    <p class="moon-display">
+                        The moon is currently... <span id="moon-icon">🌑</span> <span id="moon-phase-text">Loading...</span>
+                    </p>
+                </div>
             </div>
 
             <!-- Elder Scrolls VI Updates -->

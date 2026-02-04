@@ -199,13 +199,14 @@ a:hover {
     width: 32px;
     height: 32px;
     /* 4-frame sprite sheet: Classic Mario style in black & white
-       Each frame 16x16 pixels, scaled 2x to 32x32, all facing right */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 16' shape-rendering='crispEdges'%3E%3C!-- Frame 1: standing --%3E%3Crect x='5' y='0' width='5' height='1' fill='%23000'/%3E%3Crect x='4' y='1' width='8' height='1' fill='%23000'/%3E%3Crect x='4' y='2' width='3' height='1' fill='%23fff'/%3E%3Crect x='7' y='2' width='2' height='1' fill='%23000'/%3E%3Crect x='9' y='2' width='2' height='1' fill='%23fff'/%3E%3Crect x='3' y='3' width='2' height='1' fill='%23fff'/%3E%3Crect x='5' y='3' width='1' height='1' fill='%23000'/%3E%3Crect x='6' y='3' width='2' height='1' fill='%23fff'/%3E%3Crect x='8' y='3' width='1' height='1' fill='%23000'/%3E%3Crect x='9' y='3' width='3' height='1' fill='%23fff'/%3E%3Crect x='3' y='4' width='2' height='1' fill='%23fff'/%3E%3Crect x='5' y='4' width='1' height='1' fill='%23000'/%3E%3Crect x='6' y='4' width='3' height='1' fill='%23fff'/%3E%3Crect x='9' y='4' width='3' height='1' fill='%23000'/%3E%3Crect x='4' y='5' width='7' height='1' fill='%23000'/%3E%3Crect x='4' y='6' width='2' height='1' fill='%23fff'/%3E%3Crect x='6' y='6' width='3' height='1' fill='%23000'/%3E%3Crect x='9' y='6' width='2' height='1' fill='%23fff'/%3E%3Crect x='3' y='7' width='3' height='1' fill='%23fff'/%3E%3Crect x='6' y='7' width='1' height='1' fill='%23000'/%3E%3Crect x='7' y='7' width='2' height='1' fill='%23fff'/%3E%3Crect x='9' y='7' width='1' height='1' fill='%23000'/%3E%3Crect x='10' y='7' width='2' height='1' fill='%23fff'/%3E%3Crect x='2' y='8' width='4' height='1' fill='%23fff'/%3E%3Crect x='6' y='8' width='4' height='1' fill='%23000'/%3E%3Crect x='10' y='8' width='3' height='1' fill='%23fff'/%3E%3Crect x='1' y='9' width='3' height='1' fill='%23fff'/%3E%3Crect x='4' y='9' width='1' height='1' fill='%23000'/%3E%3Crect x='5' y='9' width='5' height='1' fill='%23fff'/%3E%3Crect x='10' y='9' width='1' height='1' fill='%23000'/%3E%3Crect x='11' y='9' width='3' height='1' fill='%23fff'/%3E%3Crect x='1' y='10' width='3' height='1' fill='%23000'/%3E%3Crect x='4' y='10' width='7' height='1' fill='%23fff'/%3E%3Crect x='11' y='10' width='3' height='1' fill='%23000'/%3E%3Crect x='4' y='11' width='3' height='1' fill='%23000'/%3E%3Crect x='7' y='11' width='2' height='1' fill='%23fff'/%3E%3Crect x='9' y='11' width='3' height='1' fill='%23000'/%3E%3Crect x='3' y='12' width='4' height='1' fill='%23000'/%3E%3Crect x='9' y='12' width='4' height='1' fill='%23000'/%3E%3Crect x='2' y='13' width='5' height='1' fill='%23000'/%3E%3Crect x='9' y='13' width='5' height='1' fill='%23000'/%3E%3C!-- Frame 2: running right leg forward --%3E%3Crect x='21' y='1' width='5' height='1' fill='%23000'/%3E%3Crect x='20' y='2' width='8' height='1' fill='%23000'/%3E%3Crect x='20' y='3' width='3' height='1' fill='%23fff'/%3E%3Crect x='23' y='3' width='2' height='1' fill='%23000'/%3E%3Crect x='25' y='3' width='2' height='1' fill='%23fff'/%3E%3Crect x='19' y='4' width='2' height='1' fill='%23fff'/%3E%3Crect x='21' y='4' width='1' height='1' fill='%23000'/%3E%3Crect x='22' y='4' width='2' height='1' fill='%23fff'/%3E%3Crect x='24' y='4' width='1' height='1' fill='%23000'/%3E%3Crect x='25' y='4' width='3' height='1' fill='%23fff'/%3E%3Crect x='19' y='5' width='2' height='1' fill='%23fff'/%3E%3Crect x='21' y='5' width='1' height='1' fill='%23000'/%3E%3Crect x='22' y='5' width='3' height='1' fill='%23fff'/%3E%3Crect x='25' y='5' width='3' height='1' fill='%23000'/%3E%3Crect x='20' y='6' width='7' height='1' fill='%23000'/%3E%3Crect x='19' y='7' width='2' height='1' fill='%23000'/%3E%3Crect x='21' y='7' width='2' height='1' fill='%23fff'/%3E%3Crect x='23' y='7' width='2' height='1' fill='%23000'/%3E%3Crect x='25' y='7' width='2' height='1' fill='%23fff'/%3E%3Crect x='27' y='7' width='2' height='1' fill='%23000'/%3E%3Crect x='18' y='8' width='3' height='1' fill='%23000'/%3E%3Crect x='21' y='8' width='1' height='1' fill='%23fff'/%3E%3Crect x='22' y='8' width='4' height='1' fill='%23000'/%3E%3Crect x='26' y='8' width='1' height='1' fill='%23fff'/%3E%3Crect x='27' y='8' width='3' height='1' fill='%23000'/%3E%3Crect x='18' y='9' width='2' height='1' fill='%23fff'/%3E%3Crect x='20' y='9' width='8' height='1' fill='%23000'/%3E%3Crect x='28' y='9' width='2' height='1' fill='%23fff'/%3E%3Crect x='20' y='10' width='3' height='1' fill='%23000'/%3E%3Crect x='25' y='10' width='3' height='1' fill='%23000'/%3E%3Crect x='19' y='11' width='3' height='1' fill='%23000'/%3E%3Crect x='27' y='11' width='3' height='1' fill='%23000'/%3E%3Crect x='17' y='12' width='4' height='1' fill='%23000'/%3E%3Crect x='28' y='12' width='3' height='1' fill='%23000'/%3E%3C!-- Frame 3: mid-air --%3E%3Crect x='37' y='2' width='5' height='1' fill='%23000'/%3E%3Crect x='36' y='3' width='8' height='1' fill='%23000'/%3E%3Crect x='36' y='4' width='3' height='1' fill='%23fff'/%3E%3Crect x='39' y='4' width='2' height='1' fill='%23000'/%3E%3Crect x='41' y='4' width='2' height='1' fill='%23fff'/%3E%3Crect x='35' y='5' width='2' height='1' fill='%23fff'/%3E%3Crect x='37' y='5' width='1' height='1' fill='%23000'/%3E%3Crect x='38' y='5' width='2' height='1' fill='%23fff'/%3E%3Crect x='40' y='5' width='1' height='1' fill='%23000'/%3E%3Crect x='41' y='5' width='3' height='1' fill='%23fff'/%3E%3Crect x='35' y='6' width='2' height='1' fill='%23fff'/%3E%3Crect x='37' y='6' width='1' height='1' fill='%23000'/%3E%3Crect x='38' y='6' width='3' height='1' fill='%23fff'/%3E%3Crect x='41' y='6' width='3' height='1' fill='%23000'/%3E%3Crect x='36' y='7' width='7' height='1' fill='%23000'/%3E%3Crect x='34' y='8' width='2' height='1' fill='%23fff'/%3E%3Crect x='36' y='8' width='3' height='1' fill='%23000'/%3E%3Crect x='39' y='8' width='2' height='1' fill='%23fff'/%3E%3Crect x='41' y='8' width='3' height='1' fill='%23000'/%3E%3Crect x='44' y='8' width='2' height='1' fill='%23fff'/%3E%3Crect x='33' y='9' width='4' height='1' fill='%23000'/%3E%3Crect x='37' y='9' width='1' height='1' fill='%23fff'/%3E%3Crect x='38' y='9' width='4' height='1' fill='%23000'/%3E%3Crect x='42' y='9' width='1' height='1' fill='%23fff'/%3E%3Crect x='43' y='9' width='4' height='1' fill='%23000'/%3E%3Crect x='35' y='10' width='3' height='1' fill='%23fff'/%3E%3Crect x='38' y='10' width='4' height='1' fill='%23000'/%3E%3Crect x='42' y='10' width='3' height='1' fill='%23fff'/%3E%3Crect x='37' y='11' width='6' height='1' fill='%23000'/%3E%3Crect x='35' y='12' width='4' height='1' fill='%23000'/%3E%3Crect x='41' y='12' width='4' height='1' fill='%23000'/%3E%3C!-- Frame 4: running left leg forward --%3E%3Crect x='53' y='1' width='5' height='1' fill='%23000'/%3E%3Crect x='52' y='2' width='8' height='1' fill='%23000'/%3E%3Crect x='52' y='3' width='3' height='1' fill='%23fff'/%3E%3Crect x='55' y='3' width='2' height='1' fill='%23000'/%3E%3Crect x='57' y='3' width='2' height='1' fill='%23fff'/%3E%3Crect x='51' y='4' width='2' height='1' fill='%23fff'/%3E%3Crect x='53' y='4' width='1' height='1' fill='%23000'/%3E%3Crect x='54' y='4' width='2' height='1' fill='%23fff'/%3E%3Crect x='56' y='4' width='1' height='1' fill='%23000'/%3E%3Crect x='57' y='4' width='3' height='1' fill='%23fff'/%3E%3Crect x='51' y='5' width='2' height='1' fill='%23fff'/%3E%3Crect x='53' y='5' width='1' height='1' fill='%23000'/%3E%3Crect x='54' y='5' width='3' height='1' fill='%23fff'/%3E%3Crect x='57' y='5' width='3' height='1' fill='%23000'/%3E%3Crect x='52' y='6' width='7' height='1' fill='%23000'/%3E%3Crect x='51' y='7' width='2' height='1' fill='%23000'/%3E%3Crect x='53' y='7' width='2' height='1' fill='%23fff'/%3E%3Crect x='55' y='7' width='2' height='1' fill='%23000'/%3E%3Crect x='57' y='7' width='2' height='1' fill='%23fff'/%3E%3Crect x='59' y='7' width='2' height='1' fill='%23000'/%3E%3Crect x='50' y='8' width='3' height='1' fill='%23000'/%3E%3Crect x='53' y='8' width='1' height='1' fill='%23fff'/%3E%3Crect x='54' y='8' width='4' height='1' fill='%23000'/%3E%3Crect x='58' y='8' width='1' height='1' fill='%23fff'/%3E%3Crect x='59' y='8' width='3' height='1' fill='%23000'/%3E%3Crect x='50' y='9' width='2' height='1' fill='%23fff'/%3E%3Crect x='52' y='9' width='8' height='1' fill='%23000'/%3E%3Crect x='60' y='9' width='2' height='1' fill='%23fff'/%3E%3Crect x='52' y='10' width='3' height='1' fill='%23000'/%3E%3Crect x='57' y='10' width='3' height='1' fill='%23000'/%3E%3Crect x='50' y='11' width='3' height='1' fill='%23000'/%3E%3Crect x='56' y='11' width='3' height='1' fill='%23000'/%3E%3Crect x='49' y='12' width='3' height='1' fill='%23000'/%3E%3Crect x='57' y='12' width='4' height='1' fill='%23000'/%3E%3C/svg%3E");
+       Each frame 16x16 pixels, scaled 2x to 32x32, all facing right
+       Consistent outfit across all frames */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 16' shape-rendering='crispEdges'%3E%3C!-- Frame 1: standing (feet together) --%3E%3Crect x='5' y='0' width='5' height='1' fill='%23000'/%3E%3Crect x='4' y='1' width='7' height='1' fill='%23000'/%3E%3Crect x='3' y='2' width='3' height='1' fill='%23fff'/%3E%3Crect x='6' y='2' width='1' height='1' fill='%23000'/%3E%3Crect x='7' y='2' width='1' height='1' fill='%23fff'/%3E%3Crect x='8' y='2' width='1' height='1' fill='%23000'/%3E%3Crect x='9' y='2' width='2' height='1' fill='%23fff'/%3E%3Crect x='3' y='3' width='1' height='1' fill='%23fff'/%3E%3Crect x='4' y='3' width='3' height='1' fill='%23000'/%3E%3Crect x='7' y='3' width='4' height='1' fill='%23fff'/%3E%3Crect x='4' y='4' width='7' height='1' fill='%23000'/%3E%3Crect x='4' y='5' width='2' height='1' fill='%23000'/%3E%3Crect x='6' y='5' width='3' height='1' fill='%23fff'/%3E%3Crect x='9' y='5' width='2' height='1' fill='%23000'/%3E%3Crect x='3' y='6' width='2' height='1' fill='%23000'/%3E%3Crect x='5' y='6' width='5' height='1' fill='%23fff'/%3E%3Crect x='10' y='6' width='2' height='1' fill='%23000'/%3E%3Crect x='3' y='7' width='9' height='1' fill='%23000'/%3E%3Crect x='4' y='8' width='3' height='1' fill='%23000'/%3E%3Crect x='8' y='8' width='3' height='1' fill='%23000'/%3E%3Crect x='4' y='9' width='3' height='1' fill='%23fff'/%3E%3Crect x='8' y='9' width='3' height='1' fill='%23fff'/%3E%3Crect x='3' y='10' width='4' height='1' fill='%23000'/%3E%3Crect x='8' y='10' width='4' height='1' fill='%23000'/%3E%3C!-- Frame 2: right leg forward, knee up (bounce up frame) --%3E%3Crect x='21' y='0' width='5' height='1' fill='%23000'/%3E%3Crect x='20' y='1' width='7' height='1' fill='%23000'/%3E%3Crect x='19' y='2' width='3' height='1' fill='%23fff'/%3E%3Crect x='22' y='2' width='1' height='1' fill='%23000'/%3E%3Crect x='23' y='2' width='1' height='1' fill='%23fff'/%3E%3Crect x='24' y='2' width='1' height='1' fill='%23000'/%3E%3Crect x='25' y='2' width='2' height='1' fill='%23fff'/%3E%3Crect x='19' y='3' width='1' height='1' fill='%23fff'/%3E%3Crect x='20' y='3' width='3' height='1' fill='%23000'/%3E%3Crect x='23' y='3' width='4' height='1' fill='%23fff'/%3E%3Crect x='20' y='4' width='7' height='1' fill='%23000'/%3E%3Crect x='20' y='5' width='2' height='1' fill='%23000'/%3E%3Crect x='22' y='5' width='3' height='1' fill='%23fff'/%3E%3Crect x='25' y='5' width='2' height='1' fill='%23000'/%3E%3Crect x='18' y='6' width='3' height='1' fill='%23000'/%3E%3Crect x='21' y='6' width='5' height='1' fill='%23fff'/%3E%3Crect x='26' y='6' width='3' height='1' fill='%23000'/%3E%3Crect x='19' y='7' width='9' height='1' fill='%23000'/%3E%3Crect x='19' y='8' width='4' height='1' fill='%23000'/%3E%3Crect x='25' y='8' width='3' height='1' fill='%23000'/%3E%3Crect x='18' y='9' width='4' height='1' fill='%23fff'/%3E%3Crect x='26' y='9' width='3' height='1' fill='%23fff'/%3E%3Crect x='17' y='10' width='4' height='1' fill='%23000'/%3E%3Crect x='27' y='10' width='3' height='1' fill='%23000'/%3E%3C!-- Frame 3: legs passing --%3E%3Crect x='37' y='0' width='5' height='1' fill='%23000'/%3E%3Crect x='36' y='1' width='7' height='1' fill='%23000'/%3E%3Crect x='35' y='2' width='3' height='1' fill='%23fff'/%3E%3Crect x='38' y='2' width='1' height='1' fill='%23000'/%3E%3Crect x='39' y='2' width='1' height='1' fill='%23fff'/%3E%3Crect x='40' y='2' width='1' height='1' fill='%23000'/%3E%3Crect x='41' y='2' width='2' height='1' fill='%23fff'/%3E%3Crect x='35' y='3' width='1' height='1' fill='%23fff'/%3E%3Crect x='36' y='3' width='3' height='1' fill='%23000'/%3E%3Crect x='39' y='3' width='4' height='1' fill='%23fff'/%3E%3Crect x='36' y='4' width='7' height='1' fill='%23000'/%3E%3Crect x='36' y='5' width='2' height='1' fill='%23000'/%3E%3Crect x='38' y='5' width='3' height='1' fill='%23fff'/%3E%3Crect x='41' y='5' width='2' height='1' fill='%23000'/%3E%3Crect x='35' y='6' width='2' height='1' fill='%23000'/%3E%3Crect x='37' y='6' width='5' height='1' fill='%23fff'/%3E%3Crect x='42' y='6' width='2' height='1' fill='%23000'/%3E%3Crect x='35' y='7' width='9' height='1' fill='%23000'/%3E%3Crect x='37' y='8' width='5' height='1' fill='%23000'/%3E%3Crect x='37' y='9' width='5' height='1' fill='%23fff'/%3E%3Crect x='36' y='10' width='7' height='1' fill='%23000'/%3E%3C!-- Frame 4: left leg forward, knee up (bounce up frame) --%3E%3Crect x='53' y='0' width='5' height='1' fill='%23000'/%3E%3Crect x='52' y='1' width='7' height='1' fill='%23000'/%3E%3Crect x='51' y='2' width='3' height='1' fill='%23fff'/%3E%3Crect x='54' y='2' width='1' height='1' fill='%23000'/%3E%3Crect x='55' y='2' width='1' height='1' fill='%23fff'/%3E%3Crect x='56' y='2' width='1' height='1' fill='%23000'/%3E%3Crect x='57' y='2' width='2' height='1' fill='%23fff'/%3E%3Crect x='51' y='3' width='1' height='1' fill='%23fff'/%3E%3Crect x='52' y='3' width='3' height='1' fill='%23000'/%3E%3Crect x='55' y='3' width='4' height='1' fill='%23fff'/%3E%3Crect x='52' y='4' width='7' height='1' fill='%23000'/%3E%3Crect x='52' y='5' width='2' height='1' fill='%23000'/%3E%3Crect x='54' y='5' width='3' height='1' fill='%23fff'/%3E%3Crect x='57' y='5' width='2' height='1' fill='%23000'/%3E%3Crect x='50' y='6' width='3' height='1' fill='%23000'/%3E%3Crect x='53' y='6' width='5' height='1' fill='%23fff'/%3E%3Crect x='58' y='6' width='3' height='1' fill='%23000'/%3E%3Crect x='51' y='7' width='9' height='1' fill='%23000'/%3E%3Crect x='51' y='8' width='3' height='1' fill='%23000'/%3E%3Crect x='56' y='8' width='4' height='1' fill='%23000'/%3E%3Crect x='50' y='9' width='3' height='1' fill='%23fff'/%3E%3Crect x='57' y='9' width='4' height='1' fill='%23fff'/%3E%3Crect x='49' y='10' width='3' height='1' fill='%23000'/%3E%3Crect x='57' y='10' width='4' height='1' fill='%23000'/%3E%3C/svg%3E");
     background-size: 128px 32px;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
     -webkit-image-rendering: pixelated;
-    animation: sprite-run 0.5s steps(4) infinite, run-back-forth 5s linear infinite;
+    animation: sprite-run 0.43s steps(4) infinite, run-back-forth 4.25s linear infinite, bounce 0.215s ease-in-out infinite;
     top: 8px;
 }
 
@@ -220,6 +221,11 @@ a:hover {
     50% { left: calc(85% - 32px); transform: scaleX(-1); }
     99% { left: 15%; transform: scaleX(-1); }
     100% { left: 15%; transform: scaleX(1); }
+}
+
+@keyframes bounce {
+    0%, 100% { top: 8px; }
+    50% { top: 4px; }
 }
 
 /* Moon Phase container */
@@ -418,11 +424,30 @@ a:hover {
     animation-play-state: paused;
 }
 
+/* Widgets row (horoscope + moon side by side on desktop) */
+.widgets-row {
+    display: flex;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.widgets-row .horoscope-container,
+.widgets-row .moon-container {
+    margin: 0;
+}
+
+.widgets-row .horoscope-container {
+    flex: 2;
+}
+
+.widgets-row .moon-container {
+    flex: 1;
+}
+
 /* Horoscope container */
 .horoscope-container {
     border: 3px solid #cc66ff;
     padding: 20px;
-    margin: 20px 0;
     background-color: #1a0033;
 }
 
@@ -609,13 +634,22 @@ a:hover {
         position: absolute;
     }
 
+    .widgets-row {
+        flex-direction: column;
+    }
+
+    .widgets-row .horoscope-container,
+    .widgets-row .moon-container {
+        margin: 10px 0;
+    }
+
     .tes6-scroll-wrapper {
         height: 100px;
         overflow: hidden;
     }
 
     .tes6-scroll {
-        animation: tes6-scroll-up 25s linear infinite;
+        animation: tes6-scroll-up 15s linear infinite;
     }
 
     .wiki-button {
