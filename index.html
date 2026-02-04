@@ -429,6 +429,9 @@
             // Duplicate content for seamless loop
             const clone = scrollEl.innerHTML;
             scrollEl.innerHTML += clone;
+
+            // Start scrolling animation after content is loaded
+            scrollEl.classList.add('scrolling');
         }
 
         loadTES6Updates();

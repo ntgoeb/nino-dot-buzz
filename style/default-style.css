@@ -361,8 +361,11 @@ a:hover {
 }
 
 .tes6-scroll {
-    animation: tes6-scroll-up 20s linear infinite;
     padding: 0 10px;
+}
+
+.tes6-scroll.scrolling {
+    animation: tes6-scroll-up 20s linear infinite;
 }
 
 .tes6-scroll p {
@@ -605,7 +608,7 @@ a:hover {
         overflow: hidden;
     }
 
-    .tes6-scroll {
+    .tes6-scroll.scrolling {
         animation: tes6-scroll-up 20s linear infinite;
     }
 
