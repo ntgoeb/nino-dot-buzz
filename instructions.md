@@ -13,7 +13,7 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans, neon
 ## Repository Structure
 ```
 ├── index.html              # Homepage (notes, horoscope, moon phase, news feed)
-├── games.html              # Games index (Chess, Scrabble, Star Trek)
+├── games.html              # Games index (Scrabble, Chess, Star Trek)
 ├── chess.html              # Chess vs Stockfish AI + mate puzzles
 ├── scrabble.html           # Scrabble multiplayer (2-4 players, Firebase)
 ├── startrek.html           # Star Trek (under construction)
@@ -46,7 +46,7 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans, neon
 - [x] News feed (BBC, NPR, The Onion via RSS) - collapsed by default
 - [x] Elder Scrolls VI Updates (Google News RSS) - auto-scrolling text box
 - [x] Visitor counter (localStorage-based with 8653 offset)
-- [x] Birthday banner (Feb 3-4 Eastern Time) with pixel art sprite running man
+- [x] Birthday banner (Feb 3-4 Eastern Time)
 - [x] Music player (26 retro tracks, random play)
 
 ### Desktop Layout
@@ -89,17 +89,14 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans, neon
 
 ### Birthday Banner
 - Shows Feb 3-4 in Eastern Time (uses `toLocaleDateString` with `America/New_York` timezone)
-- Pixel art sprite running man (4-frame SVG sprite sheet embedded as data URI)
-- Sprite uses CSS `steps(4)` animation for frame cycling
-- Runs back and forth using `scaleX(-1)` to mirror when changing direction
-- Has bounce animation (moves up/down while running)
 - Text is 32px on desktop, 24px on mobile
 
 ### Elder Scrolls VI Updates Widget
 - Uses Google News RSS: `news.google.com/rss/search?q=elder+scrolls+vi`
 - Auto-scrolling text box with CSS animation (`tes6-scroll-up`)
 - Content is duplicated in JS for seamless loop (scrolls to -50%)
-- Desktop: 30s scroll duration; Mobile: 15s scroll duration
+- Animation only starts after content loads (JS adds `.scrolling` class)
+- Desktop: 20s scroll duration; Mobile: 25s scroll duration
 - Pauses on hover
 
 ### Chess Pieces on Mobile
@@ -131,7 +128,7 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans, neon
   - Hard: depth 5, skill 5
   - Expert: depth 8, skill 10
 - Click-to-move and algebraic notation text input
-- **Mating Puzzles mode:** Mix of verified historical puzzles and generated puzzles
+- **Mating Puzzles mode:** Mix of verified historical puzzles and generated puzzles (marked "work in progress" in UI)
 - **Mobile:** Full-width board, pieces at 72% of square size, game over shows "Back to Chess" and "Home" buttons
 
 ### Chess Puzzle Format
@@ -148,9 +145,11 @@ Two formats supported in `MATING_PUZZLES` array:
 ## Scrabble Multiplayer (Implemented)
 - **Firebase Realtime Database** for real-time game state sync
 - 2-4 players with room code system (4-letter codes)
+- **Menu layout:** Two-column Create Game / Join Game selection, inputs appear after choice
 - **Automatic word validation** using TWL06 dictionary with definitions from Free Dictionary API
 - Challenge system with proper penalties
-- Game persistence via localStorage
+- Game persistence via localStorage (per-device, not shared between desktop/mobile)
+- **Recent Games:** Shows only in-progress/lobby games (finished games filtered out, shown in Gallery)
 - Gallery for finished games (screenshots stored in localStorage)
 - **Mobile optimization:** tap-to-place AND drag-and-drop supported
 
