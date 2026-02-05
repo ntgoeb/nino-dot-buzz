@@ -118,13 +118,12 @@
 
         <div class="game-instructions">
             <h2>Quick Commands:</h2>
-            <p>NAV - Navigate (warp)</p>
-            <p>SRS - Short Range Scan</p>
-            <p>LRS - Long Range Scan</p>
-            <p>PHA - Fire Phasers</p>
-            <p>TOR - Fire Torpedoes</p>
-            <p>SHE - Shields</p>
-            <p>COM - Computer</p>
+            <p>WARP x, y - Move between quadrants</p>
+            <p>IMPULSE x, y - Move within quadrant</p>
+            <p>SRSCAN / LRSCAN / STARMAP - Scans</p>
+            <p>PHASERS - Fire Phasers</p>
+            <p>TORPEDOES - Fire Torpedoes</p>
+            <p>DOCK - Dock at starbase to repair</p>
             <p>Type 'HELP' for full instructions</p>
         </div>
 
@@ -134,41 +133,31 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
-            integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
-            crossorigin="anonymous"></script>
-
-    <!-- Game engine script will go here -->
+    <!-- Game engine -->
     <script src="sst.js"></script>
 
     <!-- Interface script -->
     <script>
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            const output = document.getElementById('output');
+            const commandInput = document.getElementById('command');
+
+            // Initialize the game engine with output element
+            SST.init(output);
+
             // Handle command input
-            $('#command').keypress(function(e) {
-                if(e.which == 13) { // Enter key
-                    const command = $(this).val();
-                    $('#output').append('> ' + command + '\n');
-                    // Here we'll add the function to process commands
-                    processCommand(command);
-                    $(this).val('');
+            commandInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const command = commandInput.value;
+                    SST.print('> ' + command);
+                    SST.process(command);
+                    commandInput.value = '';
                 }
             });
 
-            // Start the game
-            startGame();
+            // Start a new game
+            SST.newGame();
         });
-
-        function startGame() {
-            $('#output').append('Welcome to Super Star Trek!\n');
-            $('#output').append('=======================\n\n');
-            $('#output').append('🚧 Game under construction - check back soon!\n');
-        }
-
-        function processCommand(command) {
-            // Command processing will be implemented in sst.js
-            $('#output').append('Command not yet implemented.\n\n');
-        }
     </script>
     <script>
         // Music Player

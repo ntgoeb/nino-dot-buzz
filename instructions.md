@@ -20,6 +20,7 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans, neon
 ├── links.html              # Links page (quirky/interesting sites)
 ├── style/
 │   └── default-style.css   # Retro styling + Comic Neue web font
+├── sst.js                  # Super Star Trek game engine
 ├── js/
 │   ├── analytics.js        # Firebase analytics
 │   └── stockfish.min.js    # Chess AI engine (~1.5MB)
@@ -57,14 +58,14 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans, neon
 ### Games
 - [x] Chess - vs computer using Stockfish.js + mating puzzles
 - [x] Scrabble - 2-4 player online multiplayer
-- [ ] Super Star Trek - under construction (has styled page with banner)
+- [~] Super Star Trek - partially implemented (navigation, scanning, docking working)
 
 ### Other Pages
 - [x] Links page - curated list of quirky/interesting websites
 - [x] Games index page
 
 ## Feature Wishlist (remaining)
-- [ ] **Super Star Trek** - Full implementation (see `startrek-implementation-plan.md`)
+- [~] **Super Star Trek** - Combat (phasers, torpedoes) still needed
 - [ ] "Login" page (novelty/fake)
 - [ ] Recipe generator
 - [ ] Requests button
@@ -156,6 +157,54 @@ Two formats supported in `MATING_PUZZLES` array:
 ### Scrabble - Known Issues / TODO
 - [ ] Test challenge flow edge cases
 - [ ] Test reconnection in various scenarios
+
+---
+
+## Super Star Trek (Partially Implemented)
+
+Recreation of the classic 1978 text-based game. Terminal-style interface with green text on dark blue.
+
+### Implemented Features
+- **Galaxy generation:** 8x8 quadrants, each with 8x8 sectors
+- **Klingons:** 15-25 randomly placed across galaxy (max 3 per quadrant)
+- **Starbases:** 2-4 for resupply and repair
+- **Navigation:**
+  - `WARP x, y` - Move between quadrants (positive X = right, positive Y = up)
+  - `IMPULSE x, y` - Move within current quadrant
+- **Scanning:**
+  - `SRSCAN` - View current quadrant (8x8 sector grid)
+  - `LRSCAN` - View adjacent quadrants
+  - `STARMAP` - View entire galaxy map
+- **Ship Systems:**
+  - Energy (starts at 3000)
+  - Shields (automatic, starts at 1000, absorb damage)
+  - Torpedoes (10)
+  - 8 systems that can be damaged and repaired
+- **Docking:** `DOCK` at starbases restores energy, shields, torpedoes, repairs systems
+- **Klingon attacks:** Automatic after player movement, damage shields then hull
+- **Win/lose conditions:** Destroy all Klingons, or lose by running out of energy/time
+
+### Not Yet Implemented
+- [ ] `PHASERS` - Energy weapons (damage based on distance)
+- [ ] `TORPEDOES` - Photon torpedoes (instant kill, limited supply)
+- [ ] `COMPUTER` - Navigation calculator, torpedo targeting
+
+### Commands
+```
+WARP x, y    - Warp between quadrants
+IMPULSE x, y - Move within quadrant
+SRSCAN       - Short range scan
+LRSCAN       - Long range scan
+STARMAP      - Full galaxy map
+PHASERS      - Fire phasers (not implemented)
+TORPEDOES    - Fire torpedoes (not implemented)
+SHIELDS      - View shield status
+DAMAGE       - Damage report
+STATUS       - Mission status
+DOCK         - Dock at starbase
+HELP         - Command list
+NEW          - New game
+```
 
 ---
 
