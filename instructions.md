@@ -58,14 +58,14 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans, neon
 ### Games
 - [x] Chess - vs computer using Stockfish.js + mating puzzles
 - [x] Scrabble - 2-4 player online multiplayer
-- [~] Super Star Trek - partially implemented (navigation, scanning, docking working)
+- [x] Super Star Trek - core gameplay complete (navigation, combat, replicator buffs)
 
 ### Other Pages
 - [x] Links page - curated list of quirky/interesting websites
 - [x] Games index page
 
 ## Feature Wishlist (remaining)
-- [~] **Super Star Trek** - Combat (phasers, torpedoes) still needed
+- [~] **Super Star Trek** - Core complete, see future feature ideas in Star Trek section
 - [ ] "Login" page (novelty/fake)
 - [ ] Recipe generator
 - [ ] Requests button
@@ -160,51 +160,157 @@ Two formats supported in `MATING_PUZZLES` array:
 
 ---
 
-## Super Star Trek (Partially Implemented)
+## Super Star Trek (Core Complete)
 
-Recreation of the classic 1978 text-based game. Terminal-style interface with green text on dark blue.
+Recreation of the classic 1978 text-based game. Terminal-style interface with green text on dark blue. Note: This is an alternate version - will be "Cardassian Wars" themed rather than classic Klingon.
 
 ### Implemented Features
 - **Galaxy generation:** 8x8 quadrants, each with 8x8 sectors
-- **Klingons:** 15-25 randomly placed across galaxy (max 3 per quadrant)
+- **Enemies:** 15-25 Klingons randomly placed (max 3 per quadrant) - *to be replaced with Cardassians*
 - **Starbases:** 2-4 for resupply and repair
 - **Navigation:**
   - `WARP x, y` - Move between quadrants (positive X = right, positive Y = up)
   - `IMPULSE x, y` - Move within current quadrant
 - **Scanning:**
-  - `SRSCAN` - View current quadrant (8x8 sector grid)
+  - `SRSCAN` - View current quadrant (8x8 sector grid) + Klingon positions/energy
   - `LRSCAN` - View adjacent quadrants
   - `STARMAP` - View entire galaxy map
+- **Combat:**
+  - `PHASERS n` - Fire phasers with n energy (distributed among enemies, damage decreases with distance)
+  - `TORPEDOES x, y` - Fire torpedo at sector coordinates (instant kill, limited supply)
 - **Ship Systems:**
   - Energy (starts at 3000)
   - Shields (automatic, starts at 1000, absorb damage)
   - Torpedoes (10)
   - 8 systems that can be damaged and repaired
+- **Replicator (COMPUTER command):** Crew buffs with Star Trek flavor
+  - "Coffee, black" - 30% reduced energy costs
+  - "Tea, Earl Grey, hot" - Double repair rate
+  - "Raktajino" - 50% phaser damage boost
+  - "Prune juice" - Shield regeneration
 - **Docking:** `DOCK` at starbases restores energy, shields, torpedoes, repairs systems
-- **Klingon attacks:** Automatic after player movement, damage shields then hull
-- **Win/lose conditions:** Destroy all Klingons, or lose by running out of energy/time
-
-### Not Yet Implemented
-- [ ] `PHASERS` - Energy weapons (damage based on distance)
-- [ ] `TORPEDOES` - Photon torpedoes (instant kill, limited supply)
-- [ ] `COMPUTER` - Navigation calculator, torpedo targeting
+- **Enemy attacks:** Automatic after player movement, damage shields then hull
+- **Win/lose conditions:** Destroy all enemies, or lose by running out of energy/time
 
 ### Commands
 ```
-WARP x, y    - Warp between quadrants
-IMPULSE x, y - Move within quadrant
-SRSCAN       - Short range scan
-LRSCAN       - Long range scan
-STARMAP      - Full galaxy map
-PHASERS      - Fire phasers (not implemented)
-TORPEDOES    - Fire torpedoes (not implemented)
-SHIELDS      - View shield status
-DAMAGE       - Damage report
-STATUS       - Mission status
-DOCK         - Dock at starbase
-HELP         - Command list
-NEW          - New game
+WARP x, y      - Warp between quadrants
+IMPULSE x, y   - Move within quadrant
+SRSCAN         - Short range scan (shows enemy positions)
+LRSCAN         - Long range scan
+STARMAP        - Full galaxy map
+PHASERS n      - Fire phasers with n energy
+TORPEDOES x, y - Fire torpedo at sector x, y
+COMPUTER       - Replicator menu (crew buffs)
+SHIELDS        - View shield status
+DAMAGE         - Damage report
+STATUS         - Mission status
+DOCK           - Dock at starbase
+HELP           - Command list
+NEW            - New game
 ```
+
+### Future Feature Ideas
+
+#### 1. Cardassian Reskin (Easy)
+Replace Klingons with Cardassians throughout. This marks the game as an alternate/modified version rather than a straight Super Star Trek clone. Change 'K' symbol to 'C', update all text references.
+- **Feasibility:** Easy - mostly find/replace on text and symbol constants.
+
+#### 2. Random Encounters / Away Missions (Medium)
+Trigger random events when entering certain quadrants or after certain actions. Examples:
+- Distress beacon from disabled ship (investigate for rewards/crew)
+- Anomaly scan (science mini-game, risk/reward)
+- Diplomatic encounter with neutral species
+- Derelict ship exploration (away team risk)
+- **Feasibility:** Medium - need event system, outcome tables, possibly mini-game UI.
+
+#### 3. Cardassian Commander Skill Levels (Medium)
+Give enemy ships different AI behaviors based on commander rank:
+- **Glinn (ensign):** Basic, predictable attacks
+- **Gil:** More aggressive, occasional tactical moves
+- **Gul:** Smart targeting (damaged systems), evasive maneuvers
+- **Legate:** Elite tactics, calls for reinforcements
+- **Feasibility:** Medium - enhance enemy AI, add commander data to ship objects.
+
+#### 4. Cardassian Mothership / Final Boss (Medium-Hard)
+A powerful Cardassian flagship commanded by a Gul or Legate that roams the galaxy:
+- Much higher shields/weapons than regular ships
+- Appears on STARMAP as special icon
+- May need to be weakened through multiple encounters
+- Defeating it could be alternate win condition or bonus objective
+- **Feasibility:** Medium - special ship type, boss mechanics, possibly multi-phase fight.
+
+#### 5. Distress Signals / Timed Events (Medium)
+Starbases or allied ships send distress calls that must be answered within X stardates:
+- "Starbase 4 under attack - 3 stardates to respond"
+- Failure = starbase destroyed (lose resupply point)
+- Success = bonus rewards, reputation
+- Creates urgency and strategic decisions
+- **Feasibility:** Medium - event queue, countdown system, notification UI.
+
+#### 6. Allied Federation Ships (Medium-Hard)
+Other Federation vessels fighting in the war:
+- Appear on scans, can be hailed
+- May assist in combat if in same quadrant
+- Can be escorted/protected for bonus objectives
+- Could request supplies from your ship
+- Named ships with captains (Easter eggs: USS Defiant, USS Voyager, etc.)
+- **Feasibility:** Medium-Hard - NPC ship AI, ally combat system, dialogue.
+
+#### 7. Self-Destruct / Abandon Ship / Eject Warp Core (Easy-Medium)
+Dramatic last-resort mechanics:
+- **Self-Destruct:** Countdown sequence, destroys everything in quadrant (kamikaze)
+- **Abandon Ship:** Save crew, lose the game but with honor (different ending)
+- **Eject Warp Core:** Massive explosion damages all ships in quadrant, leaves you stranded
+- **Feasibility:** Easy-Medium - special commands with dramatic text sequences.
+
+#### Additional Ideas (Claude's suggestions)
+
+#### 8. Nebulae and Terrain (Medium)
+Quadrants could contain nebulae that affect gameplay:
+- Sensor interference (can't see enemy positions clearly)
+- Weapons dampening (reduced phaser effectiveness)
+- Shield disruption (shields drain faster)
+- Hiding spots (enemies can't target you either)
+- **Feasibility:** Medium - quadrant properties, modifier system.
+
+#### 9. Cloaking Device (Easy-Medium)
+Limited-use stealth ability:
+- Avoid combat when entering dangerous quadrants
+- Can't fire weapons while cloaked
+- Uses significant energy
+- Maybe acquired as reward from away mission
+- **Feasibility:** Easy-Medium - state flag, energy drain, combat skip logic.
+
+#### 10. Ship Upgrades at Starbases (Medium)
+Spend resources/time to improve the Enterprise:
+- Enhanced phasers (more damage)
+- Torpedo bay expansion (carry more torpedoes)
+- Improved shields (higher max)
+- Better sensors (see further on LRSCAN)
+- **Feasibility:** Medium - upgrade system, resource tracking, UI for purchase.
+
+#### 11. Named Crew Members (Easy-Medium)
+Bridge crew who can be injured or lost:
+- Affects ship performance (injured engineer = slower repairs)
+- Adds emotional stakes
+- Could have crew-specific abilities
+- Away mission casualties
+- **Feasibility:** Easy-Medium - crew roster, injury system, stat modifiers.
+
+#### 12. Captain's Log (Easy)
+Automatic or manual log entries that record your journey:
+- "Stardate 2547.3: Encountered three Cardassian vessels..."
+- Could be exported/shared
+- Adds narrative flavor
+- **Feasibility:** Easy - array of log strings, display command.
+
+#### 13. Wormholes (Easy)
+Fast travel between distant quadrants:
+- Random or fixed wormhole locations
+- Two-way or one-way
+- Risk of ending up somewhere dangerous
+- **Feasibility:** Easy - special quadrant property, teleport logic.
 
 ---
 

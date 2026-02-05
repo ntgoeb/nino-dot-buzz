@@ -90,7 +90,15 @@ function createGameState() {
 
         // Input state for multi-step commands
         inputMode: null,
-        inputCallback: null
+        inputCallback: null,
+
+        // Replicator buffs (turns remaining)
+        buffs: {
+            coffee: 0,      // Energy efficiency - movement costs less
+            tea: 0,         // Focus - faster repairs
+            raktajino: 0,   // Klingon coffee - phaser damage boost
+            pruneJuice: 0   // Warrior's drink - shield boost
+        }
     };
 }
 
@@ -331,6 +339,16 @@ function shortRangeScan() {
     print('Torpedoes:  ' + game.ship.torpedoes);
     print('Klingons:   ' + game.klingonsRemaining + ' total, ' + game.quadrant.klingons.length + ' here');
     print('Stardates:  ' + stardatesRemaining.toFixed(1) + ' remaining');
+
+    // Show Klingon positions if any present
+    if (game.quadrant.klingons.length > 0) {
+        print('');
+        print('Klingon positions:');
+        for (const klingon of game.quadrant.klingons) {
+            print('  [' + (klingon.x + 1) + ', ' + (klingon.y + 1) + '] - energy: ' + klingon.energy);
+        }
+    }
+
     print('');
 }
 
@@ -588,12 +606,16 @@ function executeWarp(dx, dy, energyCost) {
         print('Navigation computer adjusted course.');
     }
 
-    // Deduct energy
-    game.ship.energy -= energyCost;
+    // Deduct energy (coffee buff reduces cost by 30%)
+    const actualCost = game.buffs.coffee > 0 ? Math.floor(energyCost * 0.7) : energyCost;
+    game.ship.energy -= actualCost;
 
     // Advance stardate based on distance
     const distance = Math.abs(dx) + Math.abs(dy);
     game.stardate.current += distance * 0.5;
+
+    // Tick buffs after movement
+    tickBuffs();
 
     // Move to new quadrant
     game.ship.quadrantX = newQuadX;
@@ -672,17 +694,21 @@ function executeImpulse(dx, dy, energyCost) {
     game.ship.sectorY = newSectorY;
     game.quadrant.sectors[game.ship.sectorY][game.ship.sectorX] = SYM.ENTERPRISE;
 
-    // Deduct energy
-    game.ship.energy -= energyCost;
+    // Deduct energy (coffee buff reduces cost by 30%)
+    const actualCost = game.buffs.coffee > 0 ? Math.floor(energyCost * 0.7) : energyCost;
+    game.ship.energy -= actualCost;
 
     // Small stardate advance for impulse
     const distance = Math.abs(dx) + Math.abs(dy);
     game.stardate.current += distance * 0.1;
 
+    // Tick buffs after movement
+    tickBuffs();
+
     // Check docking status
     checkDockingStatus();
 
-    print('Impulse complete. Energy used: ' + energyCost);
+    print('Impulse complete. Energy used: ' + actualCost);
     print('');
 
     // Klingons attack after movement
@@ -716,6 +742,319 @@ function findNearbyEmpty(x, y) {
         }
     }
     return findEmptySpot();  // Fallback to any empty spot
+}
+
+// ============================================================================
+// COMBAT
+// ============================================================================
+
+function firePhasers(parts) {
+    // Check if phasers are damaged
+    if (game.ship.damage.phasers < 0) {
+        print('');
+        print('*** PHASERS ARE DAMAGED ***');
+        print('');
+        return;
+    }
+
+    // Check if there are Klingons to shoot
+    if (game.quadrant.klingons.length === 0) {
+        print('');
+        print('No Klingons in this quadrant.');
+        print('');
+        return;
+    }
+
+    // Parse energy amount
+    const energy = parseInt(parts[1]);
+
+    if (isNaN(energy) || energy <= 0) {
+        print('');
+        print('PHASERS [energy] - Fire phasers');
+        print('');
+        print('Example: PHASERS 500');
+        print('');
+        print('Energy will be distributed among all ' + game.quadrant.klingons.length + ' Klingon(s).');
+        print('Damage decreases with distance.');
+        print('Available energy: ' + game.ship.energy);
+        print('');
+        return;
+    }
+
+    // Check if we have enough energy
+    if (energy > game.ship.energy) {
+        print('');
+        print('Insufficient energy. Available: ' + game.ship.energy);
+        print('');
+        return;
+    }
+
+    // Fire phasers!
+    game.ship.energy -= energy;
+    print('');
+    print('=== FIRING PHASERS ===');
+    print('Energy used: ' + energy);
+    print('');
+
+    // Distribute energy among Klingons
+    const energyPerKlingon = energy / game.quadrant.klingons.length;
+    const destroyedKlingons = [];
+
+    for (const klingon of game.quadrant.klingons) {
+        // Calculate distance
+        const dx = klingon.x - game.ship.sectorX;
+        const dy = klingon.y - game.ship.sectorY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        // Damage decreases with distance (inverse relationship)
+        // At distance 1, full damage. At distance 8, about 1/3 damage.
+        const effectiveness = 1 / (1 + distance * 0.3);
+        // Raktajino buff increases phaser damage by 50%
+        const raktajinoBonus = game.buffs.raktajino > 0 ? 1.5 : 1.0;
+        const damage = Math.floor(energyPerKlingon * effectiveness * (0.8 + Math.random() * 0.4) * raktajinoBonus);
+
+        klingon.energy -= damage;
+        print('Klingon at [' + (klingon.x + 1) + ',' + (klingon.y + 1) + '] hit for ' + damage + ' damage.');
+
+        if (klingon.energy <= 0) {
+            print('  *** KLINGON DESTROYED! ***');
+            destroyedKlingons.push(klingon);
+        } else {
+            print('  Klingon energy remaining: ' + klingon.energy);
+        }
+    }
+
+    // Remove destroyed Klingons
+    for (const klingon of destroyedKlingons) {
+        removeKlingon(klingon);
+    }
+
+    print('');
+
+    // Surviving Klingons counterattack
+    if (game.quadrant.klingons.length > 0 && !game.ship.docked) {
+        klingonsAttack();
+    }
+
+    // Tick buffs after combat
+    tickBuffs();
+
+    // Check game over conditions
+    checkGameOver();
+
+    // Show scan
+    shortRangeScan();
+}
+
+function fireTorpedoes(parts) {
+    // Check if torpedoes are damaged
+    if (game.ship.damage.photonTorpedoes < 0) {
+        print('');
+        print('*** PHOTON TORPEDOES ARE DAMAGED ***');
+        print('');
+        return;
+    }
+
+    // Check if we have torpedoes
+    if (game.ship.torpedoes <= 0) {
+        print('');
+        print('No torpedoes remaining. Dock at a starbase to resupply.');
+        print('');
+        return;
+    }
+
+    // Parse target coordinates
+    const coords = parseCoordinates(parts);
+
+    if (!coords) {
+        print('');
+        print('TORPEDOES x, y - Fire a photon torpedo at sector coordinates');
+        print('');
+        print('Example: TORPEDOES 3, 5');
+        print('');
+        print('Torpedoes remaining: ' + game.ship.torpedoes);
+        print('Use SRSCAN to locate Klingons (K).');
+        print('');
+        return;
+    }
+
+    // Convert to 0-indexed (player uses 1-indexed)
+    const targetX = coords.dx - 1;
+    const targetY = coords.dy - 1;
+
+    // Validate coordinates are in range
+    if (targetX < 0 || targetX >= QUADRANT_SIZE || targetY < 0 || targetY >= QUADRANT_SIZE) {
+        print('');
+        print('Target out of range. Coordinates must be 1-8.');
+        print('');
+        return;
+    }
+
+    // Fire torpedo!
+    game.ship.torpedoes--;
+    print('');
+    print('=== TORPEDO AWAY ===');
+    print('Targeting sector [' + (targetX + 1) + ', ' + (targetY + 1) + ']');
+    print('Torpedoes remaining: ' + game.ship.torpedoes);
+    print('');
+
+    // Check what's at the target
+    const target = game.quadrant.sectors[targetY][targetX];
+
+    if (target === SYM.KLINGON) {
+        print('*** DIRECT HIT! KLINGON DESTROYED! ***');
+        // Find and remove the Klingon
+        const klingon = game.quadrant.klingons.find(k => k.x === targetX && k.y === targetY);
+        if (klingon) {
+            removeKlingon(klingon);
+        }
+    } else if (target === SYM.STAR) {
+        print('Torpedo impacts star - no effect.');
+    } else if (target === SYM.STARBASE) {
+        print('');
+        print('*** YOU DESTROYED A FEDERATION STARBASE! ***');
+        print('You will be court-martialed for this!');
+        print('');
+        game.quadrant.sectors[targetY][targetX] = SYM.EMPTY;
+        game.galaxy[game.ship.quadrantY][game.ship.quadrantX].starbases = 0;
+        game.starbasesRemaining--;
+        checkDockingStatus();
+    } else if (target === SYM.ENTERPRISE) {
+        print('You cannot fire at yourself!');
+        game.ship.torpedoes++;  // Give the torpedo back
+    } else {
+        print('Torpedo explodes in empty space.');
+    }
+
+    print('');
+
+    // Klingons counterattack
+    if (game.quadrant.klingons.length > 0 && !game.ship.docked) {
+        klingonsAttack();
+    }
+
+    // Tick buffs after combat
+    tickBuffs();
+
+    // Check game over conditions
+    checkGameOver();
+
+    // Show scan
+    shortRangeScan();
+}
+
+function removeKlingon(klingon) {
+    // Remove from sector grid
+    game.quadrant.sectors[klingon.y][klingon.x] = SYM.EMPTY;
+
+    // Remove from klingon list
+    const index = game.quadrant.klingons.indexOf(klingon);
+    if (index > -1) {
+        game.quadrant.klingons.splice(index, 1);
+    }
+
+    // Update galaxy count
+    game.galaxy[game.ship.quadrantY][game.ship.quadrantX].klingons--;
+
+    // Update total remaining
+    game.klingonsRemaining--;
+}
+
+// ============================================================================
+// REPLICATOR (COMPUTER)
+// ============================================================================
+
+function useReplicator(parts) {
+    const order = parts.slice(1).join(' ').toLowerCase();
+
+    // Show menu if no order given
+    if (!order) {
+        print('');
+        print('=== REPLICATOR MENU ===');
+        print('');
+        print('1. COMPUTER COFFEE       - "Coffee, black"');
+        print('   Improves engine efficiency (reduced energy costs)');
+        print('');
+        print('2. COMPUTER TEA          - "Tea, Earl Grey, hot"');
+        print('   Calms the crew (faster system repairs)');
+        print('');
+        print('3. COMPUTER RAKTAJINO    - "Raktajino"');
+        print('   Klingon coffee (boosted phaser damage)');
+        print('');
+        print('4. COMPUTER PRUNE JUICE  - "Prune juice"');
+        print('   A warrior\'s drink (shield regeneration)');
+        print('');
+        print('Active buffs last for 5 moves.');
+        print('');
+        showActiveBuffs();
+        return;
+    }
+
+    // Process orders
+    if (order.includes('coffee') && !order.includes('raktajino')) {
+        print('');
+        print('"Coffee, black."');
+        print('');
+        print('The replicator hums and produces a steaming cup of black coffee.');
+        print('You feel more alert. Engine efficiency improved for 5 moves.');
+        print('');
+        game.buffs.coffee = 5;
+    } else if (order.includes('tea') || order.includes('earl grey')) {
+        print('');
+        print('"Tea, Earl Grey, hot."');
+        print('');
+        print('The replicator produces a perfect cup of Earl Grey tea.');
+        print('A sense of calm focus settles over the bridge. Repairs will be faster for 5 moves.');
+        print('');
+        game.buffs.tea = 5;
+    } else if (order.includes('raktajino')) {
+        print('');
+        print('"Raktajino."');
+        print('');
+        print('The replicator produces the strong Klingon coffee.');
+        print('The crew feels energized and aggressive. Phaser damage boosted for 5 moves.');
+        print('');
+        game.buffs.raktajino = 5;
+    } else if (order.includes('prune') || order.includes('juice')) {
+        print('');
+        print('"Prune juice. A warrior\'s drink."');
+        print('');
+        print('The replicator produces a glass of prune juice.');
+        print('You feel the vigor of a Klingon warrior. Shields regenerating for 5 moves.');
+        print('');
+        game.buffs.pruneJuice = 5;
+    } else {
+        print('');
+        print('The replicator does not recognize that order.');
+        print('Try: COFFEE, TEA, RAKTAJINO, or PRUNE JUICE');
+        print('');
+    }
+}
+
+function showActiveBuffs() {
+    const active = [];
+    if (game.buffs.coffee > 0) active.push('Coffee (' + game.buffs.coffee + ' moves)');
+    if (game.buffs.tea > 0) active.push('Tea (' + game.buffs.tea + ' moves)');
+    if (game.buffs.raktajino > 0) active.push('Raktajino (' + game.buffs.raktajino + ' moves)');
+    if (game.buffs.pruneJuice > 0) active.push('Prune Juice (' + game.buffs.pruneJuice + ' moves)');
+
+    if (active.length > 0) {
+        print('Active buffs: ' + active.join(', '));
+        print('');
+    }
+}
+
+function tickBuffs() {
+    // Decrement buff timers
+    if (game.buffs.coffee > 0) game.buffs.coffee--;
+    if (game.buffs.tea > 0) game.buffs.tea--;
+    if (game.buffs.raktajino > 0) game.buffs.raktajino--;
+    if (game.buffs.pruneJuice > 0) {
+        game.buffs.pruneJuice--;
+        // Prune juice regenerates shields
+        const regen = Math.floor(INITIAL_SHIELDS * 0.1);  // 10% per move
+        game.ship.shields = Math.min(INITIAL_SHIELDS, game.ship.shields + regen);
+    }
 }
 
 function klingonsAttack() {
@@ -772,9 +1111,12 @@ function damageRandomSystem() {
 }
 
 function repairSystems(time) {
+    // Tea buff doubles repair rate
+    const repairRate = game.buffs.tea > 0 ? 1.0 : 0.5;
+
     for (const system of SYSTEMS) {
         if (game.ship.damage[system] < 0) {
-            game.ship.damage[system] += time * 0.5;  // Repair rate
+            game.ship.damage[system] += time * repairRate;
             if (game.ship.damage[system] >= 0) {
                 game.ship.damage[system] = 0;
                 print(SYSTEM_NAMES[system] + ' repair complete.');
@@ -913,10 +1255,10 @@ function processCommand(input) {
             startImpulseNavigation(parts);
             break;
         case 'PHASERS':
-            print('Phasers not yet implemented.');
+            firePhasers(parts);
             break;
         case 'TORPEDOES':
-            print('Torpedoes not yet implemented.');
+            fireTorpedoes(parts);
             break;
         case 'SHIELDS':
             print('');
@@ -926,7 +1268,7 @@ function processCommand(input) {
             print('');
             break;
         case 'COMPUTER':
-            print('Computer not yet implemented.');
+            useReplicator(parts);
             break;
         case 'DOCK':
             dockAtStarbase();
@@ -956,12 +1298,12 @@ function showHelp() {
     print('SRSCAN         - Short Range Scan (view quadrant)');
     print('LRSCAN         - Long Range Scan (view nearby quadrants)');
     print('STARMAP        - View entire galaxy map');
-    print('PHASERS        - Fire Phasers');
-    print('TORPEDOES      - Fire Photon Torpedoes');
+    print('PHASERS n      - Fire phasers using n energy');
+    print('TORPEDOES x, y - Fire torpedo at sector x, y');
     print('SHIELDS        - View shield status (automatic)');
     print('DAMAGE         - Damage Report');
     print('STATUS         - Status Report');
-    print('COMPUTER       - Computer Functions');
+    print('COMPUTER       - Replicator (crew buffs)');
     print('DOCK           - Dock at Starbase (must be adjacent)');
     print('NEW            - Start New Game');
     print('HELP           - Show this help');
@@ -973,6 +1315,11 @@ function showHelp() {
     print('WARP 1, 0    - Warp one quadrant right');
     print('WARP 0, -1   - Warp one quadrant down');
     print('IMPULSE 2, 1 - Move 2 sectors right, 1 up');
+    print('');
+    print('=== COMBAT ===');
+    print('');
+    print('PHASERS 500    - Fire phasers with 500 energy (hits all Klingons)');
+    print('TORPEDOES 3, 5 - Fire torpedo at sector [3, 5] (instant kill)');
     print('');
     print('=== MISSION ===');
     print('');
