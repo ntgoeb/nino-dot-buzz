@@ -10,17 +10,19 @@ const QUADRANT_SIZE = 8;        // 8x8 sectors per quadrant
 const INITIAL_ENERGY = 3000;
 const INITIAL_TORPEDOES = 10;
 const INITIAL_SHIELDS = 1000;
-const MAX_KLINGONS = 25;
-const MIN_KLINGONS = 15;
+const MAX_CARDASSIANS = 25;
+const MIN_CARDASSIANS = 15;
 const MAX_STARBASES = 4;
 const MIN_STARBASES = 2;
+const SAVE_KEY = 'sst-save';
 
 // Symbols for display
 const SYM = {
     ENTERPRISE: 'E',
-    KLINGON: 'K',
+    CARDASSIAN: 'C',
     STARBASE: 'B',
     STAR: '*',
+    WORMHOLE: '@',
     EMPTY: '.'
 };
 
@@ -55,13 +57,13 @@ let game = null;
 
 function createGameState() {
     return {
-        // Galaxy: 8x8 quadrants, each with klingon/starbase/star counts
+        // Galaxy: 8x8 quadrants, each with cardassian/starbase/star counts
         galaxy: [],
 
         // Current quadrant detail: 8x8 sectors
         quadrant: {
             sectors: [],
-            klingons: []  // Array of {x, y, energy}
+            cardassians: []  // Array of {x, y, energy}
         },
 
         // Ship state
@@ -83,7 +85,7 @@ function createGameState() {
             start: 0,
             end: 0
         },
-        klingonsRemaining: 0,
+        cardassiansRemaining: 0,
         starbasesRemaining: 0,
         gameOver: false,
         won: false,
@@ -98,8 +100,56 @@ function createGameState() {
             tea: 0,         // Focus - faster repairs
             raktajino: 0,   // Klingon coffee - phaser damage boost
             pruneJuice: 0   // Warrior's drink - shield boost
-        }
+        },
+
+        // Wormhole circuit (array of {quadrantX, quadrantY} in order)
+        wormholes: [],
+
+        // Captain's log (player notes)
+        log: ''
     };
+}
+
+// ============================================================================
+// SAVE / LOAD
+// ============================================================================
+
+function saveGame() {
+    try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(game));
+        print('');
+        print('=== GAME SAVED ===');
+        print('');
+        print('Your progress has been saved.');
+        print('Your game will be here when you return.');
+        print('');
+    } catch (e) {
+        print('');
+        print('*** SAVE FAILED ***');
+        print('Unable to save game data.');
+        print('');
+    }
+}
+
+function loadGame() {
+    try {
+        const data = localStorage.getItem(SAVE_KEY);
+        if (data) {
+            game = JSON.parse(data);
+            return true;
+        }
+    } catch (e) {
+        // Invalid save data
+    }
+    return false;
+}
+
+function hasSavedGame() {
+    return localStorage.getItem(SAVE_KEY) !== null;
+}
+
+function clearSave() {
+    localStorage.removeItem(SAVE_KEY);
 }
 
 // ============================================================================
@@ -121,8 +171,8 @@ function initializeGame() {
     // Generate the galaxy
     generateGalaxy();
 
-    // Set time limit based on Klingon count
-    game.stardate.end = game.stardate.start + Math.max(25, game.klingonsRemaining + 5);
+    // Set time limit based on Cardassian count
+    game.stardate.end = game.stardate.start + Math.max(25, game.cardassiansRemaining + 5);
 
     // Place Enterprise in random quadrant
     game.ship.quadrantX = Math.floor(Math.random() * GALAXY_SIZE);
@@ -141,26 +191,27 @@ function generateGalaxy() {
         game.galaxy[y] = [];
         for (let x = 0; x < GALAXY_SIZE; x++) {
             game.galaxy[y][x] = {
-                klingons: 0,
+                cardassians: 0,
                 starbases: 0,
                 stars: Math.floor(Math.random() * 8) + 1,  // 1-8 stars
-                explored: false
+                explored: false,
+                wormhole: false
             };
         }
     }
 
-    // Place Klingons (15-25 total)
-    const totalKlingons = Math.floor(Math.random() * (MAX_KLINGONS - MIN_KLINGONS + 1)) + MIN_KLINGONS;
-    game.klingonsRemaining = totalKlingons;
+    // Place Cardassians (15-25 total)
+    const totalCardassians = Math.floor(Math.random() * (MAX_CARDASSIANS - MIN_CARDASSIANS + 1)) + MIN_CARDASSIANS;
+    game.cardassiansRemaining = totalCardassians;
 
-    let klingonsPlaced = 0;
-    while (klingonsPlaced < totalKlingons) {
+    let cardassiansPlaced = 0;
+    while (cardassiansPlaced < totalCardassians) {
         const x = Math.floor(Math.random() * GALAXY_SIZE);
         const y = Math.floor(Math.random() * GALAXY_SIZE);
-        // Max 3 Klingons per quadrant
-        if (game.galaxy[y][x].klingons < 3) {
-            game.galaxy[y][x].klingons++;
-            klingonsPlaced++;
+        // Max 3 Cardassians per quadrant
+        if (game.galaxy[y][x].cardassians < 3) {
+            game.galaxy[y][x].cardassians++;
+            cardassiansPlaced++;
         }
     }
 
@@ -176,6 +227,22 @@ function generateGalaxy() {
         if (game.galaxy[y][x].starbases === 0) {
             game.galaxy[y][x].starbases = 1;
             starbasesPlaced++;
+        }
+    }
+
+    // Place Wormholes (3-4 in a one-way circuit)
+    const totalWormholes = Math.random() < 0.5 ? 3 : 4;
+    game.wormholes = [];
+
+    let wormholesPlaced = 0;
+    while (wormholesPlaced < totalWormholes) {
+        const x = Math.floor(Math.random() * GALAXY_SIZE);
+        const y = Math.floor(Math.random() * GALAXY_SIZE);
+        // Max 1 wormhole per quadrant
+        if (!game.galaxy[y][x].wormhole) {
+            game.galaxy[y][x].wormhole = true;
+            game.wormholes.push({ quadrantX: x, quadrantY: y });
+            wormholesPlaced++;
         }
     }
 }
@@ -197,18 +264,18 @@ function enterQuadrant() {
         }
     }
 
-    // Clear Klingon list
-    game.quadrant.klingons = [];
+    // Clear Cardassian list
+    game.quadrant.cardassians = [];
 
     // Place stars
     placeRandomly(SYM.STAR, quadrantData.stars);
 
-    // Place Klingons
-    for (let i = 0; i < quadrantData.klingons; i++) {
+    // Place Cardassians
+    for (let i = 0; i < quadrantData.cardassians; i++) {
         const pos = findEmptySpot();
         if (pos) {
-            game.quadrant.sectors[pos.y][pos.x] = SYM.KLINGON;
-            game.quadrant.klingons.push({
+            game.quadrant.sectors[pos.y][pos.x] = SYM.CARDASSIAN;
+            game.quadrant.cardassians.push({
                 x: pos.x,
                 y: pos.y,
                 energy: 300 + Math.floor(Math.random() * 200)  // 300-500 energy
@@ -219,6 +286,11 @@ function enterQuadrant() {
     // Place starbase
     if (quadrantData.starbases > 0) {
         placeRandomly(SYM.STARBASE, 1);
+    }
+
+    // Place wormhole
+    if (quadrantData.wormhole) {
+        placeRandomly(SYM.WORMHOLE, 1);
     }
 
     // Place Enterprise
@@ -300,7 +372,7 @@ function checkDockingStatus() {
 
 function getCondition() {
     if (game.ship.docked) return 'DOCKED';
-    if (game.quadrant.klingons.length > 0) return 'RED';
+    if (game.quadrant.cardassians.length > 0) return 'RED';
     if (game.ship.energy < 300) return 'YELLOW';
     return 'GREEN';
 }
@@ -337,15 +409,15 @@ function shortRangeScan() {
     print('Energy:     ' + game.ship.energy);
     print('Shields:    ' + game.ship.shields);
     print('Torpedoes:  ' + game.ship.torpedoes);
-    print('Klingons:   ' + game.klingonsRemaining + ' total, ' + game.quadrant.klingons.length + ' here');
+    print('Cardassians: ' + game.cardassiansRemaining + ' total, ' + game.quadrant.cardassians.length + ' here');
     print('Stardates:  ' + stardatesRemaining.toFixed(1) + ' remaining');
 
-    // Show Klingon positions if any present
-    if (game.quadrant.klingons.length > 0) {
+    // Show Cardassian positions if any present
+    if (game.quadrant.cardassians.length > 0) {
         print('');
-        print('Klingon positions:');
-        for (const klingon of game.quadrant.klingons) {
-            print('  [' + (klingon.x + 1) + ', ' + (klingon.y + 1) + '] - energy: ' + klingon.energy);
+        print('Cardassian positions:');
+        for (const cardassianof game.quadrant.cardassians) {
+            print('  [' + (cardassian.x + 1) + ', ' + (cardassian.y + 1) + '] - energy: ' + cardassian.energy);
         }
     }
 
@@ -390,7 +462,7 @@ function longRangeScan() {
             if (x >= 0 && x < GALAXY_SIZE && y >= 0 && y < GALAXY_SIZE) {
                 const q = game.galaxy[y][x];
                 q.explored = true;  // Mark as explored
-                const code = '' + q.klingons + q.starbases + q.stars;
+                const code = '' + q.cardassians + q.starbases + q.stars;
                 line += code + '|';
             } else {
                 line += '***|';  // Edge of galaxy
@@ -401,7 +473,7 @@ function longRangeScan() {
     }
 
     print('');
-    print('(Format: Klingons/Starbases/Stars)');
+    print('(Format: Cardassians/Starbases/Stars)');
     print('');
 }
 
@@ -425,10 +497,12 @@ function starMap() {
             const isHere = (x === game.ship.quadrantX && y === game.ship.quadrantY);
 
             if (q.explored) {
-                // Show KBS format (Klingons/Bases/Stars)
-                let code = '' + q.klingons + q.starbases + q.stars;
+                // Show CBS format (Cardassians/Bases/Stars)
+                let code = '' + q.cardassians + q.starbases + q.stars;
                 if (isHere) {
                     line += '>' + code + '<|';  // Mark current position
+                } else if (q.wormhole) {
+                    line += '~' + code + '~|';  // Mark wormhole
                 } else if (q.starbases > 0) {
                     line += '*' + code + '*|';  // Mark starbases
                 } else {
@@ -447,14 +521,42 @@ function starMap() {
     }
 
     print('');
-    print('Format: Klingons/Starbases/Stars');
+    print('Format: Cardassians/Starbases/Stars');
     print('>###< = Enterprise location');
+    print('~###~ = Wormhole');
     print('*###* = Starbase present');
     print(' ???  = Unexplored');
     print('');
     print('Enterprise at quadrant [' + (game.ship.quadrantX + 1) + ', ' + (game.ship.quadrantY + 1) + ']');
-    print('Klingons remaining: ' + game.klingonsRemaining);
+    print('Cardassians remaining: ' + game.cardassiansRemaining);
     print('Starbases: ' + game.starbasesRemaining);
+
+    // Show discovered wormhole circuit
+    const discovered = game.wormholes.filter(
+        w => game.galaxy[w.quadrantY][w.quadrantX].explored
+    );
+    if (discovered.length > 0) {
+        print('');
+        print('Wormhole circuit (one-way):');
+        let circuit = '';
+        for (let i = 0; i < game.wormholes.length; i++) {
+            const w = game.wormholes[i];
+            const explored = game.galaxy[w.quadrantY][w.quadrantX].explored;
+            if (explored) {
+                circuit += '[' + (w.quadrantX + 1) + ',' + (w.quadrantY + 1) + ']';
+            } else {
+                circuit += '[???]';
+            }
+            circuit += ' -> ';
+        }
+        // Complete the circuit back to the first
+        const first = game.wormholes[0];
+        const firstExplored = game.galaxy[first.quadrantY][first.quadrantX].explored;
+        circuit += firstExplored ?
+            '[' + (first.quadrantX + 1) + ',' + (first.quadrantY + 1) + ']' : '[???]';
+        print('  ' + circuit);
+    }
+
     print('');
 }
 
@@ -481,7 +583,7 @@ function statusReport() {
     print('');
     print('Stardate:           ' + game.stardate.current.toFixed(1));
     print('Time Remaining:     ' + (game.stardate.end - game.stardate.current).toFixed(1) + ' stardates');
-    print('Klingons Remaining: ' + game.klingonsRemaining);
+    print('Cardassians Remaining: ' + game.cardassiansRemaining);
     print('Starbases:          ' + game.starbasesRemaining);
     print('');
 }
@@ -627,18 +729,18 @@ function executeWarp(dx, dy, energyCost) {
     enterQuadrant();
 
     // Report what's here
-    const kCount = game.quadrant.klingons.length;
+    const kCount = game.quadrant.cardassians.length;
     if (kCount > 0) {
         print('');
-        print('*** RED ALERT! ' + kCount + ' Klingon' + (kCount > 1 ? 's' : '') + ' detected! ***');
+        print('*** RED ALERT! ' + kCount + ' Cardassian' + (kCount > 1 ? 's' : '') + ' detected! ***');
     }
 
     print('Warp complete. Energy used: ' + energyCost);
     print('');
 
-    // Klingons attack after warp
-    if (game.quadrant.klingons.length > 0 && !game.ship.docked) {
-        klingonsAttack();
+    // Cardassians attack after warp
+    if (game.quadrant.cardassians.length > 0 && !game.ship.docked) {
+        cardassiansAttack();
     }
 
     // Repair tick
@@ -674,8 +776,8 @@ function executeImpulse(dx, dy, energyCost) {
         return;
     }
 
-    if (destination === SYM.KLINGON) {
-        print('*** BLOCKED BY KLINGON WARSHIP ***');
+    if (destination === SYM.CARDASSIAN) {
+        print('*** BLOCKED BY CARDASSIAN WARSHIP ***');
         print('Use phasers or torpedoes to clear the path.');
         return;
     }
@@ -683,6 +785,14 @@ function executeImpulse(dx, dy, energyCost) {
     if (destination === SYM.STARBASE) {
         print('*** BLOCKED BY STARBASE ***');
         print('Move adjacent to starbase and use DOCK command.');
+        return;
+    }
+
+    if (destination === SYM.WORMHOLE) {
+        // Deduct impulse energy before entering
+        const actualCost = game.buffs.coffee > 0 ? Math.floor(energyCost * 0.7) : energyCost;
+        game.ship.energy -= actualCost;
+        enterWormhole();
         return;
     }
 
@@ -711,9 +821,9 @@ function executeImpulse(dx, dy, energyCost) {
     print('Impulse complete. Energy used: ' + actualCost);
     print('');
 
-    // Klingons attack after movement
-    if (game.quadrant.klingons.length > 0 && !game.ship.docked) {
-        klingonsAttack();
+    // Cardassians attack after movement
+    if (game.quadrant.cardassians.length > 0 && !game.ship.docked) {
+        cardassiansAttack();
     }
 
     // Small repair tick
@@ -745,6 +855,91 @@ function findNearbyEmpty(x, y) {
 }
 
 // ============================================================================
+// WORMHOLES
+// ============================================================================
+
+function enterWormhole() {
+    // Find which wormhole we're at
+    const qx = game.ship.quadrantX;
+    const qy = game.ship.quadrantY;
+    const wormholeIndex = game.wormholes.findIndex(
+        w => w.quadrantX === qx && w.quadrantY === qy
+    );
+
+    if (wormholeIndex === -1) {
+        print('The wormhole flickers and destabilizes. Nothing happens.');
+        return;
+    }
+
+    // Destination is the next wormhole in the circuit
+    const destIndex = (wormholeIndex + 1) % game.wormholes.length;
+    const dest = game.wormholes[destIndex];
+
+    print('');
+    print('=== ENTERING WORMHOLE ===');
+    print('');
+    print('The ship shudders as it crosses the event horizon...');
+    print('Subspace corridor detected - transit in progress...');
+
+    // Clear Enterprise from current sector
+    game.quadrant.sectors[game.ship.sectorY][game.ship.sectorX] = SYM.EMPTY;
+
+    // Turbulence: ~20% chance of minor damage
+    if (Math.random() < 0.2) {
+        print('');
+        print('*** SUBSPACE TURBULENCE ***');
+        const system = SYSTEMS[Math.floor(Math.random() * SYSTEMS.length)];
+        const damageAmount = -(0.5 + Math.random() * 1.5);  // 0.5-2 stardates to repair (minor)
+        if (game.ship.damage[system] > damageAmount) {
+            game.ship.damage[system] = damageAmount;
+            print(SYSTEM_NAMES[system] + ' damaged by subspace distortion!');
+        } else {
+            print('The ship rattles but holds together.');
+        }
+    }
+
+    // Advance stardate
+    game.stardate.current += 0.5;
+
+    // Tick buffs
+    tickBuffs();
+
+    // Move to destination quadrant
+    game.ship.quadrantX = dest.quadrantX;
+    game.ship.quadrantY = dest.quadrantY;
+
+    print('');
+    print('Emerging from wormhole in quadrant [' +
+        (dest.quadrantX + 1) + ', ' + (dest.quadrantY + 1) + ']');
+
+    // Enter new quadrant (places Enterprise randomly)
+    enterQuadrant();
+
+    // Report what's here
+    const cCount = game.quadrant.cardassians.length;
+    if (cCount > 0) {
+        print('');
+        print('*** RED ALERT! ' + cCount + ' Cardassian' + (cCount > 1 ? 's' : '') + ' detected! ***');
+    }
+
+    print('');
+
+    // Cardassians attack after arrival
+    if (game.quadrant.cardassians.length > 0 && !game.ship.docked) {
+        cardassiansAttack();
+    }
+
+    // Repair tick
+    repairSystems(0.5);
+
+    // Check game over conditions
+    checkGameOver();
+
+    // Show scan
+    shortRangeScan();
+}
+
+// ============================================================================
 // COMBAT
 // ============================================================================
 
@@ -757,10 +952,10 @@ function firePhasers(parts) {
         return;
     }
 
-    // Check if there are Klingons to shoot
-    if (game.quadrant.klingons.length === 0) {
+    // Check if there are Cardassians to shoot
+    if (game.quadrant.cardassians.length === 0) {
         print('');
-        print('No Klingons in this quadrant.');
+        print('No Cardassians in this quadrant.');
         print('');
         return;
     }
@@ -774,7 +969,7 @@ function firePhasers(parts) {
         print('');
         print('Example: PHASERS 500');
         print('');
-        print('Energy will be distributed among all ' + game.quadrant.klingons.length + ' Klingon(s).');
+        print('Energy will be distributed among all ' + game.quadrant.cardassians.length + ' Cardassian(s).');
         print('Damage decreases with distance.');
         print('Available energy: ' + game.ship.energy);
         print('');
@@ -796,14 +991,14 @@ function firePhasers(parts) {
     print('Energy used: ' + energy);
     print('');
 
-    // Distribute energy among Klingons
-    const energyPerKlingon = energy / game.quadrant.klingons.length;
-    const destroyedKlingons = [];
+    // Distribute energy among Cardassians
+    const energyPerCardassian = energy / game.quadrant.cardassians.length;
+    const destroyedCardassians = [];
 
-    for (const klingon of game.quadrant.klingons) {
+    for (const cardassianof game.quadrant.cardassians) {
         // Calculate distance
-        const dx = klingon.x - game.ship.sectorX;
-        const dy = klingon.y - game.ship.sectorY;
+        const dx = cardassian.x - game.ship.sectorX;
+        const dy = cardassian.y - game.ship.sectorY;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         // Damage decreases with distance (inverse relationship)
@@ -811,29 +1006,29 @@ function firePhasers(parts) {
         const effectiveness = 1 / (1 + distance * 0.3);
         // Raktajino buff increases phaser damage by 50%
         const raktajinoBonus = game.buffs.raktajino > 0 ? 1.5 : 1.0;
-        const damage = Math.floor(energyPerKlingon * effectiveness * (0.8 + Math.random() * 0.4) * raktajinoBonus);
+        const damage = Math.floor(energyPerCardassian * effectiveness * (0.8 + Math.random() * 0.4) * raktajinoBonus);
 
-        klingon.energy -= damage;
-        print('Klingon at [' + (klingon.x + 1) + ',' + (klingon.y + 1) + '] hit for ' + damage + ' damage.');
+        cardassian.energy -= damage;
+        print('Cardassian at [' + (cardassian.x + 1) + ',' + (cardassian.y + 1) + '] hit for ' + damage + ' damage.');
 
-        if (klingon.energy <= 0) {
-            print('  *** KLINGON DESTROYED! ***');
-            destroyedKlingons.push(klingon);
+        if (cardassian.energy <= 0) {
+            print('  *** CARDASSIAN DESTROYED! ***');
+            destroyedCardassians.push(cardassian);
         } else {
-            print('  Klingon energy remaining: ' + klingon.energy);
+            print('  Cardassian energy remaining: ' + cardassian.energy);
         }
     }
 
-    // Remove destroyed Klingons
-    for (const klingon of destroyedKlingons) {
-        removeKlingon(klingon);
+    // Remove destroyed Cardassians
+    for (const cardassianof destroyedCardassians) {
+        removeCardassian(cardassian);
     }
 
     print('');
 
-    // Surviving Klingons counterattack
-    if (game.quadrant.klingons.length > 0 && !game.ship.docked) {
-        klingonsAttack();
+    // Surviving Cardassians counterattack
+    if (game.quadrant.cardassians.length > 0 && !game.ship.docked) {
+        cardassiansAttack();
     }
 
     // Tick buffs after combat
@@ -873,7 +1068,7 @@ function fireTorpedoes(parts) {
         print('Example: TORPEDOES 3, 5');
         print('');
         print('Torpedoes remaining: ' + game.ship.torpedoes);
-        print('Use SRSCAN to locate Klingons (K).');
+        print('Use SRSCAN to locate Cardassians (C).');
         print('');
         return;
     }
@@ -901,12 +1096,12 @@ function fireTorpedoes(parts) {
     // Check what's at the target
     const target = game.quadrant.sectors[targetY][targetX];
 
-    if (target === SYM.KLINGON) {
-        print('*** DIRECT HIT! KLINGON DESTROYED! ***');
-        // Find and remove the Klingon
-        const klingon = game.quadrant.klingons.find(k => k.x === targetX && k.y === targetY);
-        if (klingon) {
-            removeKlingon(klingon);
+    if (target === SYM.CARDASSIAN) {
+        print('*** DIRECT HIT! CARDASSIAN DESTROYED! ***');
+        // Find and remove the Cardassian
+        const cardassian= game.quadrant.cardassians.find(k => k.x === targetX && k.y === targetY);
+        if (cardassian) {
+            removeCardassian(cardassian);
         }
     } else if (target === SYM.STAR) {
         print('Torpedo impacts star - no effect.');
@@ -928,9 +1123,9 @@ function fireTorpedoes(parts) {
 
     print('');
 
-    // Klingons counterattack
-    if (game.quadrant.klingons.length > 0 && !game.ship.docked) {
-        klingonsAttack();
+    // Cardassians counterattack
+    if (game.quadrant.cardassians.length > 0 && !game.ship.docked) {
+        cardassiansAttack();
     }
 
     // Tick buffs after combat
@@ -943,21 +1138,21 @@ function fireTorpedoes(parts) {
     shortRangeScan();
 }
 
-function removeKlingon(klingon) {
+function removeCardassian(cardassian) {
     // Remove from sector grid
-    game.quadrant.sectors[klingon.y][klingon.x] = SYM.EMPTY;
+    game.quadrant.sectors[cardassian.y][cardassian.x] = SYM.EMPTY;
 
-    // Remove from klingon list
-    const index = game.quadrant.klingons.indexOf(klingon);
+    // Remove from cardassian list
+    const index = game.quadrant.cardassians.indexOf(cardassian);
     if (index > -1) {
-        game.quadrant.klingons.splice(index, 1);
+        game.quadrant.cardassians.splice(index, 1);
     }
 
     // Update galaxy count
-    game.galaxy[game.ship.quadrantY][game.ship.quadrantX].klingons--;
+    game.galaxy[game.ship.quadrantY][game.ship.quadrantX].cardassians--;
 
     // Update total remaining
-    game.klingonsRemaining--;
+    game.cardassiansRemaining--;
 }
 
 // ============================================================================
@@ -1057,22 +1252,22 @@ function tickBuffs() {
     }
 }
 
-function klingonsAttack() {
+function cardassiansAttack() {
     print('');
-    print('*** KLINGON ATTACK ***');
+    print('*** CARDASSIAN ATTACK ***');
 
-    for (const klingon of game.quadrant.klingons) {
+    for (const cardassianof game.quadrant.cardassians) {
         // Calculate distance
-        const dx = klingon.x - game.ship.sectorX;
-        const dy = klingon.y - game.ship.sectorY;
+        const dx = cardassian.x - game.ship.sectorX;
+        const dy = cardassian.y - game.ship.sectorY;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
-        // Calculate damage based on Klingon energy and distance
+        // Calculate damage based on Cardassian energy and distance
         const hitChance = 0.7 + (Math.random() * 0.3);  // 70-100% hit rate
-        let damage = Math.floor((klingon.energy / (distance + 1)) * hitChance * 0.4);
+        let damage = Math.floor((cardassian.energy / (distance + 1)) * hitChance * 0.4);
 
         if (damage > 0) {
-            print('Klingon at [' + (klingon.x + 1) + ',' + (klingon.y + 1) + '] fires - ');
+            print('Cardassian at [' + (cardassian.x + 1) + ',' + (cardassian.y + 1) + '] fires - ');
 
             // Shields absorb damage first
             if (game.ship.shields > 0) {
@@ -1092,7 +1287,7 @@ function klingonsAttack() {
                 }
             }
         } else {
-            print('Klingon at [' + (klingon.x + 1) + ',' + (klingon.y + 1) + '] misses!');
+            print('Cardassian at [' + (cardassian.x + 1) + ',' + (cardassian.y + 1) + '] misses!');
         }
     }
 
@@ -1190,7 +1385,7 @@ function checkGameOver() {
     if (game.stardate.current >= game.stardate.end) {
         print('');
         print('*** TIME HAS RUN OUT ***');
-        print('The Federation has fallen to the Klingon invasion.');
+        print('The Federation has fallen to the Cardassian invasion.');
         print('');
         game.gameOver = true;
         game.won = false;
@@ -1198,10 +1393,10 @@ function checkGameOver() {
     }
 
     // Victory check
-    if (game.klingonsRemaining <= 0) {
+    if (game.cardassiansRemaining <= 0) {
         print('');
         print('*** CONGRATULATIONS! ***');
-        print('You have destroyed all Klingon warships!');
+        print('You have destroyed all Cardassian warships!');
         print('The Federation is saved!');
         print('');
         game.gameOver = true;
@@ -1273,6 +1468,12 @@ function processCommand(input) {
         case 'DOCK':
             dockAtStarbase();
             break;
+        case 'SAVE':
+            saveGame();
+            break;
+        case 'LOG':
+            openLog();
+            break;
         case 'NEW':
             startNewGame();
             break;
@@ -1305,6 +1506,8 @@ function showHelp() {
     print('STATUS         - Status Report');
     print('COMPUTER       - Replicator (crew buffs)');
     print('DOCK           - Dock at Starbase (must be adjacent)');
+    print('SAVE           - Save game');
+    print('LOG            - Captain\'s log (personal notes)');
     print('NEW            - Start New Game');
     print('HELP           - Show this help');
     print('');
@@ -1318,27 +1521,105 @@ function showHelp() {
     print('');
     print('=== COMBAT ===');
     print('');
-    print('PHASERS 500    - Fire phasers with 500 energy (hits all Klingons)');
+    print('PHASERS 500    - Fire phasers with 500 energy (hits all Cardassians)');
     print('TORPEDOES 3, 5 - Fire torpedo at sector [3, 5] (instant kill)');
     print('');
     print('=== MISSION ===');
     print('');
-    print('Destroy all Klingons before time runs out!');
+    print('Destroy all Cardassians before time runs out!');
     print('Dock at starbases to repair and resupply.');
     print('');
     print('=== SYMBOLS ===');
     print('');
     print('E = Enterprise (you)');
-    print('K = Klingon warship');
+    print('C = Cardassian warship');
     print('B = Starbase');
+    print('@ = Wormhole (one-way, fly into it with IMPULSE)');
     print('* = Star');
     print('. = Empty space');
     print('');
 }
 
 // ============================================================================
+// CAPTAIN'S LOG
+// ============================================================================
+
+let logEditorCallback = null;
+
+function setLogEditor(callback) {
+    logEditorCallback = callback;
+}
+
+function openLog() {
+    if (!logEditorCallback) {
+        print('');
+        print('Log editor not available.');
+        print('');
+        return;
+    }
+
+    logEditorCallback(game.log || '', function(newLog) {
+        game.log = newLog;
+        print('');
+        print("Captain's log updated.");
+        print("Don't forget to SAVE to preserve your log.");
+        print('');
+    });
+}
+
+// ============================================================================
 // GAME FLOW
 // ============================================================================
+
+function startOrResume() {
+    if (hasSavedGame()) {
+        print('');
+        print('                      SUPER STAR TREK');
+        print('');
+        print('');
+        print('Saved game detected.');
+        print('');
+        print('Resume saved game? (Y/N)');
+        print('');
+
+        // Create temporary state for input handling
+        game = createGameState();
+        game.inputMode = 'resume';
+        game.inputCallback = function(input) {
+            game.inputMode = null;
+            game.inputCallback = null;
+
+            if (input === 'Y' || input === 'YES') {
+                if (loadGame()) {
+                    print('');
+                    print('=== GAME RESUMED ===');
+                    print('');
+
+                    // Show log if it has content
+                    if (game.log && game.log.trim()) {
+                        print("Captain's Log:");
+                        print('---');
+                        print(game.log);
+                        print('---');
+                        print('');
+                    }
+
+                    shortRangeScan();
+                } else {
+                    print('Save data corrupted. Starting new game.');
+                    print('');
+                    clearSave();
+                    startNewGame();
+                }
+            } else {
+                print('');
+                startNewGame();
+            }
+        };
+    } else {
+        startNewGame();
+    }
+}
 
 function startNewGame() {
     print('');
@@ -1349,13 +1630,14 @@ function startNewGame() {
 
     initializeGame();
 
-    print('Your mission: Destroy ' + game.klingonsRemaining + ' Klingon warships in ' +
+    print('Your mission: Destroy ' + game.cardassiansRemaining + ' Cardassian warships in ' +
           (game.stardate.end - game.stardate.start).toFixed(0) + ' stardates.');
     print('');
     print('The galaxy is divided into an 8x8 grid of quadrants.');
     print('Each quadrant contains an 8x8 grid of sectors.');
     print('');
     print('There are ' + game.starbasesRemaining + ' starbases in the galaxy for resupply.');
+    print('Subspace anomalies detected - ' + game.wormholes.length + ' wormholes reported.');
     print('');
     print('Type HELP for commands, or SRSCAN for a Short Range Scan.');
     print('');
@@ -1397,6 +1679,8 @@ window.SST = {
     init: setOutputElement,
     process: processCommand,
     newGame: startNewGame,
+    start: startOrResume,
     print: print,
-    clear: clearOutput
+    clear: clearOutput,
+    setLogEditor: setLogEditor
 };

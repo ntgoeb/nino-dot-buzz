@@ -85,9 +85,93 @@
             font-style: italic;
         }
 
+        .log-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .log-modal.active {
+            display: flex;
+        }
+
+        .log-modal-content {
+            background: #000033;
+            border: 3px ridge #00ff00;
+            padding: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .log-modal-content h2 {
+            color: #00ff00;
+            font-family: monospace;
+            margin: 0 0 10px 0;
+            font-size: 16px;
+        }
+
+        .log-modal-content textarea {
+            background: #000000;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            font-family: monospace;
+            font-size: 14px;
+            padding: 10px;
+            resize: vertical;
+            min-height: 200px;
+            flex: 1;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .log-modal-content textarea::placeholder {
+            color: #006600;
+        }
+
+        .log-modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .log-modal-buttons button {
+            flex: 1;
+            padding: 8px 16px;
+            font-family: monospace;
+            font-size: 14px;
+            cursor: pointer;
+            border: 2px solid #00ff00;
+            background: #000033;
+            color: #00ff00;
+        }
+
+        .log-modal-buttons button:hover {
+            background: #003300;
+        }
+
         @media (max-width: 600px) {
             .game-window {
                 height: 350px;
+                font-size: 12px;
+            }
+
+            .log-modal-content {
+                width: 95%;
+                padding: 15px;
+            }
+
+            .log-modal-content textarea {
+                min-height: 150px;
                 font-size: 12px;
             }
         }
@@ -124,12 +208,24 @@
             <p>PHASERS n - Fire phasers (n energy)</p>
             <p>TORPEDOES x, y - Fire torpedo at sector</p>
             <p>COMPUTER - Replicator (crew buffs)</p>
+            <p>SAVE - Save game / LOG - Captain's log</p>
             <p>Type 'HELP' for full instructions</p>
         </div>
 
         <div id="gameContainer">
             <div id="output" class="game-window"></div>
             <input type="text" id="command" class="command-input" placeholder="Enter command..." autocomplete="off">
+        </div>
+
+        <div id="logModal" class="log-modal">
+            <div class="log-modal-content">
+                <h2>Captain's Log</h2>
+                <textarea id="logText" placeholder="Enter your notes here..."></textarea>
+                <div class="log-modal-buttons">
+                    <button id="logSave">Save Log</button>
+                    <button id="logCancel">Cancel</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -141,9 +237,50 @@
         document.addEventListener('DOMContentLoaded', function() {
             const output = document.getElementById('output');
             const commandInput = document.getElementById('command');
+            const logModal = document.getElementById('logModal');
+            const logText = document.getElementById('logText');
+            const logSaveBtn = document.getElementById('logSave');
+            const logCancelBtn = document.getElementById('logCancel');
+
+            let logSaveCallback = null;
 
             // Initialize the game engine with output element
             SST.init(output);
+
+            // Set up the log editor
+            SST.setLogEditor(function(currentLog, onSave) {
+                logText.value = currentLog;
+                logModal.classList.add('active');
+                logText.focus();
+                logSaveCallback = onSave;
+            });
+
+            function closeLogModal() {
+                logModal.classList.remove('active');
+                logSaveCallback = null;
+                commandInput.focus();
+            }
+
+            logSaveBtn.addEventListener('click', function() {
+                if (logSaveCallback) {
+                    logSaveCallback(logText.value);
+                }
+                closeLogModal();
+            });
+
+            logCancelBtn.addEventListener('click', function() {
+                SST.print('');
+                SST.print('Log edit cancelled.');
+                SST.print('');
+                closeLogModal();
+            });
+
+            // Close modal on Escape
+            logModal.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    logCancelBtn.click();
+                }
+            });
 
             // Handle command input
             commandInput.addEventListener('keypress', function(e) {
@@ -155,8 +292,8 @@
                 }
             });
 
-            // Start a new game
-            SST.newGame();
+            // Start game (checks for saved game)
+            SST.start();
         });
     </script>
     <script>

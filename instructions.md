@@ -162,17 +162,17 @@ Two formats supported in `MATING_PUZZLES` array:
 
 ## Super Star Trek (Core Complete)
 
-Recreation of the classic 1978 text-based game. Terminal-style interface with green text on dark blue. Note: This is an alternate version - will be "Cardassian Wars" themed rather than classic Klingon.
+Recreation of the classic 1978 text-based game. Terminal-style interface with green text on dark blue. Note: This is an alternate version - "Cardassian Wars" themed (enemies are Cardassians, not Klingons).
 
 ### Implemented Features
 - **Galaxy generation:** 8x8 quadrants, each with 8x8 sectors
-- **Enemies:** 15-25 Klingons randomly placed (max 3 per quadrant) - *to be replaced with Cardassians*
+- **Enemies:** 15-25 Cardassians randomly placed (max 3 per quadrant)
 - **Starbases:** 2-4 for resupply and repair
 - **Navigation:**
   - `WARP x, y` - Move between quadrants (positive X = right, positive Y = up)
   - `IMPULSE x, y` - Move within current quadrant
 - **Scanning:**
-  - `SRSCAN` - View current quadrant (8x8 sector grid) + Klingon positions/energy
+  - `SRSCAN` - View current quadrant (8x8 sector grid) + Cardassian positions/energy
   - `LRSCAN` - View adjacent quadrants
   - `STARMAP` - View entire galaxy map
 - **Combat:**
@@ -189,6 +189,8 @@ Recreation of the classic 1978 text-based game. Terminal-style interface with gr
   - "Raktajino" - 50% phaser damage boost
   - "Prune juice" - Shield regeneration
 - **Docking:** `DOCK` at starbases restores energy, shields, torpedoes, repairs systems
+- **Save/Load:** `SAVE` persists game state to localStorage; resume prompt on page load
+- **Captain's Log:** `LOG` opens modal notepad for personal notes (persisted with save)
 - **Enemy attacks:** Automatic after player movement, damage shields then hull
 - **Win/lose conditions:** Destroy all enemies, or lose by running out of energy/time
 
@@ -206,15 +208,16 @@ SHIELDS        - View shield status
 DAMAGE         - Damage report
 STATUS         - Mission status
 DOCK           - Dock at starbase
+SAVE           - Save game
+LOG            - Captain's log (personal notes)
 HELP           - Command list
 NEW            - New game
 ```
 
 ### Future Feature Ideas
 
-#### 1. Cardassian Reskin (Easy)
-Replace Klingons with Cardassians throughout. This marks the game as an alternate/modified version rather than a straight Super Star Trek clone. Change 'K' symbol to 'C', update all text references.
-- **Feasibility:** Easy - mostly find/replace on text and symbol constants.
+#### 1. Cardassian Reskin (DONE)
+Klingons replaced with Cardassians throughout. Symbol changed from K to C. Raktajino flavor text kept as "Klingon coffee" (it's a cultural reference, not an enemy reference).
 
 #### 2. Random Encounters / Away Missions (Medium)
 Trigger random events when entering certain quadrants or after certain actions. Examples:
@@ -298,19 +301,11 @@ Bridge crew who can be injured or lost:
 - Away mission casualties
 - **Feasibility:** Easy-Medium - crew roster, injury system, stat modifiers.
 
-#### 12. Captain's Log (Easy)
-Automatic or manual log entries that record your journey:
-- "Stardate 2547.3: Encountered three Cardassian vessels..."
-- Could be exported/shared
-- Adds narrative flavor
-- **Feasibility:** Easy - array of log strings, display command.
+#### 12. Captain's Log (DONE)
+Manual notepad via LOG command - opens modal textarea for personal notes. Notes persist with SAVE and display on game resume. Future: holodeck-themed save/load language.
 
-#### 13. Wormholes (Easy)
-Fast travel between distant quadrants:
-- Random or fixed wormhole locations
-- Two-way or one-way
-- Risk of ending up somewhere dangerous
-- **Feasibility:** Easy - special quadrant property, teleport logic.
+#### 13. Wormholes (DONE)
+3-4 wormholes placed randomly, connected in a one-way circuit (A→B→C→A). Sector symbol `@`, fly into with IMPULSE. ~20% chance of minor turbulence damage. Discovered wormholes shown on STARMAP with `~` markers and circuit info in legend.
 
 ---
 
