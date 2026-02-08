@@ -58,7 +58,7 @@ nino.buzz is a fun personal website with a retro 90s aesthetic (Comic Sans, neon
 ### Games
 - [x] Chess - vs computer using Stockfish.js + mating puzzles
 - [x] Scrabble - 2-4 player online multiplayer
-- [x] Super Star Trek - core gameplay complete (navigation, combat, replicator buffs)
+- [x] Super Star Trek - core gameplay complete (navigation, combat, replicator buffs, crew, self-destruct)
 
 ### Other Pages
 - [x] Links page - curated list of quirky/interesting websites
@@ -193,6 +193,29 @@ Recreation of the classic 1978 text-based game. Terminal-style interface with gr
 - **Captain's Log:** `LOG` opens modal notepad for personal notes (persisted with save)
 - **Enemy attacks:** Automatic after player movement, damage shields then hull
 - **Win/lose conditions:** Destroy all enemies, or lose by running out of energy/time
+- **Named Starbase Commanders:** Each starbase has a unique named commander (from pool of 12) who greets on dock
+- **Self-Destruct (`SELFDESTRUCT`):** Dramatic countdown, destroys all Cardassians in quadrant. Two outcomes:
+  - Starbases remain: Escape pod reaches nearest starbase, commander assigns mysterious "ghost ship" (USS Enterprise-A). Ship fully restored, `game.ghostShip` flag set for future subplot.
+  - No starbases: Escape pod captured by Cardassians, "To be continued...", game over.
+- **Named Bridge Crew:** 20 crew members across 5 roles, randomly assigned at game start. Each has flavor text description and hidden stat modifiers. `CREW` command to view roster; swap crew when docked at starbases.
+
+### Bridge Crew System
+5 bridge roles with 4 candidates each (20 total). Players see personality descriptions, not numbers.
+
+| Role | Stats Affected | Example Tradeoff |
+|------|---------------|------------------|
+| Helm | Warp/impulse energy costs | Great at warp, rough on short hops |
+| Tactical | Phaser damage, torpedo accuracy | Dead-eye phasers, shaky torpedoes |
+| Engineering | Repair speed, shield efficiency | Fast repairs, weak shields |
+| Science | LRS range (±1 or ±2), SRS damage compensation | Extended range, misses close detail |
+| Communications | Buff duration, dock resupply efficiency | High morale, poor supply logistics |
+
+- Torpedo accuracy: base 85%, modified by tactical crew (new miss mechanic)
+- Shield efficiency: better engineer = shields drain slower per hit
+- Dock efficiency: multiplier on energy/shields restored when docking
+- Science scan detail: compensates for minor SRS damage (< 2 stardates)
+- Starbase crew pools: each starbase has 2-3 crew for swapping (`CREW SWAP [role] [number]`)
+- Crew survives self-destruct (transfers to ghost ship)
 
 ### Commands
 ```
@@ -208,6 +231,8 @@ SHIELDS        - View shield status
 DAMAGE         - Damage report
 STATUS         - Mission status
 DOCK           - Dock at starbase
+CREW           - View bridge crew (swap at starbase)
+SELFDESTRUCT   - Self-destruct (last resort!)
 SAVE           - Save game
 LOG            - Captain's log (personal notes)
 HELP           - Command list
@@ -260,12 +285,8 @@ Other Federation vessels fighting in the war:
 - Named ships with captains (Easter eggs: USS Defiant, USS Voyager, etc.)
 - **Feasibility:** Medium-Hard - NPC ship AI, ally combat system, dialogue.
 
-#### 7. Self-Destruct / Abandon Ship / Eject Warp Core (Easy-Medium)
-Dramatic last-resort mechanics:
-- **Self-Destruct:** Countdown sequence, destroys everything in quadrant (kamikaze)
-- **Abandon Ship:** Save crew, lose the game but with honor (different ending)
-- **Eject Warp Core:** Massive explosion damages all ships in quadrant, leaves you stranded
-- **Feasibility:** Easy-Medium - special commands with dramatic text sequences.
+#### 7. Self-Destruct (DONE)
+`SELFDESTRUCT` command with dramatic countdown. Destroys all Cardassians in quadrant. If starbases remain, player respawns at nearest starbase with mysterious ghost ship (Enterprise-A) and named commander dialogue. If no starbases, captured by Cardassians ("To be continued..."). Ghost ship flag (`game.ghostShip`) planted for future subplot (mysterious damage events, strange readings, etc.). Abandon Ship and Eject Warp Core could still be added as separate commands.
 
 #### Additional Ideas (Claude's suggestions)
 
@@ -277,12 +298,12 @@ Quadrants could contain nebulae that affect gameplay:
 - Hiding spots (enemies can't target you either)
 - **Feasibility:** Medium - quadrant properties, modifier system.
 
-#### 9. Cloaking Device (Easy-Medium)
-Limited-use stealth ability:
+#### 9. Cloaking Device (Easy-Medium) — save for Random Encounters
+Limited-use stealth ability, planned as a reward for completing a random encounter:
 - Avoid combat when entering dangerous quadrants
 - Can't fire weapons while cloaked
 - Uses significant energy
-- Maybe acquired as reward from away mission
+- Acquired as reward from away mission / random encounter
 - **Feasibility:** Easy-Medium - state flag, energy drain, combat skip logic.
 
 #### 10. Ship Upgrades at Starbases (Medium)
@@ -293,13 +314,10 @@ Spend resources/time to improve the Enterprise:
 - Better sensors (see further on LRSCAN)
 - **Feasibility:** Medium - upgrade system, resource tracking, UI for purchase.
 
-#### 11. Named Crew Members (Easy-Medium)
-Bridge crew who can be injured or lost:
-- Affects ship performance (injured engineer = slower repairs)
-- Adds emotional stakes
-- Could have crew-specific abilities
-- Away mission casualties
-- **Feasibility:** Easy-Medium - crew roster, injury system, stat modifiers.
+#### 11. Named Crew Members (DONE — injuries TBD)
+20 crew across 5 bridge roles (Helm, Tactical, Engineering, Science, Communications). Each has hidden stat modifiers and flavor-text descriptions. Randomly assigned at game start, swappable at starbases. Crew survives self-destruct.
+
+**Future: Crew Injuries** — When ship takes damage, crew member's console sends a shower of sparks (like the show). Injured crew go to sick bay for a duration depending on severity. Reduces/removes their buff until healed. Not yet implemented.
 
 #### 12. Captain's Log (DONE)
 Manual notepad via LOG command - opens modal textarea for personal notes. Notes persist with SAVE and display on game resume. Future: holodeck-themed save/load language.
