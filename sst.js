@@ -16,6 +16,22 @@ const MAX_STARBASES = 4;
 const MIN_STARBASES = 2;
 const SAVE_KEY = 'sst-save';
 
+// Starbase commander names
+const STARBASE_COMMANDERS = [
+    'Commander Chen',
+    'Commander T\'Prela',
+    'Commander Okafor',
+    'Commander Vasquez',
+    'Commander zh\'Raal',
+    'Commander Dubois',
+    'Commander Krishnamurthy',
+    'Commander Sato',
+    'Commander O\'Brien',
+    'Commander Tarkiv',
+    'Commander Mbeki',
+    'Commander Johansson'
+];
+
 // Symbols for display
 const SYM = {
     ENTERPRISE: 'E',
@@ -106,7 +122,10 @@ function createGameState() {
         wormholes: [],
 
         // Captain's log (player notes)
-        log: ''
+        log: '',
+
+        // Ghost ship flag (set after self-destruct respawn)
+        ghostShip: false
     };
 }
 
@@ -215,9 +234,12 @@ function generateGalaxy() {
         }
     }
 
-    // Place Starbases (2-4 total)
+    // Place Starbases (2-4 total) with named commanders
     const totalStarbases = Math.floor(Math.random() * (MAX_STARBASES - MIN_STARBASES + 1)) + MIN_STARBASES;
     game.starbasesRemaining = totalStarbases;
+
+    // Shuffle commander names and pick one per starbase
+    const shuffledCommanders = STARBASE_COMMANDERS.slice().sort(() => Math.random() - 0.5);
 
     let starbasesPlaced = 0;
     while (starbasesPlaced < totalStarbases) {
@@ -226,6 +248,7 @@ function generateGalaxy() {
         // Max 1 starbase per quadrant
         if (game.galaxy[y][x].starbases === 0) {
             game.galaxy[y][x].starbases = 1;
+            game.galaxy[y][x].commander = shuffledCommanders[starbasesPlaced];
             starbasesPlaced++;
         }
     }
@@ -416,7 +439,7 @@ function shortRangeScan() {
     if (game.quadrant.cardassians.length > 0) {
         print('');
         print('Cardassian positions:');
-        for (const cardassianof game.quadrant.cardassians) {
+        for (const cardassian of game.quadrant.cardassians) {
             print('  [' + (cardassian.x + 1) + ', ' + (cardassian.y + 1) + '] - energy: ' + cardassian.energy);
         }
     }
@@ -995,7 +1018,7 @@ function firePhasers(parts) {
     const energyPerCardassian = energy / game.quadrant.cardassians.length;
     const destroyedCardassians = [];
 
-    for (const cardassianof game.quadrant.cardassians) {
+    for (const cardassian of game.quadrant.cardassians) {
         // Calculate distance
         const dx = cardassian.x - game.ship.sectorX;
         const dy = cardassian.y - game.ship.sectorY;
@@ -1020,7 +1043,7 @@ function firePhasers(parts) {
     }
 
     // Remove destroyed Cardassians
-    for (const cardassianof destroyedCardassians) {
+    for (const cardassian of destroyedCardassians) {
         removeCardassian(cardassian);
     }
 
@@ -1099,7 +1122,7 @@ function fireTorpedoes(parts) {
     if (target === SYM.CARDASSIAN) {
         print('*** DIRECT HIT! CARDASSIAN DESTROYED! ***');
         // Find and remove the Cardassian
-        const cardassian= game.quadrant.cardassians.find(k => k.x === targetX && k.y === targetY);
+        const cardassian = game.quadrant.cardassians.find(k => k.x === targetX && k.y === targetY);
         if (cardassian) {
             removeCardassian(cardassian);
         }
@@ -1256,7 +1279,7 @@ function cardassiansAttack() {
     print('');
     print('*** CARDASSIAN ATTACK ***');
 
-    for (const cardassianof game.quadrant.cardassians) {
+    for (const cardassian of game.quadrant.cardassians) {
         // Calculate distance
         const dx = cardassian.x - game.ship.sectorX;
         const dy = cardassian.y - game.ship.sectorY;
@@ -1333,9 +1356,16 @@ function dockAtStarbase() {
         return;
     }
 
+    // Greet with commander name
+    const commander = game.galaxy[game.ship.quadrantY][game.ship.quadrantX].commander;
     print('');
     print('=== DOCKING COMPLETE ===');
     print('');
+    if (commander) {
+        print(commander + ': "Welcome to Starbase, Captain.');
+        print('We\'ll have you resupplied shortly."');
+        print('');
+    }
 
     // Restore energy
     const energyRestored = INITIAL_ENERGY - game.ship.energy;
@@ -1474,6 +1504,9 @@ function processCommand(input) {
         case 'LOG':
             openLog();
             break;
+        case 'SELFDESTRUCT':
+            selfDestruct();
+            break;
         case 'NEW':
             startNewGame();
             break;
@@ -1506,6 +1539,7 @@ function showHelp() {
     print('STATUS         - Status Report');
     print('COMPUTER       - Replicator (crew buffs)');
     print('DOCK           - Dock at Starbase (must be adjacent)');
+    print('SELFDESTRUCT   - Self-destruct (last resort!)');
     print('SAVE           - Save game');
     print('LOG            - Captain\'s log (personal notes)');
     print('NEW            - Start New Game');
@@ -1565,6 +1599,156 @@ function openLog() {
         print("Don't forget to SAVE to preserve your log.");
         print('');
     });
+}
+
+// ============================================================================
+// SELF-DESTRUCT
+// ============================================================================
+
+function findNearestStarbase() {
+    let nearest = null;
+    let bestDist = Infinity;
+    for (let y = 0; y < GALAXY_SIZE; y++) {
+        for (let x = 0; x < GALAXY_SIZE; x++) {
+            if (game.galaxy[y][x].starbases > 0) {
+                const dist = Math.abs(x - game.ship.quadrantX) + Math.abs(y - game.ship.quadrantY);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    nearest = { x, y };
+                }
+            }
+        }
+    }
+    return nearest;
+}
+
+function selfDestruct() {
+    print('');
+    print('=== SELF-DESTRUCT SEQUENCE ===');
+    print('');
+    print('Are you sure, Captain? This will destroy the Enterprise. (Y/N)');
+    print('');
+
+    game.inputMode = 'selfdestruct';
+    game.inputCallback = function(input) {
+        game.inputMode = null;
+        game.inputCallback = null;
+
+        if (input !== 'Y' && input !== 'YES') {
+            print('Self-destruct aborted.');
+            print('');
+            return;
+        }
+
+        print('Captain\'s authorization confirmed.');
+        print('Self-destruct sequence activated.');
+        print('');
+        print('5...');
+        print('4...');
+        print('3...');
+        print('2...');
+        print('1...');
+        print('');
+        print('*** USS ENTERPRISE - DESTROYED ***');
+        print('');
+
+        // Destroy all Cardassians in current quadrant
+        const qx = game.ship.quadrantX;
+        const qy = game.ship.quadrantY;
+        const destroyed = game.quadrant.cardassians.length;
+
+        if (destroyed > 0) {
+            print('The explosion engulfs ' + destroyed + ' Cardassian warship' + (destroyed > 1 ? 's' : '') + '.');
+            game.cardassiansRemaining -= destroyed;
+            game.galaxy[qy][qx].cardassians = 0;
+            game.quadrant.cardassians = [];
+            // Clear Cardassian symbols from sector grid
+            for (let sy = 0; sy < QUADRANT_SIZE; sy++) {
+                for (let sx = 0; sx < QUADRANT_SIZE; sx++) {
+                    if (game.quadrant.sectors[sy][sx] === SYM.CARDASSIAN) {
+                        game.quadrant.sectors[sy][sx] = SYM.EMPTY;
+                    }
+                }
+            }
+        } else {
+            print('The explosion tears through empty space.');
+        }
+        print('');
+
+        // Check if that was the last of them
+        if (game.cardassiansRemaining <= 0) {
+            print('*** CONGRATULATIONS! ***');
+            print('That was the last of the Cardassian fleet!');
+            print('The Federation is saved — though the Enterprise is lost.');
+            print('');
+            game.gameOver = true;
+            game.won = true;
+            clearSave();
+            return;
+        }
+
+        print('Emergency escape pods launched...');
+        print('');
+
+        // Branch based on starbases remaining
+        if (game.starbasesRemaining > 0) {
+            // Branch A: Ghost ship
+            const starbase = findNearestStarbase();
+            const commander = game.galaxy[starbase.y][starbase.x].commander || 'The starbase commander';
+
+            print('Escape pod reaches Starbase at quadrant [' + (starbase.x + 1) + ', ' + (starbase.y + 1) + '].');
+            print('');
+            print(commander + ' meets you in the docking bay.');
+            print('');
+            print('"Captain, we have a ship for you. She was found drifting');
+            print('near the Badlands two weeks ago — no crew, no logs, no');
+            print('indication of what happened. Not a soul on board.');
+            print('');
+            print('Our repair crews have searched her stem to stern and');
+            print('declared her good as new. With the war effort, we need');
+            print('every ship we can get.');
+            print('');
+            print('She\'s yours now, Captain. Try not to blow this one up."');
+            print('');
+            print('=== USS ENTERPRISE-A COMMISSIONED ===');
+            print('');
+
+            // Reset ship to full stats
+            game.ship.energy = INITIAL_ENERGY;
+            game.ship.shields = INITIAL_SHIELDS;
+            game.ship.torpedoes = INITIAL_TORPEDOES;
+            for (const system of SYSTEMS) {
+                game.ship.damage[system] = 0;
+            }
+
+            // Move to starbase quadrant
+            game.ship.quadrantX = starbase.x;
+            game.ship.quadrantY = starbase.y;
+            enterQuadrant();
+
+            // Set docked and ghost ship flag
+            game.ship.docked = true;
+            game.ghostShip = true;
+
+            shortRangeScan();
+        } else {
+            // Branch B: Captured
+            print('Your pod drifts through the debris field.');
+            print('');
+            print('A shadow falls across the viewport.');
+            print('A Cardassian Galor-class warship decloaks above you.');
+            print('');
+            print('"Federation captain... you are now a prisoner');
+            print('of the Cardassian Union."');
+            print('');
+            print('=== TO BE CONTINUED... ===');
+            print('');
+
+            game.gameOver = true;
+            game.won = false;
+            clearSave();
+        }
+    };
 }
 
 // ============================================================================
