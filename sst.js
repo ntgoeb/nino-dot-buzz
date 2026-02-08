@@ -65,6 +65,89 @@ const SYSTEM_NAMES = {
     subspaceRadio: 'Subspace Radio'
 };
 
+// Bridge crew roster (20 characters, 4 per role)
+const CREW_ROSTER = [
+    // Helm - stats: warpCost (lower=better), impulseCost (lower=better)
+    { id: 'helm1', role: 'helm', name: 'Lt. Kowalski',
+      description: 'Runs the engines hot — great at warp, rough on short hops',
+      stats: { warpCost: 0.75, impulseCost: 1.20 } },
+    { id: 'helm2', role: 'helm', name: 'Ensign Ro',
+      description: 'Smooth on the stick, takes her time between stars',
+      stats: { warpCost: 1.15, impulseCost: 0.75 } },
+    { id: 'helm3', role: 'helm', name: 'Lt. Cmdr. Park',
+      description: 'By-the-book navigator, steady and efficient',
+      stats: { warpCost: 0.90, impulseCost: 0.90 } },
+    { id: 'helm4', role: 'helm', name: 'Lt. DeSoto',
+      description: 'Gets the job done, nothing fancy',
+      stats: { warpCost: 1.0, impulseCost: 1.0 } },
+
+    // Tactical - stats: phaserDamage (higher=better), torpedoAccuracy (higher=better)
+    { id: 'tac1', role: 'tactical', name: 'Lt. Worf',
+      description: 'Dead-eye with phasers, not such a hot shot on the torpedo controls',
+      stats: { phaserDamage: 1.30, torpedoAccuracy: 0.70 } },
+    { id: 'tac2', role: 'tactical', name: 'Ensign Tala',
+      description: 'Careful aim with torpedoes, conservative on the trigger',
+      stats: { phaserDamage: 0.85, torpedoAccuracy: 1.10 } },
+    { id: 'tac3', role: 'tactical', name: 'Lt. Ch\'Taran',
+      description: 'Aggressive on all fronts, no finesse',
+      stats: { phaserDamage: 1.15, torpedoAccuracy: 0.90 } },
+    { id: 'tac4', role: 'tactical', name: 'Lt. Cmdr. Ayala',
+      description: 'Solid all around, keeps a cool head',
+      stats: { phaserDamage: 1.05, torpedoAccuracy: 1.0 } },
+
+    // Engineering - stats: repairSpeed (higher=better), shieldEfficiency (higher=better)
+    { id: 'eng1', role: 'engineering', name: 'Chief Rawlings',
+      description: 'Keeps shields humming, repairs take a backseat',
+      stats: { repairSpeed: 0.80, shieldEfficiency: 1.25 } },
+    { id: 'eng2', role: 'engineering', name: 'Lt. Barclay',
+      description: 'Brilliant at fixing things, forgets to check the shields',
+      stats: { repairSpeed: 1.30, shieldEfficiency: 0.80 } },
+    { id: 'eng3', role: 'engineering', name: 'Lt. Cmdr. Singh',
+      description: 'Methodical, everything runs a little better',
+      stats: { repairSpeed: 1.10, shieldEfficiency: 1.10 } },
+    { id: 'eng4', role: 'engineering', name: 'Ensign Vorik',
+      description: 'Competent, by Vulcan standards that\'s high praise',
+      stats: { repairSpeed: 1.0, shieldEfficiency: 1.0 } },
+
+    // Science - stats: scanDetail (boolean), lrsRange (1 or 2)
+    { id: 'sci1', role: 'science', name: 'Lt. Cmdr. Velix',
+      description: 'Reads long-range like a book, misses what\'s under her nose',
+      stats: { scanDetail: false, lrsRange: 2 } },
+    { id: 'sci2', role: 'science', name: 'Lt. Duval',
+      description: 'Sharp eye up close, struggles at range',
+      stats: { scanDetail: true, lrsRange: 1 } },
+    { id: 'sci3', role: 'science', name: 'Ensign T\'Lora',
+      description: 'Thorough analyst, takes nothing for granted',
+      stats: { scanDetail: true, lrsRange: 2 } },
+    { id: 'sci4', role: 'science', name: 'Ensign Brooks',
+      description: 'Still calibrating, gives you the basics',
+      stats: { scanDetail: false, lrsRange: 1 } },
+
+    // Communications - stats: buffDuration (higher=better), dockEfficiency (higher=better)
+    { id: 'comm1', role: 'communications', name: 'Lt. Palmer',
+      description: 'Keeps morale sky-high, never heard of energy rationing',
+      stats: { buffDuration: 1.5, dockEfficiency: 0.85 } },
+    { id: 'comm2', role: 'communications', name: 'Ensign Patel',
+      description: 'Efficient communicator, no time for small talk',
+      stats: { buffDuration: 0.80, dockEfficiency: 1.20 } },
+    { id: 'comm3', role: 'communications', name: 'Lt. Cmdr. Hoshi',
+      description: 'The crew hangs on every word, starbases love her',
+      stats: { buffDuration: 1.20, dockEfficiency: 1.15 } },
+    { id: 'comm4', role: 'communications', name: 'Ensign Zheng',
+      description: 'Gets the message across, nothing more',
+      stats: { buffDuration: 1.0, dockEfficiency: 1.0 } }
+];
+
+const BRIDGE_ROLES = ['helm', 'tactical', 'engineering', 'science', 'communications'];
+
+const ROLE_LABELS = {
+    helm: 'Helm',
+    tactical: 'Tactical',
+    engineering: 'Engineering',
+    science: 'Science',
+    communications: 'Communications'
+};
+
 // ============================================================================
 // GAME STATE
 // ============================================================================
@@ -116,6 +199,15 @@ function createGameState() {
             tea: 0,         // Focus - faster repairs
             raktajino: 0,   // Klingon coffee - phaser damage boost
             pruneJuice: 0   // Warrior's drink - shield boost
+        },
+
+        // Bridge crew
+        crew: {
+            helm: null,
+            tactical: null,
+            engineering: null,
+            science: null,
+            communications: null
         },
 
         // Wormhole circuit (array of {quadrantX, quadrantY} in order)
@@ -189,6 +281,9 @@ function initializeGame() {
 
     // Generate the galaxy
     generateGalaxy();
+
+    // Assign bridge crew and distribute remaining to starbases
+    assignInitialCrew();
 
     // Set time limit based on Cardassian count
     game.stardate.end = game.stardate.start + Math.max(25, game.cardassiansRemaining + 5);
@@ -267,6 +362,44 @@ function generateGalaxy() {
             game.wormholes.push({ quadrantX: x, quadrantY: y });
             wormholesPlaced++;
         }
+    }
+}
+
+function assignInitialCrew() {
+    // Group roster by role
+    const byRole = {};
+    for (const role of BRIDGE_ROLES) {
+        byRole[role] = CREW_ROSTER.filter(c => c.role === role)
+            .sort(() => Math.random() - 0.5);
+    }
+
+    // Assign one random crew member per role to the player
+    const assigned = [];
+    for (const role of BRIDGE_ROLES) {
+        game.crew[role] = byRole[role].shift();
+        assigned.push(game.crew[role].id);
+    }
+
+    // Remaining crew distributed to starbases (2-3 each)
+    const remaining = CREW_ROSTER.filter(c => !assigned.includes(c.id))
+        .sort(() => Math.random() - 0.5);
+
+    // Find all starbases
+    const starbases = [];
+    for (let y = 0; y < GALAXY_SIZE; y++) {
+        for (let x = 0; x < GALAXY_SIZE; x++) {
+            if (game.galaxy[y][x].starbases > 0) {
+                game.galaxy[y][x].availableCrew = [];
+                starbases.push(game.galaxy[y][x]);
+            }
+        }
+    }
+
+    // Distribute remaining crew round-robin to starbases
+    let sbIndex = 0;
+    for (const crew of remaining) {
+        starbases[sbIndex % starbases.length].availableCrew.push(crew);
+        sbIndex++;
     }
 }
 
@@ -401,10 +534,16 @@ function getCondition() {
 }
 
 function shortRangeScan() {
+    const hasScanDetail = game.crew.science && game.crew.science.stats.scanDetail;
     if (game.ship.damage.shortRangeSensors < 0) {
-        print('*** SHORT RANGE SENSORS ARE DAMAGED ***');
-        print('');
-        return;
+        if (hasScanDetail && game.ship.damage.shortRangeSensors > -2) {
+            // Science officer compensates for minor sensor damage
+            print('*** SHORT RANGE SENSORS DAMAGED — science officer compensating ***');
+        } else {
+            print('*** SHORT RANGE SENSORS ARE DAMAGED ***');
+            print('');
+            return;
+        }
     }
 
     print('');
@@ -457,13 +596,19 @@ function longRangeScan() {
     const qx = game.ship.quadrantX;
     const qy = game.ship.quadrantY;
 
+    // Science officer affects scan range (1 or 2 quadrants)
+    const scanRange = game.crew.science ? game.crew.science.stats.lrsRange : 1;
+
     print('');
     print('Long Range Scan for Quadrant [' + (qx + 1) + ', ' + (qy + 1) + ']');
+    if (scanRange > 1) {
+        print('(Enhanced range from science officer)');
+    }
     print('');
 
     // Header row
     let header = '    ';
-    for (let x = qx - 1; x <= qx + 1; x++) {
+    for (let x = qx - scanRange; x <= qx + scanRange; x++) {
         if (x >= 0 && x < GALAXY_SIZE) {
             header += ' ' + (x + 1) + '  ';
         } else {
@@ -471,9 +616,9 @@ function longRangeScan() {
         }
     }
     print(header);
-    print('  +---+---+---+');
+    print('  +' + '---+'.repeat(scanRange * 2 + 1));
 
-    for (let y = qy - 1; y <= qy + 1; y++) {
+    for (let y = qy - scanRange; y <= qy + scanRange; y++) {
         let line = '';
         if (y >= 0 && y < GALAXY_SIZE) {
             line = (y + 1) + ' |';
@@ -481,7 +626,7 @@ function longRangeScan() {
             line = '  |';
         }
 
-        for (let x = qx - 1; x <= qx + 1; x++) {
+        for (let x = qx - scanRange; x <= qx + scanRange; x++) {
             if (x >= 0 && x < GALAXY_SIZE && y >= 0 && y < GALAXY_SIZE) {
                 const q = game.galaxy[y][x];
                 q.explored = true;  // Mark as explored
@@ -492,7 +637,7 @@ function longRangeScan() {
             }
         }
         print(line);
-        print('  +---+---+---+');
+        print('  +' + '---+'.repeat(scanRange * 2 + 1));
     }
 
     print('');
@@ -660,7 +805,8 @@ function startWarpNavigation(parts) {
 
     // Calculate energy cost based on distance
     const distance = Math.abs(dx) + Math.abs(dy);
-    const energyCost = distance * 50;
+    const helmMod = game.crew.helm ? game.crew.helm.stats.warpCost : 1.0;
+    const energyCost = Math.floor(distance * 50 * helmMod);
 
     if (game.ship.energy < energyCost) {
         print('Insufficient energy for warp.');
@@ -698,7 +844,8 @@ function startImpulseNavigation(parts) {
 
     // Calculate energy cost (10 per sector moved)
     const distance = Math.abs(dx) + Math.abs(dy);
-    const energyCost = distance * 10;
+    const helmMod = game.crew.helm ? game.crew.helm.stats.impulseCost : 1.0;
+    const energyCost = Math.floor(distance * 10 * helmMod);
 
     if (game.ship.energy < energyCost) {
         print('Insufficient energy for impulse.');
@@ -1029,7 +1176,8 @@ function firePhasers(parts) {
         const effectiveness = 1 / (1 + distance * 0.3);
         // Raktajino buff increases phaser damage by 50%
         const raktajinoBonus = game.buffs.raktajino > 0 ? 1.5 : 1.0;
-        const damage = Math.floor(energyPerCardassian * effectiveness * (0.8 + Math.random() * 0.4) * raktajinoBonus);
+        const tacMod = game.crew.tactical ? game.crew.tactical.stats.phaserDamage : 1.0;
+        const damage = Math.floor(energyPerCardassian * effectiveness * (0.8 + Math.random() * 0.4) * raktajinoBonus * tacMod);
 
         cardassian.energy -= damage;
         print('Cardassian at [' + (cardassian.x + 1) + ',' + (cardassian.y + 1) + '] hit for ' + damage + ' damage.');
@@ -1120,11 +1268,18 @@ function fireTorpedoes(parts) {
     const target = game.quadrant.sectors[targetY][targetX];
 
     if (target === SYM.CARDASSIAN) {
-        print('*** DIRECT HIT! CARDASSIAN DESTROYED! ***');
-        // Find and remove the Cardassian
-        const cardassian = game.quadrant.cardassians.find(k => k.x === targetX && k.y === targetY);
-        if (cardassian) {
-            removeCardassian(cardassian);
+        // Torpedo accuracy check (base 85%, modified by tactical crew)
+        const tacAccuracy = game.crew.tactical ? game.crew.tactical.stats.torpedoAccuracy : 1.0;
+        const hitChance = 0.85 * tacAccuracy;
+        if (Math.random() < hitChance) {
+            print('*** DIRECT HIT! CARDASSIAN DESTROYED! ***');
+            // Find and remove the Cardassian
+            const cardassian = game.quadrant.cardassians.find(k => k.x === targetX && k.y === targetY);
+            if (cardassian) {
+                removeCardassian(cardassian);
+            }
+        } else {
+            print('Torpedo veers off course — near miss!');
         }
     } else if (target === SYM.STAR) {
         print('Torpedo impacts star - no effect.');
@@ -1208,39 +1363,43 @@ function useReplicator(parts) {
         return;
     }
 
+    // Buff duration (communications crew affects this)
+    const commMod = game.crew.communications ? game.crew.communications.stats.buffDuration : 1.0;
+    const duration = Math.round(5 * commMod);
+
     // Process orders
     if (order.includes('coffee') && !order.includes('raktajino')) {
         print('');
         print('"Coffee, black."');
         print('');
         print('The replicator hums and produces a steaming cup of black coffee.');
-        print('You feel more alert. Engine efficiency improved for 5 moves.');
+        print('You feel more alert. Engine efficiency improved for ' + duration + ' moves.');
         print('');
-        game.buffs.coffee = 5;
+        game.buffs.coffee = duration;
     } else if (order.includes('tea') || order.includes('earl grey')) {
         print('');
         print('"Tea, Earl Grey, hot."');
         print('');
         print('The replicator produces a perfect cup of Earl Grey tea.');
-        print('A sense of calm focus settles over the bridge. Repairs will be faster for 5 moves.');
+        print('A sense of calm focus settles over the bridge. Repairs will be faster for ' + duration + ' moves.');
         print('');
-        game.buffs.tea = 5;
+        game.buffs.tea = duration;
     } else if (order.includes('raktajino')) {
         print('');
         print('"Raktajino."');
         print('');
         print('The replicator produces the strong Klingon coffee.');
-        print('The crew feels energized and aggressive. Phaser damage boosted for 5 moves.');
+        print('The crew feels energized and aggressive. Phaser damage boosted for ' + duration + ' moves.');
         print('');
-        game.buffs.raktajino = 5;
+        game.buffs.raktajino = duration;
     } else if (order.includes('prune') || order.includes('juice')) {
         print('');
         print('"Prune juice. A warrior\'s drink."');
         print('');
         print('The replicator produces a glass of prune juice.');
-        print('You feel the vigor of a Klingon warrior. Shields regenerating for 5 moves.');
+        print('You feel the vigor of a Klingon warrior. Shields regenerating for ' + duration + ' moves.');
         print('');
-        game.buffs.pruneJuice = 5;
+        game.buffs.pruneJuice = duration;
     } else {
         print('');
         print('The replicator does not recognize that order.');
@@ -1292,10 +1451,14 @@ function cardassiansAttack() {
         if (damage > 0) {
             print('Cardassian at [' + (cardassian.x + 1) + ',' + (cardassian.y + 1) + '] fires - ');
 
-            // Shields absorb damage first
+            // Shields absorb damage first (engineering crew affects efficiency)
+            // Better engineer = shields drain slower per point of damage absorbed
             if (game.ship.shields > 0) {
-                const absorbed = Math.min(game.ship.shields, damage);
-                game.ship.shields -= absorbed;
+                const shieldMod = game.crew.engineering ? game.crew.engineering.stats.shieldEfficiency : 1.0;
+                const shieldCost = Math.max(1, Math.floor(damage / shieldMod));
+                const canAbsorb = Math.min(game.ship.shields, shieldCost);
+                const absorbed = Math.min(damage, Math.floor(canAbsorb * shieldMod));
+                game.ship.shields -= canAbsorb;
                 damage -= absorbed;
                 print('  Shields absorb ' + absorbed + ' units');
             }
@@ -1330,7 +1493,8 @@ function damageRandomSystem() {
 
 function repairSystems(time) {
     // Tea buff doubles repair rate
-    const repairRate = game.buffs.tea > 0 ? 1.0 : 0.5;
+    const engMod = game.crew.engineering ? game.crew.engineering.stats.repairSpeed : 1.0;
+    const repairRate = (game.buffs.tea > 0 ? 1.0 : 0.5) * engMod;
 
     for (const system of SYSTEMS) {
         if (game.ship.damage[system] < 0) {
@@ -1367,14 +1531,19 @@ function dockAtStarbase() {
         print('');
     }
 
+    // Communications crew affects dock resupply efficiency
+    const dockMod = game.crew.communications ? game.crew.communications.stats.dockEfficiency : 1.0;
+
     // Restore energy
-    const energyRestored = INITIAL_ENERGY - game.ship.energy;
-    game.ship.energy = INITIAL_ENERGY;
+    const energyMax = Math.floor(INITIAL_ENERGY * dockMod);
+    const energyRestored = energyMax - game.ship.energy;
+    game.ship.energy = energyMax;
     print('Energy restored: +' + energyRestored + ' (now ' + game.ship.energy + ')');
 
     // Restore shields
-    const shieldsRestored = INITIAL_SHIELDS - game.ship.shields;
-    game.ship.shields = INITIAL_SHIELDS;
+    const shieldsMax = Math.floor(INITIAL_SHIELDS * dockMod);
+    const shieldsRestored = shieldsMax - game.ship.shields;
+    game.ship.shields = shieldsMax;
     print('Shields restored: +' + shieldsRestored + ' (now ' + game.ship.shields + ')');
 
     // Restore torpedoes
@@ -1504,6 +1673,9 @@ function processCommand(input) {
         case 'LOG':
             openLog();
             break;
+        case 'CREW':
+            manageCrew(parts);
+            break;
         case 'SELFDESTRUCT':
             selfDestruct();
             break;
@@ -1539,6 +1711,7 @@ function showHelp() {
     print('STATUS         - Status Report');
     print('COMPUTER       - Replicator (crew buffs)');
     print('DOCK           - Dock at Starbase (must be adjacent)');
+    print('CREW           - View bridge crew (swap at starbase)');
     print('SELFDESTRUCT   - Self-destruct (last resort!)');
     print('SAVE           - Save game');
     print('LOG            - Captain\'s log (personal notes)');
@@ -1599,6 +1772,135 @@ function openLog() {
         print("Don't forget to SAVE to preserve your log.");
         print('');
     });
+}
+
+// ============================================================================
+// CREW MANAGEMENT
+// ============================================================================
+
+function showCrewRoster() {
+    print('');
+    print('=== BRIDGE CREW ===');
+    print('');
+    for (const role of BRIDGE_ROLES) {
+        const member = game.crew[role];
+        const label = (ROLE_LABELS[role] + ':').padEnd(16);
+        if (member) {
+            print(label + member.name);
+            print('                ' + member.description);
+        } else {
+            print(label + '(vacant)');
+        }
+    }
+    print('');
+}
+
+function manageCrew(parts) {
+    // CREW SWAP [role] [number] - swap crew when docked
+    if (parts.length >= 4 && parts[1] === 'SWAP') {
+        if (!game.ship.docked) {
+            print('');
+            print('You must be docked at a starbase to swap crew.');
+            print('');
+            return;
+        }
+
+        const roleName = parts[2].toLowerCase();
+        const pickNum = parseInt(parts[3]);
+
+        // Validate role
+        if (!BRIDGE_ROLES.includes(roleName)) {
+            print('');
+            print('Unknown role: ' + parts[2]);
+            print('Roles: ' + BRIDGE_ROLES.map(r => ROLE_LABELS[r]).join(', '));
+            print('');
+            return;
+        }
+
+        // Get available crew at this starbase
+        const quadrant = game.galaxy[game.ship.quadrantY][game.ship.quadrantX];
+        const available = (quadrant.availableCrew || []).filter(c => c.role === roleName);
+
+        if (available.length === 0) {
+            print('');
+            print('No ' + ROLE_LABELS[roleName] + ' crew available at this starbase.');
+            print('');
+            return;
+        }
+
+        if (isNaN(pickNum) || pickNum < 1 || pickNum > available.length) {
+            print('');
+            print('Invalid selection. Choose 1-' + available.length + '.');
+            print('');
+            return;
+        }
+
+        const newCrew = available[pickNum - 1];
+        const oldCrew = game.crew[roleName];
+
+        // Swap: remove new crew from starbase pool
+        const poolIndex = quadrant.availableCrew.indexOf(newCrew);
+        quadrant.availableCrew.splice(poolIndex, 1);
+
+        // Add old crew to starbase pool
+        if (oldCrew) {
+            quadrant.availableCrew.push(oldCrew);
+        }
+
+        // Assign new crew
+        game.crew[roleName] = newCrew;
+
+        print('');
+        print(newCrew.name + ' reports for duty as ' + ROLE_LABELS[roleName] + '.');
+        if (oldCrew) {
+            print(oldCrew.name + ' transfers to starbase personnel.');
+        }
+        print('');
+        print(newCrew.name + ': "' + newCrew.description + '"');
+        print('');
+        return;
+    }
+
+    // Default: show roster
+    showCrewRoster();
+
+    // If docked, show available crew at this starbase
+    if (game.ship.docked) {
+        const quadrant = game.galaxy[game.ship.quadrantY][game.ship.quadrantX];
+        const available = quadrant.availableCrew || [];
+
+        if (available.length > 0) {
+            print('=== AVAILABLE CREW AT THIS STARBASE ===');
+            print('');
+
+            // Group by role for display
+            let num = 1;
+            const displayMap = [];
+            for (const crew of available) {
+                print(num + '. ' + crew.name + ' (' + ROLE_LABELS[crew.role] + ')');
+                print('   ' + crew.description);
+                displayMap.push(crew);
+                num++;
+            }
+            print('');
+            print('CREW SWAP [role] [number] to swap');
+            print('Example: CREW SWAP TACTICAL 1');
+            print('');
+
+            // Also show by-role numbering hint
+            for (const role of BRIDGE_ROLES) {
+                const roleAvail = available.filter(c => c.role === role);
+                if (roleAvail.length > 0) {
+                    const names = roleAvail.map((c, i) => (i + 1) + '. ' + c.name).join(', ');
+                    print(ROLE_LABELS[role] + ': ' + names);
+                }
+            }
+            print('');
+        } else {
+            print('No crew available for transfer at this starbase.');
+            print('');
+        }
+    }
 }
 
 // ============================================================================
@@ -1822,7 +2124,10 @@ function startNewGame() {
     print('');
     print('There are ' + game.starbasesRemaining + ' starbases in the galaxy for resupply.');
     print('Subspace anomalies detected - ' + game.wormholes.length + ' wormholes reported.');
-    print('');
+
+    // Show assigned bridge crew
+    showCrewRoster();
+
     print('Type HELP for commands, or SRSCAN for a Short Range Scan.');
     print('');
 
