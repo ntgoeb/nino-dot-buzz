@@ -228,6 +228,7 @@ PHASERS n      - Fire phasers with n energy
 TORPEDOES x, y - Fire torpedo at sector x, y
 COMPUTER       - Replicator menu (crew buffs)
 SHIELDS        - View shield status
+DIAGNOSTIC     - Full ship diagnostic (systems, supplies, ghost ship status)
 DAMAGE         - Damage report
 STATUS         - Mission status
 DOCK           - Dock at starbase
@@ -287,6 +288,53 @@ Other Federation vessels fighting in the war:
 
 #### 7. Self-Destruct (DONE)
 `SELFDESTRUCT` command with dramatic countdown. Destroys all Cardassians in quadrant. If starbases remain, player respawns at nearest starbase with mysterious ghost ship (Enterprise-A) and named commander dialogue. If no starbases, captured by Cardassians ("To be continued..."). Ghost ship flag (`game.ghostShip`) planted for future subplot (mysterious damage events, strange readings, etc.). Abandon Ship and Eject Warp Core could still be added as separate commands.
+
+#### 14. DIAGNOSTIC Command (Specced)
+`DIAGNOSTIC` shows a full ship status overview: energy, shields, torpedoes, and all 8 systems with operational/damaged status and repair ETAs. Works on any ship at any time. On the ghost ship, appends atmospheric flavor text about unexplained system failures.
+
+#### 15. Ghost Ship Malfunction System (Specced)
+When `game.ghostShip` is true, ship systems suffer intermittent unexplained failures that escalate over time.
+
+**Escalating Frequency (Rising Floor Sawtooth):**
+- New properties: `game.ghostMalfunctionChance` (starts at 1), `game.ghostMalfunctionFloor` (starts at 1)
+- On each action (hook into `tickBuffs()` or new `tickGhostShip()`):
+  - If `game.ghostShip` is false, skip
+  - Roll `Math.random() * 100 < game.ghostMalfunctionChance`
+  - **Miss:** `ghostMalfunctionChance += 2` (1 → 3 → 5 → 7 → ...)
+  - **Hit:** fire malfunction, then `ghostMalfunctionFloor += 2` and `ghostMalfunctionChance = ghostMalfunctionFloor` (floor goes 1 → 3 → 5 → ..., so resets climb: 3,5,7... then 5,7,9... etc.)
+- The rising floor means the ghost ship gets progressively worse over the course of a run, creating natural urgency for the eventual side quest resolution
+
+**Weighted System Selection:**
+
+| Weight | Systems |
+|--------|---------|
+| 3 | computer, subspaceRadio |
+| 2 | shortRangeSensors, longRangeSensors |
+| 1 | phasers, photonTorpedoes, shields, warpEngines |
+
+**Severity Tiers:**
+
+| Chance | Type | Damage Value | Effective Downtime | Description |
+|--------|------|-------------|-------------------|-------------|
+| 60% | Flicker | -0.3 to -0.5 | ~1 action | Brief stutter, self-corrects quickly |
+| 30% | Glitch | -0.6 to -1.0 | ~2-3 actions | System drops out, comes back |
+| 10% | Poltergeist | -1.5 to -2.0 | ~3-5 actions | Dramatic full shutdown with eerie flavor text |
+
+**Damage stacking:** Ghost malfunctions stack with existing combat damage (rebalance later).
+
+**Flavor Text:** Each malfunction prints atmospheric text, escalating in creepiness with severity tier. Examples:
+- Flicker: `"* Static ripples across the short range display... *"`
+- Glitch: `"* Torpedo loading mechanism locks up. The turbolift activates -- empty *"`
+- Poltergeist: `"* The shields collapse without warning. In the silence, a whisper across the bridge... *"`
+
+**Side Quest Resolution:** TBD -- for now malfunctions persist for the rest of the run. Future: antagonist encounters and a quest line to discover the cause and stop it.
+
+**Properties Added to `game`:**
+- `game.ghostShip` — already exists (boolean)
+- `game.ghostMalfunctionChance` — new (number, starts at 1)
+- `game.ghostMalfunctionFloor` — new (number, starts at 1)
+
+**Integration Point:** Hook into the 5 existing `tickBuffs()` call sites (warp, impulse, wormhole, phasers, torpedoes).
 
 #### Additional Ideas (Claude's suggestions)
 

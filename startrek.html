@@ -8,32 +8,8 @@
     <title>Super Star Trek - Nino's Webhome</title>
     <link rel="stylesheet" href="style/default-style.css">
     <style>
-        .under-construction {
-            text-align: center;
-            padding: 15px;
-            border: 3px dashed #ffff00;
-            background: repeating-linear-gradient(
-                45deg,
-                #000000,
-                #000000 10px,
-                #ffcc00 10px,
-                #ffcc00 20px
-            );
-            margin: 20px 0;
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        .under-construction-inner {
-            background: #000000;
-            padding: 10px 20px;
-            display: inline-block;
-            border: 2px solid #ffff00;
-        }
-
-        .under-construction-inner span {
-            color: #ffff00;
-            animation: blink 1s ease-in-out infinite;
+        h1 {
+            font-size: 24px;
         }
 
         .game-window {
@@ -161,8 +137,25 @@
 
         @media (max-width: 600px) {
             .game-window {
-                height: 350px;
+                padding: 8px;
+                height: 40vh;
+                height: 50dvh;
+                min-height: 120px;
+                max-height: 350px;
                 font-size: 12px;
+                overflow-x: auto;
+            }
+
+            #output {
+                font-size: 10px;
+            }
+
+            .command-input {
+                font-size: 16px;
+            }
+
+            .game-instructions {
+                display: none;
             }
 
             .log-modal-content {
@@ -194,10 +187,9 @@
 
         <h1>Super Star Trek</h1>
 
-        <div class="under-construction">
-            <div class="under-construction-inner">
-                <span>🚧 UNDER CONSTRUCTION 🚧</span>
-            </div>
+        <div id="gameContainer">
+            <div id="output" class="game-window"></div>
+            <input type="text" id="command" class="command-input" placeholder="Enter command..." autocomplete="off">
         </div>
 
         <div class="game-instructions">
@@ -212,11 +204,6 @@
             <p>SAVE - Save game / LOG - Captain's log</p>
             <p>SELFDESTRUCT - Self-destruct (last resort)</p>
             <p>Type 'HELP' for full instructions</p>
-        </div>
-
-        <div id="gameContainer">
-            <div id="output" class="game-window"></div>
-            <input type="text" id="command" class="command-input" placeholder="Enter command..." autocomplete="off">
         </div>
 
         <div id="logModal" class="log-modal">

@@ -653,10 +653,10 @@ function starMap() {
     // Header row with column numbers
     let header = '     ';
     for (let x = 0; x < GALAXY_SIZE; x++) {
-        header += '  ' + (x + 1) + '  ';
+        header += '  ' + (x + 1) + '   ';
     }
     print(header);
-    print('    +' + '----+'.repeat(GALAXY_SIZE));
+    print('    +' + '-----+'.repeat(GALAXY_SIZE));
 
     for (let y = 0; y < GALAXY_SIZE; y++) {
         let line = ' ' + (y + 1) + '  |';
@@ -685,7 +685,7 @@ function starMap() {
             }
         }
         print(line);
-        print('    +' + '----+'.repeat(GALAXY_SIZE));
+        print('    +' + '-----+'.repeat(GALAXY_SIZE));
     }
 
     print('');
